@@ -1,0 +1,394 @@
+// Darkly 3.3.5
+// Bootswatch
+// -----------------------------------------------------
+
+@web-font-path: "https://fonts.googleapis.com/css?family=Lato:400,700,400italic";
+
+.web-font(@path) {
+  @import url("@{path}");
+}
+.web-font(@web-font-path);
+
+// Navbar =====================================================================
+
+.navbar {
+  border-width: 0;
+  background: linear-gradient(to bottom, darken(@brand-primary, 1.5%), darken(@brand-primary,4.5%));
+  &-default {
+
+    .badge {
+      background-color: #fff;
+      color: @navbar-default-bg;
+    }
+  }
+
+  &-inverse {
+    background: linear-gradient(to bottom, darken(@brand-primary, 1.5%), darken(@brand-primary,4.5%));
+    .badge {
+      background-color: #fff;
+      color: @navbar-inverse-bg;
+    }
+  }
+
+  &-brand {
+    line-height: 1;
+  }
+
+  &-form {
+    .form-control {
+      background-color: @gray-lighter;
+      height: auto;
+      &:focus {
+        background-color: white;
+        border-color: darken(@brand-primary, 1%);
+      }
+    }
+  }
+}
+
+.navbar-default .navbar-toggle {
+   border: none;
+   background-color: lighten(@brand-primary,7%);
+   &:hover, &:focus {
+      background-color: @brand-success;
+   }
+}
+
+.navbar-spinner {
+  padding: @padding-base-horizontal;
+  color: @brand-success;
+}
+
+// Buttons ====================================================================
+
+.btn {
+  border-width: 0;
+}
+
+.btn-default:hover {
+  background-color: darken(@brand-primary,10%);
+}
+.btn-default:active {
+  background-color: lighten(@brand-primary,3%);
+}
+
+.btn:active {
+  .box-shadow(none);
+}
+
+.btn-group.open .dropdown-toggle {
+  .box-shadow(none);
+}
+
+.navbar-btn {
+
+}
+
+// Typography =================================================================
+
+.text-primary,
+.text-primary:hover {
+  color: lighten(@brand-primary, 10%);
+}
+
+.text-success,
+.text-success:hover {
+  color: @brand-success;
+}
+
+.text-danger,
+.text-danger:hover {
+  color: @brand-danger;
+}
+
+.text-warning,
+.text-warning:hover {
+  color: @brand-warning;
+}
+
+.text-info,
+.text-info:hover {
+  color: @brand-info;
+}
+
+.text-primary,
+.text-primary:hover  {
+  .text-emphasis-variant( lighten(@brand-primary,20%)) ;
+}
+
+// Tables =====================================================================
+
+table,
+.table {
+
+  a:not(.btn) {
+    text-decoration: underline;
+  }
+
+  .dropdown-menu a {
+    text-decoration: none;
+  }
+
+  .success,
+  .warning,
+  .danger,
+  .info {
+    color: #fff;
+
+    > th > a,
+    > td > a,
+    > a {
+      color: #fff;
+    }
+  }
+
+  /*> thead > tr > th,
+  > tbody > tr > th,
+  > tfoot > tr > th,
+  > thead > tr > td,
+  > tbody > tr > td,
+  > tfoot > tr > td {
+    border: none;
+  }*/
+
+  &-bordered > thead > tr > th,
+  &-bordered > tbody > tr > th,
+  &-bordered > tfoot > tr > th,
+  &-bordered > thead > tr > td,
+  &-bordered > tbody > tr > td,
+  &-bordered > tfoot > tr > td {
+    border: 1px solid @table-border-color;
+  }
+}
+
+// Forms ======================================================================
+
+input,
+textarea {
+  color: @input-color;
+}
+
+.form-control,
+input,
+textarea {
+  border: 0 hidden transparent;
+  height: auto;
+  .box-shadow(none);
+
+  &:focus {
+    .box-shadow(none);
+  }
+}
+
+.has-warning {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label,
+  .form-control-feedback {
+    color: @brand-warning;
+  }
+
+  .form-control,
+  .form-control:focus {
+    .box-shadow(none);
+  }
+
+  .input-group-addon {
+    border-color: @brand-warning;
+  }
+}
+
+.has-error {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label,
+  .form-control-feedback {
+    color: @brand-danger;
+  }
+
+  .form-control,
+  .form-control:focus {
+    .box-shadow(none);
+  }
+
+  .input-group-addon {
+    border-color: @brand-danger;
+  }
+}
+
+.has-success {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label,
+  .form-control-feedback {
+    color: @brand-success;
+  }
+
+  .form-control,
+  .form-control:focus {
+    .box-shadow(none);
+  }
+
+  .input-group-addon {
+    border-color: @brand-success;
+  }
+}
+
+.input-group-addon {
+  color: @text-color;
+}
+
+// Navs =======================================================================
+
+.nav {
+  .open > a,
+  .open > a:hover,
+  .open > a:focus {
+    border-color: @nav-tabs-border-color;
+  }
+}
+
+.nav-tabs > li > a,
+.nav-pills > li > a {
+  color: #fff;
+}
+
+.pager {
+  a,
+  a:hover {
+    color: #fff;
+  }
+
+  .disabled {
+    &>a,
+    &>a:hover,
+    &>a:focus,
+    &>span {
+      background-color: @pagination-disabled-bg;
+    }
+  }
+}
+
+.breadcrumb a {
+  color: #fff;
+}
+
+// Indicators =================================================================
+
+.close {
+  text-decoration: none;
+  text-shadow: none;
+  opacity: 0.4;
+
+  &:hover,
+  &:focus {
+    opacity: 1;
+  }
+}
+
+.alert {
+  .alert-link {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+// Progress bars ==============================================================
+
+.progress {
+  height: 18px;
+  .box-shadow(inset 0 1px 2px rgba(0, 0, 0, 0.3));
+  .progress-bar {
+    font-size: 14px;
+    line-height: 18px;
+    .box-shadow(inset 0 -1px 0 rgba(0, 0, 0, 0.3));
+  }
+}
+
+// Containers =================================================================
+
+.well {
+  .box-shadow(none);
+}
+
+a.list-group-item {
+
+  &.active,
+  &.active:hover,
+  &.active:focus {
+    border-color: @list-group-border;
+  }
+
+  &-success {
+    &.active {
+      background-color: @state-success-bg;
+    }
+
+    &.active:hover,
+    &.active:focus {
+      background-color: darken(@state-success-bg, 5%);
+    }
+  }
+
+  &-warning {
+    &.active {
+      background-color: @state-warning-bg;
+    }
+    
+    &.active:hover,
+    &.active:focus {
+      background-color: darken(@state-warning-bg, 5%);
+    }
+  }
+
+  &-danger {
+    &.active {
+      background-color: @state-danger-bg;
+    }
+    
+    &.active:hover,
+    &.active:focus {
+      background-color: darken(@state-danger-bg, 5%);
+    }
+  }
+}
+
+a.list-group-item .list-group-item-heading, button.list-group-item .list-group-item-heading {
+   color: #fff;
+}
+
+.popover {
+  color: @text-color;
+}
+
+.panel {
+   .box-shadow(none);
+}
+
+.modal-content {
+   color: @gray-darker;
+   a {
+      color: @brand-secondary;
+   }
+}

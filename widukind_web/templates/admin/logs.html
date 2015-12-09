@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Logs{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Admin Logs</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<div class="panel panel-default">
+    <table id="table" 
+        data-toggle="table"
+        data-classes="table table-hover table-condensed"  
+        data-url="{{ url_for("admin.logs") }}"
+        data-striped="true"
+        
+        data-detail-view="false"
+        
+        data-card-view="true"        
+        data-mobile-responsive="true"
+        data-check-on-init="true"
+
+        data-pagination="true"
+        data-side-pagination="client"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+
+        data-show-toggle="true"
+        data-show-refresh="true"
+        data-show-columns="true"
+        data-show-pagination-switch="false" 
+        data-show-export="true"
+        data-flat="true"
+        data-search="true"
+
+        data-search-align="left"
+        data-buttons-align="left"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="left"
+        data-pagination-v-align="top"
+        
+        data-sort-name="timestamp"
+        data-sort-order="desc">
+        
+        <thead> 
+            <tr>
+                <th data-field="timestamp" data-formatter="createdFormatter" data-sortable="true">Date</th>
+                <th data-field="module" data-sortable="true">Module</th>
+                <th data-field="loggerName" data-sortable="true">Logger</th>
+                <th data-field="level" data-sortable="true">Level</th>
+                <th data-field="message">Message</th>
+                <th data-field="method" data-sortable="true" data-visible="false">Method</th>
+                {# FIXME: filename
+                <th data-field="filename" data-sortable="true" data-visible="true">Filename</th>
+                <th data-field="lineNumber" data-sortable="true" data-visible="false">LineNumber</th>
+                #}
+            </tr>
+        </thead>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+<script type="text/javascript">
+
+$(document).ready(function(){
+	
+var datas = [];
+
+var options = {
+    labels: ['Date', 'Value'],
+    title: 'Series - {{series.key}}',
+    titleHeight: 32,
+    includeZero: true,
+    showRangeSelector: true
+}
+
+{% for value in datas %}
+   {% if not loop.first %}
+   datas.push([{{value.0}}, {{value.1|float}}]);
+   {% endif %}
+{% endfor %}
+
+new Dygraph("graphdiv", datas, options);
+
+});
+
+
+</script>

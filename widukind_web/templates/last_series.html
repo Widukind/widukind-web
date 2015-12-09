@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Last Updated Series{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Last Updated Series</li>
+    </ol>
+{% endblock %}
+
+{% block page %}
+
+<div class="panel panel-default">
+	<table id="series" 
+        data-toggle="table" 
+        data-classes="table table-hover table-condensed"  
+	    data-url="{{ url_for("views.last_series") }}"    
+        data-striped="true"
+        data-pagination="true" 
+        data-side-pagination="server"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+        data-show-refresh="false" 
+        data-search-align="left"
+        data-buttons-align="right"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="right"
+        data-pagination-v-align="top">
+	    <thead> 
+	        <tr>
+                <th class="col-md-1" data-field="_id" data-formatter="seriesButtonFormatter">&nbsp;</th>
+                <th data-field="provider">Provider</th>
+	            <th data-field="datasetCode">Datasets</th>
+                <th data-field="key" data-formatter="seriesKeyLinkFormatter">key</th>
+                <th data-field="name">Name</th>
+                <th data-field="frequency">Frequency</th>
+	            <th data-field="startDate">Start Date</th>                         
+	            <th data-field="endDate">End Date</th>                         
+	        </tr>
+	    </thead>
+	</table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+    
+    
+    $(document).ready(function(){
+    	console.log($.fn.bootstrapTable.defaults);
+    });    
+	
+	</script>
+{% endblock %}
+

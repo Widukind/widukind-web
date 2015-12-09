@@ -1,0 +1,49 @@
+<div id="cart_table" style="display: none;" class="well container-fluid">
+    <div class="row">
+    <div class="col-md-8">
+		<table id="series_cart" 
+		    data-toggle="table" 
+		    data-classes="table table-hover table-condensed"  
+		    data-url="{{ url_for("views.card_view") }}"    
+		    
+		    data-search="false"
+		    data-strict-search="true"
+		    data-search-time-out="500"
+		    data-trim-on-search="true"      
+		    data-search-align="left"
+		
+		    data-cookie="true"
+		    data-cookie-id-table="saveId"
+		    
+		    data-filter-control="false"
+		    
+		    data-striped="true"
+		    data-pagination="true" 
+		    data-side-pagination="client"  
+		    data-page-size="{{ page_size|default('10') }}"
+		    data-page-list="[10, 25, 50, 100]"
+		    data-show-refresh="false" 
+		    data-buttons-align="right"
+		    data-toolbar-align="right"
+		    data-pagination-h-align="left"
+		    data-pagination-detail-h-align="right"
+		    data-pagination-v-align="top" 
+		    data-sort-name="startDate"
+		    data-sort-order="asc">
+		    <thead> 
+		        <tr>
+		            <th class="col-md-1" data-field="provider" >Provider</th>
+		            <th class="col-md-1" data-field="datasetCode" data-title-tooltip="Dataset Code" >Dataset</th>
+		            <th class="col-md-2" data-field="key" data-formatter="keyLinkFormatter" >key</th>
+		            <th class="col-md-5" data-field="name" >Name</th>
+		            <th class="col-md-1" data-field="frequency" data-align="center"  data-title-tooltip="Frequency">Freq</th>
+		            <th class="col-md-1" data-field="startDate" data-align="center"  data-filter-control="input">Start Date</th>                         
+		            <th class="col-md-1" data-field="endDate" data-align="center" >End Date</th>
+		        </tr>
+		    </thead>
+		    <caption><h4>Series Cart</h4></caption>
+		</table>
+        <br/>
+    </div>
+    </div>
+</div>

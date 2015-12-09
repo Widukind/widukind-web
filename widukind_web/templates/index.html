@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% macro static(filename) %}
+{{ url_for('static', filename="widukind/" + filename)}}
+{%- endmacro %}
+
+{% block styles %}
+    {{super()}}
+    <link href="{{ url_for('static', filename="widukind/style-index.css") }}" rel="stylesheet">
+{% endblock %}
+
+
+{% block page %}
+<div class="homepage">
+    <div id="banner">
+        <h1>International Economics Database</h1>
+        <p class="lead">A database of international macroeconomic data</p>
+    </div>
+
+    <div class="main-inner">
+        <div class="home-logos">
+            <h2>Partners</h2>
+            <ul class="logos">
+                <li class="logo logo-fs"><img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie" /></li>
+                <li class="logo logo-cepremap"><img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP" /></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

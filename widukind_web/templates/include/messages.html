@@ -1,0 +1,12 @@
+{% import "bootstrap/utils.html" as utils %}
+
+{{utils.flashed_messages(dismissible=True)}}
+{%- with messages = get_flashed_messages(with_categories=True) %}
+{%- if messages %}
+<div class="row">
+    <div class="col-md-12">
+      {{utils.flashed_messages(messages, dismissible=True)}}
+    </div>
+</div>
+{%- endif %}
+{%- endwith %}                

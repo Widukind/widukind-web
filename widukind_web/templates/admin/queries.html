@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Queries{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Admin Queries</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+{#
+<div id="toolbar">
+    <div class="form-inline" role="form">
+        <div class="form-group">
+            <span>Offset: </span>
+            <input name="offset" class="form-control w70" type="number" value="0">
+        </div>
+        <div class="form-group">
+            <span>Limit: </span>
+            <input name="limit" class="form-control w70" type="number" value="5">
+        </div>
+        <div class="form-group">
+            <input name="search" class="form-control" type="text" placeholder="Search">
+        </div>
+        <button id="ok" type="submit" class="btn btn-default">OK</button>
+    </div>
+</div>
+#}
+<div class="panel panel-default">
+    <table id="queries_table" 
+        data-toggle="table"
+        data-classes="table table-hover table-condensed"  
+        data-url="{{ url_for("admin.queries") }}"
+        {#
+        data-toolbar="#toolbar"
+        data-query-params="queryParams"
+        #}
+        
+        data-striped="true"
+        data-detail-view="false"
+        data-card-view="true"        
+        data-mobile-responsive="true"
+        data-check-on-init="true"
+
+        data-pagination="true"
+        data-side-pagination="client"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+
+        data-show-toggle="true"
+        data-show-refresh="true"
+        data-show-columns="true"
+        data-show-pagination-switch="false" 
+        data-show-export="true"
+        data-flat="true"
+        data-search="true"
+
+        data-search-align="left"
+        data-buttons-align="left"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="left"
+        data-pagination-v-align="top"
+        
+        data-sort-name="created"
+        data-sort-order="desc">
+        
+        <thead> 
+            <tr>
+                <th class="col-md-2" data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
+                <th class="col-md-1" data-field="result_count" data-sortable="true">Results</th>
+                <th class="col-md-5" data-field="query_string" data-help="Original Query">Query</th>
+                <th class="col-md-1" data-field="remote_addr" data-sortable="true">Remote Address</th>
+                <th data-field="query" data-visible="false" data-card-visible="true">Query</th>
+                <th class="col-md-1" data-field="tags">Tags</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/export/bootstrap-table-export.min.js") }}"></script>    
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/flat-json/bootstrap-table-flat-json.min.js") }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/toolbar/bootstrap-table-toolbar.js") }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/tableExport.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jquery.base64.js') }}"></script>
+    <!-- PNG -->
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/html2canvas.js') }}"></script>
+    
+    <!-- PDF -->
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jspdf/libs/sprintf.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jspdf/jspdf.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jspdf/libs/base64.js') }}"></script>
+    
+    
+    <script type="text/javascript">
+    $(document).ready(function(){
+        console.log($.fn.bootstrapTable.defaults);
+        
+        var $table = $('#queries_table');
+        
+        {#
+        var $ok = $('#ok');
+    
+        $(function () {
+            $ok.click(function () {
+                $table.bootstrapTable('refresh');
+            });
+        });
+    
+        function queryParams() {
+            var params = {};
+            $('#toolbar').find('input[name]').each(function () {
+                params[$(this).attr('name')] = $(this).val();
+            });
+            return params;
+        }
+        #}
+        
+        $table.on('load-success.bs.table', function (datas) {
+            var options = $table.bootstrapTable('getOptions');
+            console.log("options : ", options);
+        });
+        
+        
+    });    
+    
+    </script>
+{% endblock %}
+

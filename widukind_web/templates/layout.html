@@ -1,0 +1,118 @@
+{% extends "bootstrap/base.html" %}v
+{% block title %}Widukind{% endblock %}
+
+{% block html_attribs %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"{% endblock html_attribs %}
+
+{%- block metas %}
+{{super()}}
+<meta name="description" content="{% block meta_description %}International Economics Database - A database of international macroeconomic data{% endblock %}" xml:lang="en-US" lang="en-US">
+<meta name="keywords" content="{% block meta_keywords %}International Economics Database, international macroeconomic data{% endblock %}" xml:lang="en-US" lang="en-US">
+<meta name="robots" content="index, follow">
+{%- endblock metas %}
+
+{% block styles %}
+    {{super()}}
+    {#<link href="{{ current_theme_url }}" rel="stylesheet">#}
+    <link href="{{ url_for('static', filename="themes/bootswatch/widukind/bootstrap.min.css") }}" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename="vendors/bootstrap-table/bootstrap-table.min.css") }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename="vendors/bootstrap-treeview/bootstrap-treeview.min.css") }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename="widukind/style-light.css") }}" rel="stylesheet">
+    
+{% endblock %}
+
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+	<script type=text/javascript>
+	  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+	</script>
+	<div id="content" class="container-fluid">
+        
+        {% include "include/navbar.html" with context %}
+        
+        <div class="row">
+            <div id="site_menu_left" {% block menu_left_attrs %}class="col-md-2"{% endblock %} style="display: none;">
+                {% block menu_left %}&nbsp;{% endblock %}
+            </div>
+            <div id="site_content" {% block site_content_attrs %}class="col-md-12"{% endblock %}>
+            <span id="spinner" class="spinner-container"></span>
+                {#% include "include/series-cart.html" with context %#}
+	            {% block breadcrumb %}{% endblock %}
+	            {% block page %}{% endblock %}
+            </div>
+	    </div>
+	    {#
+	    {% include "include/messages.html" with context %}
+        #}
+	</div>     
+{% endblock content %}
+
+{% block scripts %}
+    {{super()}}
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/humanize-plus/1.5.0/humanize.min.js"></script>
+    {{ moment.include_moment(version="2.10.6") }}
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined-dev.js"></script>
+    
+    <script type="text/javascript" src="{{ url_for('static', filename='vendors/bootstrap-treeview/bootstrap-treeview.min.js') }}"></script>
+    
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/bootstrap-table.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/locale/bootstrap-table-en-US.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/natural-sorting/bootstrap-table-natural-sorting.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/filter/bootstrap-table-filter.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/filter-control/bootstrap-table-filter-control.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/cookie/bootstrap-table-cookie.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/mobile/bootstrap-table-mobile.min.js") }}"></script>
+    
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename="vendors/jquery.spin.js") }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='widukind/scripts.js') }}"></script>
+    
+    
+<script type="text/javascript">
+
+//var $table;
+
+$(document).ajaxStart(function() {
+    spinnerShow();
+}).ajaxStop(function() {
+    spinnerHide();
+}).ajaxError(function() {
+    spinnerHide();
+});
+
+$(document).ready(function() {
+    
+    {#
+    $('#card_btn').on('click', function (e) {
+    	e.preventDefault();
+    	$("#series_cart").bootstrapTable('refresh');
+    	$("#cart_table").toggle();
+    });
+    #}
+    
+    $('.human-number').each(function(i, item){
+        var value = $(item).text();
+         $(item).text(Humanize.formatNumber(value));
+    });
+
+    $('.human-size-mb').each(function(i, item){
+        var value = $(item).text();
+         $(item).text(Humanize.fileSize(value));
+    });
+        
+    {% if config.GOOGLE_ANALYTICS_ID %}
+    {{google.uanalytics(config['GOOGLE_ANALYTICS_ID'])}}
+    {% endif %}
+    
+
+});
+</script>
+
+{% endblock %}

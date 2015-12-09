@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Dataset - {{dataset.datasetCode}}{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
+      <li><a href="{{ url_for("views.datasets", provider=dataset.provider) }}">{{dataset.provider}}</a></li>
+      <li class="active">{{dataset.datasetCode}}</li>
+    </ol>
+{% endblock %}
+
+{% block page %}
+
+<a name="home"></a>
+<div class="panel panel-default">
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+            <tr>
+                <td class="col-md-2">Provider</td>
+                <td class="col-md-10">{{ provider.longName }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Name</td>
+                <td class="col-md-10">{{ dataset.name }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Last Updated</td>
+                <td class="col-md-10">{{ moment(dataset.lastUpdate).format('LLL') }} ({{ moment(dataset.lastUpdate).fromNow()}})</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Web Site</td>
+                <td class="col-md-10">
+                    {% if dataset.docHref %}
+                        <a href="{{ dataset.docHref }}">{{ dataset.docHref }}</a>
+                    {% else %}
+                    &nbsp;
+                    {% endif %}                
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Series</td>
+                <td class="col-md-10">
+                    <a href="{{ url_for('.series_with_datasetCode', provider=dataset.provider, datasetCode=dataset.datasetCode) }}"> 
+                        <span class="human-number">{{count}}</span>
+                    </a>
+                </td>
+            </tr>
+            {#
+            <tr>
+                <td class="col-md-2">Export</td>
+                <td class="col-md-10">
+                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider, datasetCode=dataset.datasetCode) }}">
+                        <i class="fa fa-download fa-lg"></i>
+                    </a>                        
+                </td>                
+            </tr>
+            #}
+            {% if dataset.notes %}
+            <tr>
+                <td class="col-md-2">Notes</td>
+                <td class="col-md-10">{{dataset.notes}}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td class="col-md-2">Dimensions</td>
+                <td class="col-md-10">
+                    {% for d in dataset.dimensionList.keys() %}
+                        <a href="#dim-{{d}}">{{d|title}}</a><br/>
+                    {% endfor %}
+                 </td>
+            </tr>            
+            <tr>
+                <td class="col-md-2">Attributes</td>
+                <td class="col-md-10">
+                    {% if dataset.attributeList %}
+                    {% for a in dataset.attributeList.keys() %}
+                        <a href="#attr-{{a}}">{{a|title}}</a><br/>
+                    {% endfor %}
+                    {% else %}
+                        Not Attributes
+                    {% endif %}
+                 </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% for dimension, values in dataset.dimensionList.items() %}
+<a name="dim-{{dimension}}"></a>
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>{{ dimension|title }} <small>(dimension)</small></h4></div>
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+        {% for v in values %}
+            <tr>
+                <td class="col-md-2">{{v.0}}</td>
+                <td class="col-md-10">{{v.1}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>       
+</div>
+{% endfor %}
+
+{% for attribute, values in dataset.attributeList.items() %}
+<a name="attr-{{attribute}}"></a>
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>{{ attribute|title }} <small>(attribute)</small></h4></div>
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+        {% for v in values %}
+            <tr>
+                <td class="col-md-2">{{v.0}}</td>
+                <td class="col-md-10">{{v.1}}</td>
+            </tr>
+        {% endfor %}        
+        </tbody>
+    </table>       
+</div>
+{% endfor %}
+
+<a name="tags"></a>
+<div class="panel panel-default">
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+            <tr>
+                <td class="col-md-2">Tags</td>
+                <td class="col-md-10">{{dataset.tags|join(", ")}}</td>
+            </tr>                        
+        </tbody>
+    </table>       
+</div>
+
+<a id="debug" class="btn btn-default btn-sm" href="#"><i class="fa fa-cog"></i> Debug</a>
+
+<div class="debug" style="display: none">
+    <h2>Dataset:</h2>
+    <pre>
+    {{ dataset|pprint }}
+    </pre>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+    $(document).ready(function(){
+        
+        $("#debug").click(function(e){
+            e.preventDefault();
+            $(".debug").toggle();           
+        });
+        
+    });
+    </script>
+{% endblock %}
+    

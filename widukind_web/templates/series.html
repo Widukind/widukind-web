@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - {{provider.name}} Series{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
+      <li><a href="{{ url_for("views.datasets", provider=provider.name) }}">{{provider.name}}</a></li>      
+      {% if dataset %}
+      <li class="active">{{dataset.datasetCode}}</li>
+      {% else %}
+      <li class="active">{{provider.name}}</li>
+      {% endif %}      
+    </ol>
+{% endblock %}
+
+{% block meta_keywords %}{{provider.name}},{{provider.longName}}{% if dataset %},{{ dataset.name }},{{ dataset.datasetCode }}{% endif %}{% endblock %}
+
+{% block page %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4>{{ provider.name }} {% if dataset %}- {{ dataset.datasetCode }} - Series{% else %} - All Series{% endif %}</h4>
+     </div>
+
+	<table id="series" 
+	    {% if dataset %}        
+	    data-url="{{ url_for(".series_with_datasetCode", provider=provider.name, datasetCode=dataset.datasetCode) }}"
+	    {% else %}
+	    data-url="{{ url_for(".series", provider=provider.name) }}"    
+	    {% endif %}
+
+        data-toggle="table" 
+        data-classes="table table-hover table-condensed"  
+        data-striped="true"
+        data-mobile-responsive="true"
+        data-check-on-init="true"
+        
+        data-card-view="true"        
+        data-show-toggle="true"
+        data-show-refresh="false"
+        data-show-columns="true"
+        data-show-pagination-switch="false" 
+        data-flat="true"
+        data-search="true"
+        data-search-align="left"
+        data-buttons-align="left"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="right"
+        data-pagination-v-align="top"
+	    
+	    {#data-strict-search="true"#}
+	    data-search-time-out="500"
+	    data-trim-on-search="true"    
+
+        data-cookie="true"
+        data-cookie-id-table="saveId"
+        
+	    data-filter-control="false"
+	    
+        data-pagination="true" 
+        data-side-pagination="server"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+
+        data-sort-name="startDate"
+        data-sort-order="asc">
+	    <thead> 
+	        <tr>
+                <th class="col-md-1" data-field="_id" data-align="center" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false" data-searchable="false">&nbsp;</th>
+	            <th class="col-md-1" data-field="datasetCode" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
+                <th class="col-md-2" data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true">key</th>
+                <th class="col-md-5" data-field="name" data-sortable="true">Name</th>
+                <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
+	            <th class="col-md-1" data-field="startDate" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
+	            <th class="col-md-1" data-field="endDate" data-align="center" data-sortable="true">End Date</th>
+	        </tr>
+	    </thead>
+	</table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+
+    $(document).ready(function(){
+    	/*
+    	var $table = $('#series');
+    	$table.on('load-success.bs.table', function (datas) {
+    		//addCart("{{ url_for('views.card_add') }}");
+    		
+    	}).on('search.bs.table', function(ev, text){
+    		console.log("search : ", ev, text); //text=A
+    	}).on('column-search.bs.table', function(ev, field, text){
+    		console.log("search column : ", ev, field, text); //text=A, field=frequency
+    	});
+    	*/
+        
+    });    
+	
+	</script>
+{% endblock %}
+

@@ -1,0 +1,216 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Series - {{provider.name}} - {{dataset.datasetCode}} - {{serie.key}}{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
+      <li><a href="{{ url_for("views.datasets", provider=serie.provider) }}">{{provider.name}}</a></li>
+      <li><a href="{{ url_for("views.series", provider=provider.name, datasetCode=serie.datasetCode) }}">{{dataset.datasetCode}}</a></li>      
+      <li class="active">{{serie.key}}</li>
+    </ol>
+{% endblock %}
+
+{% block page %}
+
+<a name="home"></a>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+	    <a title="Show Graphic" id="export_graphic" href="#">
+           <span class="fa-stack fa-lg">
+             <i class="fa fa-circle fa-stack-2x"></i>
+             <i class="fa fa-area-chart fa-stack-1x fa-inverse"></i>
+           </span>
+	    </a>
+	    <a title="Download CSV file" href="{{ url_for('download.series_csv', provider=serie.provider, datasetCode=serie.datasetCode, key=serie.key) }}">
+           <span class="fa-stack fa-lg">
+             <i class="fa fa-circle fa-stack-2x"></i>
+             <i class="fa fa-table fa-stack-1x fa-inverse"></i>
+           </span>	       
+	    </a>
+    </div>
+    <div class="panel-body" style="display: none;">        
+       <div id="graphdiv_contenair" class="contenair"></div>
+    </div>
+</div>    
+
+<div class="panel panel-default">
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>            
+            <tr>
+                <td class="col-md-2">Provider</td>
+                <td class="col-md-10">{{ provider.longName }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Dataset</td>
+                <td class="col-md-10">{{ dataset.name }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Serie Name</td>
+                <td class="col-md-10">{{ serie.name }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Serie Key</td>
+                <td class="col-md-10">{{ serie.key }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Last Updated</td>
+                <td class="col-md-10">{{ moment(dataset.lastUpdate).format('LLL') }} ({{ moment(dataset.lastUpdate).fromNow()}})</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Web Site</td>
+                <td class="col-md-10">
+                    {% if dataset.docHref %}
+                        <a target="_blank" href="{{ dataset.docHref }}">{{ dataset.docHref }}</a>
+                    {% else %}
+                    &nbsp;
+                    {% endif %}                
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Periods</td>
+                <td class="col-md-10">
+                    {{pandas_period(serie.startDate, serie.frequency)}} to {{pandas_period(serie.endDate, serie.frequency)}}
+                 </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Frequency</td>
+                <td class="col-md-10">{{frequency(serie.frequency)}}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Dimensions</td>
+                <td class="col-md-10">
+                    <table class="table table-striped table-condensed table-responsive">
+	                    <tbody>	                    
+	                    {% for dim in dimensions %}
+	                       <tr>
+	                           <td class="col-md-3">{{ dim.0 }}</td>
+	                           <td class="col-md-9">{{ dim.1 }}</td>
+	                       </tr>
+	                    {% endfor %}
+	                    </tbody>
+                    </table>
+                 </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Dimensions</td>
+                <td class="col-md-10">
+                    {% if serie.attributes %}
+                    <table class="table table-striped table-condensed table-responsive">
+                        <tbody>                     
+                        {% for attr in attributes %}
+                           <tr>
+                               <td class="col-md-3">{{ attr.0 }}</td>
+                               <td class="col-md-9">{{ attr.1 }}</td>
+                           </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        Not Attributes
+                    {% endif %}                    
+                 </td>
+            </tr>            
+            <tr>
+                <td class="col-md-2">Values</td>
+                <td class="col-md-10">
+                    <table class="table table-striped table-condensed table-responsive">
+                        <tbody>                     
+		                    {% for d, value in values %}
+	                           <tr>
+	                               <td class="col-md-3">{{ d }}</td>
+	                               <td class="col-md-9">
+	                                   {% if value %}
+	                                   {{ value }}
+	                                   {% else %}
+	                                   Null
+	                                   {% endif %}	                                   
+	                               </td>
+	                           </tr>
+		                    {% endfor %}                 
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<a name="tags"></a>
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>Tags</h4></div>
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+            <tr>
+                <td class="col-md-2">Tags</td>
+                <td class="col-md-10">{{serie.tags|join(", ")}}</td>
+            </tr>                        
+        </tbody>
+    </table>       
+</div>
+
+<a id="debug" class="btn btn-default btn-sm" href="#"><i class="fa fa-cog"></i> Debug</a>
+
+<div class="debug" style="display: none">
+    <h2>Serie:</h2>
+	<pre>
+	{{ serie|pprint }}
+	</pre>
+
+	<h2>Dataset:</h2>
+	<pre>
+	{{ dataset|pprint }}
+	</pre>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+    $(document).ready(function(){
+    	
+        $("#debug").click(function(e){
+            e.preventDefault();
+    	    $(".debug").toggle();    	    
+    	});
+        
+    });
+    </script>
+    
+	<script type="text/javascript">
+	
+	    function update_csv_data(){
+		   $.ajax({
+		        url: "{{ url_for('.series_plot', id=serie._id) }}",
+		        cache: false,
+		        complete: function(jqXHR, textStatus){
+		            if (textStatus == "success"){
+		            	$("#graphdiv_contenair").html(jqXHR.responseText);
+		            }
+		        }
+		   });
+		}
+	
+		$(document).ready(function(){			
+            
+		    $("#export_graphic").click(function(e){
+		    	var p = $("#graphdiv_contenair").parent();
+		    	if ( p.is(":visible") ) {
+		    		p.hide();
+		    	} else {
+		    		p.show()
+		    		update_csv_data();
+		    	}
+		        e.preventDefault();
+		    });     
+		});
+	   
+	
+	</script>    
+    
+{% endblock %}
+  

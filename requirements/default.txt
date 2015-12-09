@@ -1,0 +1,19 @@
+python-dateutil
+arrow
+gevent>=1.1b4
+python-decouple
+pymongo>=3.0.3
+Flask-Script
+Flask-Moment
+#Flask-Bootstrap-3.3.5.7 - bootstrap 3.3.5 - jquery 1.11.3
+Flask-Bootstrap
+Flask-Cache
+Flask-WTF
+Flask-Sitemap
+Flask-BasicAuth
+Flask-Mail
+
+#TODO: redis gevent
+redis
+
+psutil

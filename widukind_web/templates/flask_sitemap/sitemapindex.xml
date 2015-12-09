@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {%- for sitemap in sitemaps %}
+  <sitemap>
+    {%- if config.FULL_URL_SITEMAP %}
+    <loc>{{ sitemap.loc|replace("http://localhost", config.FULL_URL_SITEMAP) }}</loc>
+    {%- else %}
+    <loc>{{ sitemap.loc }}</loc>
+    {%- endif %}
+    {%- if sitemap.lastmod %}
+    <lastmod>{{ sitemap.lastmod }}</lastmod>
+    {%- endif %}
+  </sitemap>
+  {%- endfor %}
+</sitemapindex>

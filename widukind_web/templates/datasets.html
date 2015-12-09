@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Datasets{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
+      <li class="active">{{ provider.name }}</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<div class="panel panel-default">
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+            <tr>
+                <td class="col-md-2">Name</td>
+                <td class="col-md-10">{{ provider.longName }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Region</td>
+                <td class="col-md-10">{{ provider.region }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Web Site</td>
+                <td class="col-md-10">
+                    {% if provider.website %}
+                        <a target="_blank" href="{{ provider.website }}">{{ provider.website }}</a>
+                    {% else %}
+                    &nbsp;
+                    {% endif %}                
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Datasets</td>
+                <td class="col-md-10">
+                    <span class="human-number">{{collection_counters[provider.name+".datasets"].count}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Series</td>
+                <td class="col-md-10">
+                    <a href="{{ url_for('.series', provider=provider.name) }}">
+                        <span class="human-number">{{collection_counters[provider.name+".series"].count}}</span>
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+	<table id="datasets" 
+	    data-url="{{ url_for("views.datasets", provider=provider.name) }}"    
+	    data-toggle="table" 
+	    data-classes="table table-hover table-condensed"  
+	    data-striped="true"
+        data-mobile-responsive="true"
+        data-check-on-init="true"	    
+	    data-pagination="true" 
+	    data-side-pagination="server"  
+	    data-page-size="{{ page_size|default('10') }}"
+	    data-page-list="[10, 25, 50, 100]"  
+	    data-show-refresh="false" 
+        data-search-align="left"
+        data-buttons-align="right"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="right"
+        data-pagination-v-align="top" 
+	    data-sort-name="lastUpdate"
+	    data-sort-order="desc">
+	    <thead> 
+	        <tr>
+                <th class="col-md-1" data-field="docHref" data-formatter="datasetButtonFormatter">&nbsp;</th>
+	            <th data-field="name" data-formatter="datasetNameFormatter" data-sortable="true">Name</th>
+                <th data-field="datasetCode" data-sortable="true">Code</th>
+	            <th data-field="lastUpdate" data-formatter="datasetLastUpdateFormatter"data-sortable="true">Last Update</th>
+	        </tr>
+	    </thead>
+	</table>
+	
+</div>
+
+{% endblock %}
+

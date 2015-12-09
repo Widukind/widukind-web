@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block breadcrumb %}
+{% endblock %}                                    
+
+{% block page %}
+
+<table class="table table-striped table-condensed table-responsive">
+    <thead>
+        <th class="col-md-1">&nbsp;</th>        
+        <th>Provider</th>
+        <th>Dataset Code</th>
+        <th>Filename</th>
+        <th>Created Date</th>
+        <th>Length (bytes)</th>
+    </thead>
+    <tbody>
+        {% for _file in files %}
+            <tr>
+                <td class="col-md-1">
+                    <a class="icon" href="{{ url_for('download.download-file-by-id', id=_file._id) }}" title="Download">
+                        <i class="fa fa-download fa-lg"></i>
+                    </a>
+                </td>
+                <td>{{_file.metadata.provider}}</td>
+                <td>{{_file.metadata.datasetCode}}</td>
+                <td>{{_file.filename}}</td>
+                <td>
+                    {{ moment(_file.upload_date).format('LL') }} ({{ moment(_file.upload_date).fromNow()}})
+                </td>
+                <td><span class="human-size-mb">{{_file.length}}</span></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
+

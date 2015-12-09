@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+
+{% block breadcrumb %}
+{% endblock %}
+
+{% block page %}
+
+<form class="form-inline">
+<div class="form-group">
+    <label for="input-search" class="sr-only">Search Tree:</label>
+    <input type="input" class="col-xs-4 form-control" id="input-search" placeholder="Type to search..." value="">
+</div>
+<button type="button" class="btn btn-success" id="btn-search"><i class="fa fa-search"></i> Search</button>
+<button type="button" class="btn btn-default" id="btn-clear-search">Clear</button>
+<button type="button" class="btn btn-default" id="btn-collapse-all"><i class="fa fa-minus-circle"></i> Collapse All</button>
+<button type="button" class="btn btn-default" id="btn-expand-all"><i class="fa fa-plus-circle"></i> Expand All</button>
+</form>
+
+<br/>
+
+<div id="tree"></div>
+
+{% endblock %}
+
+{#
+{% block menu_left %}
+<div id="tree"></div>
+{% endblock %}
+#}
+
+{% block menu_left_attrs %}class="col-md-4"{% endblock %}
+
+{% block site_content_attrs %}class="col-md-6"{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    
+    {#
+    {% raw %}
+	<script id="template" type="x-tmpl-mustache">
+    {text: "{{ name }}" , state: {expanded: {{expanded}} }}
+	</script>	
+	{% endraw %}
+	#}
+    
+    {#	
+    var template = $('#template').html();
+    Mustache.parse(template);   // optional, speeds up future uses
+    var rendered = Mustache.render(template, {name: "Luke"});
+    #}	
+    
+    <script type="text/javascript">
+        
+    /*
+    nodes: [
+            {text: "Industrial countries' effective exchange rates excluding new Member States - monthly data" ,state: {expanded: false}},
+            {text: "Industrial countries' effective exchange rates excluding new Member States - annual data - <a href=\"/views/dataset/566154b6dedffc60659e712a\">" + "Industrial countries' effective exchange rates excluding new Member States - annual data" + '</a>', state: {expanded: false}},          
+              {text: "Industrial countries' effective exchange rates excluding new Member States - quarterly data",state: {expanded: false}}
+    ]    
+    */
+
+	var tree = [
+	{% with childrens = tree.children %}
+	    {%- for item in childrens recursive %}
+            {%- if item.code in dataset_codes -%}
+            { text: "{{ item.name|safe }} - <a href=\"{{ url_for('views.dataset', id=dataset_codes[item.code]) }}\"><i class=\"fa fa-link fa-fw\"></i></a>", state: {expanded: false},
+            {%- else -%}
+            { text: "{{ item.name|safe }}", state: {expanded: false},  
+            {%- endif -%}			
+			{%- if item.children -%}
+		    nodes: [{{ loop(item.children) }}]
+		    {#}},
+		    {%- else -%}
+		    #}
+		    {%- endif -%}
+		    },
+	    {%- endfor -%}
+	{% endwith %}
+	];
+    
+    $(document).ready(function(){
+
+    	//TODO: utiliser un spin de chargement pour page et event comme expand et search
+    	
+    	//https://github.com/jonmiles/bootstrap-treeview
+    	var $searchableTree = $('#tree').treeview({
+        	data: tree,
+        	enableLinks: false,
+        	showTags: false,
+        	expandIcon: 'fa fa-plus-circle',
+        	//levels: 5,
+        	//backColor: 'green'
+        });
+        
+        var search = function(e) {
+            var pattern = $('#input-search').val();
+            var options = {
+              ignoreCase: true,
+              exactMatch: false,
+              revealResults: true
+            };
+            var results = $searchableTree.treeview('search', [ pattern, options ]);
+            /*
+            var output = '<p>' + results.length + ' matches found</p>';
+            $.each(results, function (index, result) {
+              output += '<p>- ' + result.text + '</p>';
+            });
+            */
+            $('#search-output').html(output);
+          }
+
+          //$('#btn-search').on('click', search);
+
+          $('#btn-clear-search').on('click', function (e) {
+            $searchableTree.treeview('clearSearch');
+            $('#input-search').val('');
+            $('#search-output').html('');
+          });
+          
+          $('#btn-expand-all').on('click', function (e) {
+        	  //var levels = $('#select-expand-all-levels').val();
+        	  var levels = null;
+              $searchableTree.treeview('expandAll', { levels: levels, silent: true });
+          });          
+
+          $('#btn-collapse-all').on('click', function (e) {
+              $searchableTree.treeview('collapseAll', { silent: true });
+          });          
+          
+    });        
+    </script>
+{% endblock %}
+

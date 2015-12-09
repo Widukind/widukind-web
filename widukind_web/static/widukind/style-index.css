@@ -1,0 +1,97 @@
+.main-inner {
+   text-align: center;
+   float: none;
+   width: 100%;
+   position: relative;
+   z-index: 5;
+   right: auto;
+   background-color: transparent;
+}
+
+.homepage .main-inner {
+   margin-top: -45px;
+}
+
+#banner {
+   background: transparent;
+   width: 100%;
+   height: auto;
+   text-align: center;
+   border-radius: 0;
+   margin: auto;
+   padding: 154px 0 140px;
+   background: #0e2a34 url(logo_bg.png) no-repeat top center;
+}
+
+#banner h1 {
+   font-size: 26px;
+   text-transform: uppercase;
+   margin-top: 0;
+   margin-bottom: 5px;
+   text-shadow: 0 3px 0 #08191f;
+   font-weight: 700;
+   letter-spacing: 0.18em;
+   text-decoration: none;
+   color: #fff;
+}
+
+#banner .lead {
+   background-color: transparent;
+   border-radius: 0;
+   box-shadow: 0;
+   margin: 0;
+   color: #c5c5c5;
+   font-weight: 500;
+   font-size: 20px;
+   letter-spacing: 0.03em;
+}
+
+.home-logos {
+   max-width: 630px;
+   margin: auto;
+   margin-bottom: 15px;
+}
+
+.home-logos h2 {
+   color: #c5c5c5;
+   text-transform: uppercase;
+   margin: 15px auto 0;
+   letter-spacing: 0.07em;
+   font-size: 16px;
+   background-color: #061318;
+   border-top-right-radius: 6px;
+   border-top-left-radius: 6px;
+   padding: 10px 15px;
+}
+
+.logos {
+   margin: 0;
+   padding: 0;
+   background-color: #FFF;
+   list-style: none;
+   border: 2px solid #061318;
+   border-top: none;
+   border-bottom-right-radius: 6px;
+   border-bottom-left-radius: 6px;
+   overflow: hidden;
+}
+
+.logos li {
+   display: inline-block;
+   max-width: 300px;
+   padding: 20px 10px;
+}
+
+.logos li img {
+   width: 100%;
+}
+
+.logos .logo-fs {
+   padding-top: 8px;
+   padding-right: 20px;
+   padding-left: 0;
+}
+.logos .logo-cepremap img {
+   margin-top: 15px;
+   padding-right: 15px;
+}

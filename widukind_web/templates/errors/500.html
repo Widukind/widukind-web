@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - 500 Error{% endblock %}
+
+{% block page %}
+
+<div class="text-center error-box">
+    <h1 class="error-text tada animated"><i class="fa fa-times-circle text-danger error-icon-shadow"></i> Error 500</h1>
+    <h2>An unexpected error has occurred</h2>
+    <p>The administrator has been notified.</p>
+    <p>Sorry for the inconvenience!</p>
+    <p><a href="{{ url_for('home') }}">Back</a></p>
+</div>
+  
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Last Updated Datasets{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Last Datasets</li>
+    </ol>
+{% endblock %}
+
+{% block page %}
+
+<div class="panel panel-default">
+    {#
+    <div class="panel-heading">
+        <button class="toolbar btn-group btn-group-filter-refresh"><i class="fa fa-refresh fa-fw"></i></button>
+    </div>
+    #}
+	<table id="datasets_table" 
+        {#data-toolbar=".toolbar"#} 
+	    data-url="{{ url_for("views.last_datasets") }}" 
+	    
+        data-toggle="table" 
+        data-classes="table table-hover table-condensed"  
+        data-striped="true"
+        data-mobile-responsive="true"
+        data-check-on-init="true"
+        
+        data-card-view="true"        
+        data-show-toggle="true"
+        data-show-refresh="false"
+        data-show-columns="true"
+        data-show-pagination-switch="false" 
+        data-flat="true"
+        data-search="true"
+        data-search-align="left"
+        data-buttons-align="left"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="right"
+        data-pagination-v-align="top"
+	    
+        data-pagination="true" 
+        data-side-pagination="client"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+
+        data-sort-name="lastUpdate"
+        data-sort-order="desc">
+	    <thead> 
+	        <tr>
+                <th data-field="name" data-formatter="datasetNameFormatter" data-sortable="true">Name</th>
+                <th data-field="provider" data-sortable="true">Provider</th>
+                <th data-field="datasetCode" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
+                <th data-field="lastUpdate" data-formatter="datasetLastUpdateFormatter" data-sortable="true">Last Update</th>
+	        </tr>
+	    </thead>
+	</table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var $table = $('#datasets_table');
+            {#}
+            $('#refresh').click(function () {
+                $table.bootstrapTable('refresh');
+    	    });
+            #}
+        });
+        </script>
+        
+{% endblock %}

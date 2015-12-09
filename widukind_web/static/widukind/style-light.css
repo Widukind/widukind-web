@@ -1,0 +1,11 @@
+body {
+   padding-top: 100px;
+}
+.navbar-spinner {
+  padding: 10px 20px;
+}
+.navbar-brand {
+   padding-top: 20px;
+   padding-bottom: 20px;
+   padding-left: 20px;
+}
