@@ -12,11 +12,11 @@ var options = {
     showRangeSelector: true
 }
 
-{% for value in datas %}
-   {% if not loop.first %}
-   datas.push([{{value.0}}, {{value.1|float}}]);
-   {% endif %}
-{% endfor %}
+{%- for value in datas %}
+   {%- if not loop.first %}
+   datas.push([new Date("{{value.0}}"), {{value.1|float}}]);
+   {%- endif %}
+{%- endfor %}
 
 new Dygraph("graphdiv", datas, options);
 
