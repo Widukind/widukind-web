@@ -1,4 +1,5 @@
 {% extends "bootstrap/base.html" %}v
+{% import "bootstrap/google.html" as google %}
 {% block title %}Widukind{% endblock %}
 
 {% block html_attribs %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"{% endblock html_attribs %}
@@ -107,12 +108,11 @@ $(document).ready(function() {
          $(item).text(Humanize.fileSize(value));
     });
         
-    {% if config.GOOGLE_ANALYTICS_ID %}
-    {{google.uanalytics(config['GOOGLE_ANALYTICS_ID'])}}
-    {% endif %}
-    
-
 });
 </script>
+
+{% if config.GOOGLE_ANALYTICS_ID %}
+{{google.uanalytics(config['GOOGLE_ANALYTICS_ID'])}}
+{% endif %}
 
 {% endblock %}
