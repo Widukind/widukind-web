@@ -99,14 +99,14 @@ def filter_query(cursor,
 
 
 @bp.route('/providers', endpoint="providers")
-@cache.cached(timeout=120)
+@cache.cached(timeout=360)
 def html_providers():
-    limit = request.args.get('limit', default=20, type=int)
-    if limit > 100: limit = 100
             
-    providers = current_app.widukind_db[constants.COL_PROVIDERS].find({}, 
-                                                                      projection={'_id': False},
-                                                                      limit=limit)
+    cursor = current_app.widukind_db[constants.COL_PROVIDERS].find({}, 
+                                                                   projection={'_id': False})
+    
+    providers = [doc for doc in cursor]
+    
     return render_template("providers.html", providers=providers)
 
 
