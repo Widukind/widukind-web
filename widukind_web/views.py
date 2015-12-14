@@ -133,9 +133,6 @@ def last_datasets():
     
     count, object_list = filter_query(_object_list, limit=LIMIT, execute=True)
     
-    import time
-    time.sleep(2)
-    
     if is_ajax:
         datas = {
             "total": count,
