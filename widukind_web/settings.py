@@ -9,7 +9,7 @@ class Config(object):
     
     BOOTSTRAP_SERVE_LOCAL = True
     
-    GOOGLE_ANALYTICS_ID = config('WIDUKIND_GOOGLE_ANALYTICS_ID', None)
+    GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
     
     CACHE_TYPE = config('WIDUKIND_CACHE_TYPE', "simple")
     CACHE_KEY_PREFIX = "widukind_web"
