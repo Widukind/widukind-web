@@ -1,5 +1,10 @@
 {% extends "layout.html" %}
 
+{#
+{% block custom_navbar %}
+{% endblock %}
+#}
+
 {% macro static(filename) %}
 {{ url_for('static', filename="widukind/" + filename)}}
 {%- endmacro %}
@@ -16,16 +21,33 @@
         <h1>International Economics Database</h1>
         <p class="lead">A database of international macroeconomic data</p>
     </div>
-
-    <div class="main-inner">
-        <div class="home-logos">
+      <div class="main-inner">
+         <div class="home-logos">
             <h2>Partners</h2>
             <ul class="logos">
-                <li class="logo logo-fs"><img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie" /></li>
-                <li class="logo logo-cepremap"><img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP" /></li>
+               <li class="logo logo-fs">
+               		<a href="http://www.strategie.gouv.fr" target="_blank">
+               			<img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie">
+               		</a>
+               </li>
+               <li class="logo logo-cepremap">
+               		<a href="http://www.cepremap.org" target="_blank">               
+               			<img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP">
+               		</a>
+               </li>
             </ul>
-        </div>
-    </div>
-</div>
+         </div>
+         <div class="home-intro">
+            <p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;). These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
+            <p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
+         </div>
+         {#
+         <ul class="nav nav-pills nav-stacked">
+         	{% include "include/navbar_menus.html" with context %}
+         </ul>
+         #}
+      </div><!-- //end of main-inner -->
+
+</div><!-- //end of homepage -->
 {% endblock %}
 

@@ -9,6 +9,10 @@
 }
 .web-font(@web-font-path);
 
+.page-header {
+   margin-top: @navbar-height;
+}
+
 // Navbar =====================================================================
 
 .navbar {
@@ -142,14 +146,9 @@ table,
     }
   }
 
-  /*> thead > tr > th,
-  > tbody > tr > th,
-  > tfoot > tr > th,
-  > thead > tr > td,
-  > tbody > tr > td,
-  > tfoot > tr > td {
-    border: none;
-  }*/
+  > thead > tr > th {
+    background-color: rgba(0,0,0,.3);
+  }
 
   &-bordered > thead > tr > th,
   &-bordered > tbody > tr > th,
@@ -391,4 +390,8 @@ a.list-group-item .list-group-item-heading, button.list-group-item .list-group-i
    a {
       color: @brand-secondary;
    }
+}
+
+.nav-pills.nav-stacked > li > a {
+   background-color: darken(@brand-primary,3%);
 }
