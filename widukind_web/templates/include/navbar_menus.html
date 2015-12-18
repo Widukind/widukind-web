@@ -1,0 +1,96 @@
+	            <li>
+	                <a href="{{ url_for("views.last_datasets") }}"><i class="fa fa-table fa-fw"></i> Last Datasets</a>
+	            </li>
+
+				<li class="dropdown">
+	                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+	                    <i class="fa fa-object-group fa-fw"></i> Providers <span class="caret"></span>
+	                </a>
+				    <ul class="dropdown-menu">
+				        <li>
+				            <a href="{{ url_for("views.providers") }}">All Providers</a>
+				        </li>
+				        
+				        <li role="separator" class="divider"></li>
+				        
+				        {% for p in provider_list %}
+				            <li>
+				                <a href="{{ url_for('views.datasets', provider=p.name) }}">
+				                    {{p.name}} - {{p.longName}}
+				                </a>
+				            </li>
+				        {% endfor %}
+				    </ul>
+				</li>
+				
+				{#
+				<li class="dropdown">
+		            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+		              <i class="fa fa-tree fa-fw"></i> Trees <span class="caret"></span>
+		            </a>
+					<ul class="dropdown-menu">
+					  {% for p in provider_list %}
+					      <li>
+					          <a href="{{ url_for('views.categories', provider=p.name) }}">
+					              {{p.name}} - ({{p.longName}})
+					          </a>
+					      </li>
+					  {% endfor %}
+					</ul>
+				</li>
+				#}
+				
+				<li class="dropdown">
+	                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+	                    <i class="fa fa-download fa-fw"></i> Download <span class="caret"></span>
+	                  </a>
+				      <ul class="dropdown-menu">
+				        <li><a href="{{ url_for("download.fs_list_dataset") }}">Datasets CSV</a></li>
+				        <li><a href="{{ url_for("download.fs_list_series") }}">Series CSV</a></li>
+				      </ul>
+				</li>
+				
+				{# TODO: 		
+				<a class="btn btn-default navbar-btn" href=""><i class="fa fa-cloud fa-fw"></i> Tags</a>
+				#}
+				
+		        <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-search fa-fw"></i> Search <span class="caret"></span>
+                    </a>
+		              <ul class="dropdown-menu">
+		                <li><a href="{{ url_for("views.search_datasets") }}">Datasets</a></li>
+		                <li><a href="{{ url_for("views.search_series") }}">Series</a></li>
+		              </ul>
+		        </li>
+				
+				{#
+				<a class="btn btn-default navbar-btn" target="sitemap" href="{{ url_for("flask_sitemap.sitemap") }}"><i class="fa fa-sitemap fa-fw"></i> SiteMap</a>
+				#}
+				
+				{#
+				{% if cart and cart_count > 0 %}
+				<a class="btn btn-default navbar-btn" id="card_btn">
+				    <i class="fa fa-shopping-cart fa-fw"></i> Cart <span id="badge_cart" class="badge">{{ cart_count }}</span>
+				</a>
+				{% endif %}
+				#}            
+
+                {#				
+				{% if bookmark and bookmark_count > 0 %}
+				    <a class="btn btn-default navbar-btn" href=""><i class="fa fa-book fa-fw"></i> BookMark <span id="badge_bookmark" class="badge">{{ bookmark_count }}</span></a>            
+				{% endif %}
+				#}            
+		
+		        {% if is_logged %}
+		        <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-settings fa-fw"></i> Admin <span class="caret"></span>
+                    </a>
+					<ul class="dropdown-menu">
+						<li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
+						<li><a href="{{ url_for("admin.logs") }}">Logs</a></li>
+						<li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>						
+					</ul>
+		        </li>
+		        {% endif %}
