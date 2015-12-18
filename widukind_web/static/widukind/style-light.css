@@ -9,3 +9,38 @@ body {
    padding-bottom: 20px;
    padding-left: 20px;
 }
+@media (min-width: 768px) and (max-width: 991px) {
+   .navbar-nav > li:first-child {
+      display: none;
+   }
+}
+
+.panel .fixed-table-toolbar,
+.panel .fixed-table-pagination {
+   padding-left: 8px;
+   padding-right: 8px;
+}
+.fixed-table-container {
+   border-color: #0f2831;
+   border-bottom: none;
+}
+.panel .fixed-table-container {
+   border-radius: 0 0 4px 4px;
+   border-left: none;
+   border-right: none;
+}
+.bootstrap-table .table, 
+.bootstrap-table .table>thead>tr>th,
+.bootstrap-table .table>tbody>tr>td {
+   border-color: #0f2831;
+}
+
+.fixed-table-body .card-view .title {
+   float: left;
+   width: 30%;
+   clear: both;
+}
+.fixed-table-body .card-view .value {
+   float: left;
+   width: 70%;
+}

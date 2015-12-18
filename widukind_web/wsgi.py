@@ -431,7 +431,7 @@ def _conf_sitemap(app):
     @sitemap_page_needed.connect
     def create_page(app, page, urlset):
         key = CACHE_KEY.format(page)
-        cache.set(key, sitemap.render_page(urlset=urlset))
+        cache.set(key, extensions.sitemap.render_page(urlset=urlset))
         
     def load_page(fn):
         @wraps(fn)

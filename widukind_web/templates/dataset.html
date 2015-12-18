@@ -137,9 +137,7 @@
 
 <div class="debug" style="display: none">
     <h2>Dataset:</h2>
-    <pre>
-    {{ dataset|pprint }}
-    </pre>
+    <pre id="debug_object"></pre>
 </div>
 
 {% endblock %}
@@ -152,7 +150,20 @@
         
         $("#debug").click(function(e){
             e.preventDefault();
-            $(".debug").toggle();           
+            if ( $(".debug").is(":visible") ) {
+            	$(".debug").toggle();	
+            } else {
+	 		   	$.ajax({
+			        url: "{{ url_for('.dataset', id=dataset._id) }}",
+			        cache: false,
+			        complete: function(jqXHR, textStatus){
+			            if (textStatus == "success"){
+			            	$("#debug_object").text(jqXHR.responseJSON);
+			            }
+			        }
+			   	});
+	 		   $(".debug").toggle();
+            }
         });
         
     });

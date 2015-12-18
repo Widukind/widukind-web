@@ -5,10 +5,18 @@ from pymongo import DESCENDING
 
 from widukind_web import constants
 from widukind_web.extensions import auth
+from widukind_web.extensions import cache
 
 bp = Blueprint('admin', __name__)
 
 #TODO: redis cache view
+
+@bp.route('/cache/clear', endpoint="cache_clear")
+@auth.required
+def cache_clear():
+    cache.clear()
+    return redirect(url_for("home"))
+
 
 @bp.route('/queries', endpoint="queries")
 @auth.required

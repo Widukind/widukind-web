@@ -4,8 +4,17 @@ import csv
 from io import StringIO
 from pprint import pprint
 
-from flask import Blueprint, current_app, request, render_template, url_for, redirect, session, flash, json
-from jinja2 import Markup
+from flask import (Blueprint, 
+                   current_app, 
+                   request, 
+                   render_template,
+                   render_template_string, 
+                   url_for, 
+                   session, 
+                   flash, 
+                   json, 
+                   abort)
+
 from werkzeug.wsgi import wrap_file
 from werkzeug.datastructures import MultiDict
 
@@ -99,14 +108,14 @@ def filter_query(cursor,
 
 
 @bp.route('/providers', endpoint="providers")
-@cache.cached(timeout=120)
+@cache.cached(timeout=360)
 def html_providers():
-    limit = request.args.get('limit', default=20, type=int)
-    if limit > 100: limit = 100
             
-    providers = current_app.widukind_db[constants.COL_PROVIDERS].find({}, 
-                                                                      projection={'_id': False},
-                                                                      limit=limit)
+    cursor = current_app.widukind_db[constants.COL_PROVIDERS].find({}, 
+                                                                   projection={'_id': False})
+    
+    providers = [doc for doc in cursor]
+    
     return render_template("providers.html", providers=providers)
 
 
@@ -132,9 +141,6 @@ def last_datasets():
                                                                  projection=projection)
     
     count, object_list = filter_query(_object_list, limit=LIMIT, execute=True)
-    
-    import time
-    time.sleep(2)
     
     if is_ajax:
         datas = {
@@ -317,10 +323,17 @@ def html_series(provider=None, datasetCode=None):
 
 @bp.route('/dataset/<objectid:id>', endpoint="dataset")
 def html_dataset_by_id(id):
+    
     dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({"_id": id})
     
     if not dataset:
         abort(404)
+
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    if is_ajax:
+        result = render_template_string("{{ dataset|pprint }}", dataset=dataset)
+        return current_app.jsonify(result)
     
     provider = current_app.widukind_db[constants.COL_PROVIDERS].find_one({"name": dataset['provider']})
 
@@ -344,6 +357,13 @@ def html_serie_by_id(id):
 
     dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({"provider": serie['provider'],
                                                                         "datasetCode": serie['datasetCode']})
+
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    if is_ajax:
+        result_dataset = render_template_string("{{ dataset|pprint }}", dataset=dataset)
+        result_series = render_template_string("{{ serie|pprint }}", serie=serie)
+        return current_app.jsonify(dict(dataset=result_dataset, serie=result_series))
     
     frequency = serie['frequency']
     start_date = pandas.Period(ordinal=serie['startDate'], freq=frequency)
@@ -537,7 +557,7 @@ def search_in_datasets():
         
         kwargs = get_search_datas(form, search_type="datasets")
     
-        object_list = search_datasets_tags(current_app.widukind_db,
+        object_list, _query = search_datasets_tags(current_app.widukind_db,
                                       projection=projection, 
                                       **kwargs)
 
@@ -574,7 +594,7 @@ def search_in_series():
         
         kwargs = get_search_datas(form, search_type="series")
         
-        object_list = search_series_tags(current_app.widukind_db,
+        object_list, _query = search_series_tags(current_app.widukind_db,
                                          projection=projection, 
                                          **kwargs)
 

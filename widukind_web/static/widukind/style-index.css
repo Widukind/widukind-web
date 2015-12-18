@@ -6,10 +6,18 @@
    z-index: 5;
    right: auto;
    background-color: transparent;
+   padding: 0 20px;
+   margin: auto;
+}
+
+.homepage {
+   margin-top: -30px;
 }
 
 .homepage .main-inner {
    margin-top: -45px;
+   margin-bottom: 60px;
+   max-width: 650px;
 }
 
 #banner {
@@ -19,8 +27,21 @@
    text-align: center;
    border-radius: 0;
    margin: auto;
-   padding: 154px 0 140px;
-   background: #0e2a34 url(logo_bg.png) no-repeat top center;
+   padding: 154px 0 130px;
+   background: transparent url(logo_bg.png) no-repeat top center;
+}
+/* Retina background image */
+@media
+   only screen and (-webkit-min-device-pixel-ratio: 2),
+   only screen and (   min--moz-device-pixel-ratio: 2),
+   only screen and (     -o-min-device-pixel-ratio: 2/1),
+   only screen and (        min-device-pixel-ratio: 2),
+   only screen and (                min-resolution: 192dpi),
+   only screen and (                min-resolution: 2dppx) {
+   #banner {
+      background-image: url(logo_bg@2x.png);
+      background-size: 608px 400px;
+   }
 }
 
 #banner h1 {
@@ -43,13 +64,14 @@
    color: #c5c5c5;
    font-weight: 500;
    font-size: 20px;
+   line-height: 1.1em;
    letter-spacing: 0.03em;
 }
 
 .home-logos {
    max-width: 630px;
    margin: auto;
-   margin-bottom: 15px;
+   margin-bottom: 40px;
 }
 
 .home-logos h2 {
@@ -94,4 +116,76 @@
 .logos .logo-cepremap img {
    margin-top: 15px;
    padding-right: 15px;
+}
+
+.home-intro {
+   max-width: 610px;
+   margin: 0 auto 40px;
+   color: #d3d3d3;
+}
+
+.homepage .nav-pills {
+   max-width: 250px;
+   margin: auto;
+}
+.homepage .nav-pills > li > a {
+   background-color: #0f2831;
+}
+
+@media (max-width: 699px) {
+   .container-fluid .homepage {
+      position: relative;
+      margin-left: -15px;
+      margin-right: -15px;
+      
+   }
+   .container-fluid #banner {
+      padding-left: 15px;
+      padding-right: 15px;
+   }
+   #banner {
+      padding-top: 130px;
+   }
+   #banner h1 {
+      margin: 0 auto 5px;
+      max-width: 400px;
+   }
+   .logos li {
+      max-width: 48%;
+   }
+}
+
+@media (max-width: 480px) {
+   #banner h1 {
+      font-size: 20px;
+   }
+   #banner .lead {
+      font-size: 17px;
+      margin: 0 auto;
+      max-width: 300px;
+   }
+   .logos li {
+      display: block;
+      max-width: 250px;
+      margin: auto;
+      padding: 0 15px 15px;
+   }
+   .logos .logo-fs {
+      padding-left: 15px;
+   }
+   .logos .logo-cepremap {
+      padding-bottom: 30px;
+   }
+   .logos .logo-cepremap img {
+      padding-right: 0;
+   }
+}
+
+@media (max-width: 340px) {
+   #banner {
+      padding-top: 130px;
+   }
+   #banner h1 {
+      max-width: 270px;
+   }
 }
