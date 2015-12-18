@@ -4,8 +4,17 @@ import csv
 from io import StringIO
 from pprint import pprint
 
-from flask import Blueprint, current_app, request, render_template, url_for, redirect, session, flash, json, abort
-from jinja2 import Markup
+from flask import (Blueprint, 
+                   current_app, 
+                   request, 
+                   render_template,
+                   render_template_string, 
+                   url_for, 
+                   session, 
+                   flash, 
+                   json, 
+                   abort)
+
 from werkzeug.wsgi import wrap_file
 from werkzeug.datastructures import MultiDict
 
@@ -314,10 +323,17 @@ def html_series(provider=None, datasetCode=None):
 
 @bp.route('/dataset/<objectid:id>', endpoint="dataset")
 def html_dataset_by_id(id):
+    
     dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({"_id": id})
     
     if not dataset:
         abort(404)
+
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    if is_ajax:
+        result = render_template_string("{{ dataset|pprint }}", dataset=dataset)
+        return current_app.jsonify(result)
     
     provider = current_app.widukind_db[constants.COL_PROVIDERS].find_one({"name": dataset['provider']})
 
@@ -341,6 +357,13 @@ def html_serie_by_id(id):
 
     dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({"provider": serie['provider'],
                                                                         "datasetCode": serie['datasetCode']})
+
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    if is_ajax:
+        result_dataset = render_template_string("{{ dataset|pprint }}", dataset=dataset)
+        result_series = render_template_string("{{ serie|pprint }}", serie=serie)
+        return current_app.jsonify(dict(dataset=result_dataset, serie=result_series))
     
     frequency = serie['frequency']
     start_date = pandas.Period(ordinal=serie['startDate'], freq=frequency)

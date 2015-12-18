@@ -155,14 +155,10 @@
 
 <div class="debug" style="display: none">
     <h2>Serie:</h2>
-	<pre>
-	{{ serie|pprint }}
-	</pre>
+	<pre id="debug_object_series"></pre>
 
 	<h2>Dataset:</h2>
-	<pre>
-	{{ dataset|pprint }}
-	</pre>
+	<pre id="debug_object_datasets"></pre>
 </div>
 
 {% endblock %}
@@ -172,12 +168,24 @@
     
     <script type="text/javascript">
     $(document).ready(function(){
-    	
+
         $("#debug").click(function(e){
             e.preventDefault();
-    	    $(".debug").toggle();    	    
-    	});
-        
+            if ( $(".debug").is(":visible") ) {
+            	$(".debug").toggle();	
+            } else {
+	 		   	$.ajax({
+			        url: "{{ url_for('.serie', id=serie._id) }}",
+			        cache: false,
+			        success: function(result) {
+			        	$("#debug_object_series").text(result.serie);
+			        	$("#debug_object_datasets").text(result.dataset);
+			        }
+			   	});
+	 		   $(".debug").toggle();
+            }
+        });
+    	        
     });
     </script>
     
