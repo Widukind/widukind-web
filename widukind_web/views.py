@@ -557,7 +557,7 @@ def search_in_datasets():
         
         kwargs = get_search_datas(form, search_type="datasets")
     
-        object_list = search_datasets_tags(current_app.widukind_db,
+        object_list, _query = search_datasets_tags(current_app.widukind_db,
                                       projection=projection, 
                                       **kwargs)
 
@@ -594,7 +594,7 @@ def search_in_series():
         
         kwargs = get_search_datas(form, search_type="series")
         
-        object_list = search_series_tags(current_app.widukind_db,
+        object_list, _query = search_series_tags(current_app.widukind_db,
                                          projection=projection, 
                                          **kwargs)
 
