@@ -34,6 +34,7 @@
         data-toggle="table"
         data-classes="table table-hover table-condensed"  
         data-url="{{ url_for("admin.queries") }}"
+        data-response-handler="AdminQueriesResponseHandler"
         {#
         data-toolbar="#toolbar"
         data-query-params="queryParams"
@@ -72,10 +73,9 @@
             <tr>
                 <th class="col-md-2" data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
                 <th class="col-md-1" data-field="result_count" data-sortable="true">Results</th>
-                <th class="col-md-5" data-field="query_string" data-help="Original Query">Query</th>
-                <th class="col-md-1" data-field="remote_addr" data-sortable="true">Remote Address</th>
-                <th data-field="query" data-visible="false" data-card-visible="true">Query</th>
+                <th class="col-md-7" data-field="query">Query Details</th>
                 <th class="col-md-1" data-field="tags">Tags</th>
+                <th class="col-md-1" data-field="remote_addr" data-sortable="true">Remote Address</th>
             </tr>
         </thead>
     </table>
@@ -104,7 +104,6 @@
     
     <script type="text/javascript">
     $(document).ready(function(){
-        console.log($.fn.bootstrapTable.defaults);
         
         var $table = $('#queries_table');
         
@@ -125,11 +124,12 @@
             return params;
         }
         #}
-        
+        /*
         $table.on('load-success.bs.table', function (datas) {
             var options = $table.bootstrapTable('getOptions');
             console.log("options : ", options);
         });
+        */
         
         
     });    

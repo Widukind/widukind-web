@@ -126,3 +126,21 @@ function spinnerShow(){
 function spinnerHide(){
     $('#spinner').spin(false);
 }
+
+function AdminQueriesResponseHandler(res){
+	_.forEach(res, function(item){
+		var tags = item.tags;
+		item.tags = tags.join(", ");
+		
+		var query = [];
+		query.push("search: " + item.query.search_tags);		
+		if (item.query.provider_name){
+			query.push("providers: " + item.query.provider_name.join(',') );
+		}
+		query.push("limit: " + item.query.limit);
+		query.push("sort: " + item.query.sort);
+		item.query = query.join(" - ");		
+	});
+	return res;
+}
+
