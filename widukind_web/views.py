@@ -448,6 +448,7 @@ def plot_series(id):
     datas = []
     datas.append(["Dates", "Values"])
     for i, v in enumerate(values):
+        v = v.replace("NAN", "0")
         datas.append([periods[i], v])
     
     return render_template(tmpl, 
