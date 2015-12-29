@@ -381,7 +381,7 @@ def html_serie_by_id(id):
             #TODO: log
             continue
         dim_value = dict(dimensionList[d])[value]
-        dimensions.append((d, dim_value))
+        dimensions.append((dim_value, value))
 
     attributes = []
     attributeList = dataset['attributeList']
@@ -390,7 +390,7 @@ def html_serie_by_id(id):
             #TODO: log
             continue
         attr_value = dict(attributeList[d])[value]
-        attributes.append((d, attr_value))
+        attributes.append((attr_value, value))
         
     return render_template("serie.html", 
                            id=id, 
