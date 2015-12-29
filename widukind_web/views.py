@@ -384,13 +384,21 @@ def html_serie_by_id(id):
         dimensions.append((dim_value, value))
 
     attributes = []
+    """
     attributeList = dataset['attributeList']
     for d, value in serie['attributes'].items():
         if not d in attributeList:            
             #TODO: log
             continue
-        attr_value = dict(attributeList[d])[value]
-        attributes.append((attr_value, value))
+        for v in value:
+            if v and len(v.strip()) > 0:
+                attr_value = dict(attributeList[d])[v]
+                attributes.append((attr_value, v))
+            else:
+                attributes.append((None, None))
+    """
+    # [..., (None, None), ('provisional', 'p')]
+    # Eurostat - series key: A.CLV05_MEUR.N111G.CH
         
     return render_template("serie.html", 
                            id=id, 
