@@ -67,7 +67,7 @@
                 <td class="col-md-2">Dimensions</td>
                 <td class="col-md-10">
                     {% for d in dataset.dimensionList.keys() %}
-                        <a href="#dim-{{d}}">{{d|title}}</a><br/>
+                        <a href="#dim-{{d}}">{{d}}</a><br/>
                     {% endfor %}
                  </td>
             </tr>            
@@ -76,7 +76,7 @@
                 <td class="col-md-10">
                     {% if dataset.attributeList %}
                     {% for a in dataset.attributeList.keys() %}
-                        <a href="#attr-{{a}}">{{a|title}}</a><br/>
+                        <a href="#attr-{{a}}">{{a}}</a><br/>
                     {% endfor %}
                     {% else %}
                         Not Attributes
@@ -90,7 +90,7 @@
 {% for dimension, values in dataset.dimensionList.items() %}
 <a name="dim-{{dimension}}"></a>
 <div class="panel panel-default">
-    <div class="panel-heading"><h4>{{ dimension|title }} <small>(dimension)</small></h4></div>
+    <div class="panel-heading"><h4>{{ dimension }} <small>(dimension)</small></h4></div>
     <table class="table table-striped table-condensed table-responsive">
         <tbody>
         {% for v in values %}
@@ -107,7 +107,7 @@
 {% for attribute, values in dataset.attributeList.items() %}
 <a name="attr-{{attribute}}"></a>
 <div class="panel panel-default">
-    <div class="panel-heading"><h4>{{ attribute|title }} <small>(attribute)</small></h4></div>
+    <div class="panel-heading"><h4>{{ attribute }} <small>(attribute)</small></h4></div>
     <table class="table table-striped table-condensed table-responsive">
         <tbody>
         {% for v in values %}
