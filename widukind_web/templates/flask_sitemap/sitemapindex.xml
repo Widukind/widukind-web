@@ -8,7 +8,7 @@
     <loc>{{ sitemap.loc }}</loc>
     {%- endif %}
     {%- if sitemap.lastmod %}
-    <lastmod>{{ sitemap.lastmod }}</lastmod>
+    <lastmod>{{ sitemap.lastmod.strftime('%Y-%m-%d') }}</lastmod>
     {%- endif %}
   </sitemap>
   {%- endfor %}
