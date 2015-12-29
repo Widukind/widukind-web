@@ -283,54 +283,17 @@ def _conf_counters(app):
     TODO: websocket 
     """
     from widukind_web.mongolock import MongoLockLocked
+    from widukind_web import counters
     
     counter_sleep = app.config.get("COUNTER_SLEEP", 60)
-
-    def upsert(category, name, new_count):
-        col_counters = app.widukind_db[constants.COL_COUNTERS]
-        
-        app.logger.info("count category[%s] for %s: new[%s]" % (category, name, new_count))
-        
-        data = {"category": category,
-                'count': new_count, 
-                'lastUpdated': utils.utcnow()}
-        return col_counters.update_one({"name": name}, {"$set": data}, upsert=True)
-    
-    def datasets_by_provider():
-        """Datasets count by Provider"""
-        _group_by = {"$group": {"_id": "$provider", "count": {"$sum": 1}}}
-        result = app.widukind_db[constants.COL_DATASETS].aggregate([_group_by])
-        category = "counter.datasets"
-        for r in result:
-            name = "%s.datasets" % r['_id']
-            upsert(category, name, r['count'])
-
-    def series_by_provider():
-        """Series count by Provider"""
-        _group_by = {"$group": {"_id": "$provider", "count": {"$sum": 1}}}
-        result = app.widukind_db[constants.COL_SERIES].aggregate([_group_by])
-        category = "counter.series"
-        for r in result:
-            name = "%s.series" % r['_id']
-            upsert(category, name, r['count'])
-
-    #TODO: update_many or bulk update
-    def series_by_datasets():
-        """Series count by Provider and Datasets"""        
-        _group_by = {"$group": {"_id": {"provider": "$provider", "datasetCode": "$datasetCode"}, "count": {"$sum": 1}}}
-        result = app.widukind_db[constants.COL_SERIES].aggregate([_group_by])
-        category = "counter.series.bydataset"
-        for r in result:
-            name = "%s.%s.series" % (r['_id']['provider'], r['_id']['datasetCode'])
-            upsert(category, name, r['count'])
 
     def update_counters():
         while True:
             try:
                 with app.task_locker('update.counters', 'update.counters', expire=600, timeout=300):
-                    datasets_by_provider()
-                    series_by_provider()
-                    series_by_datasets()
+                    counters.datasets_by_provider(app.widukind_db)
+                    counters.series_by_provider(app.widukind_db)
+                    counters.series_by_datasets(app.widukind_db)
             except MongoLockLocked as err:
                 app.logger.warning(str(err))
             except Exception as err:
