@@ -280,73 +280,66 @@ def _conf_locker(app):
 
 def _conf_counters(app):
     """
-    TODO: compteur par fetcher et datasets
     TODO: websocket 
     """
-    from hashlib import md5
     from widukind_web.mongolock import MongoLockLocked
-    from pymongo import CursorType
-    import os
     
     counter_sleep = app.config.get("COUNTER_SLEEP", 60)
 
-    def update_counter(cursor=None, name=None, category=None):
-        count = 0
+    def upsert(category, name, new_count):
+        col_counters = app.widukind_db[constants.COL_COUNTERS]
         
-        col = app.widukind_db[constants.COL_COUNTERS]
+        app.logger.info("count category[%s] for %s: new[%s]" % (category, name, new_count))
         
-        key = md5(("%s.%s" % (name, category)).encode('utf-8')).hexdigest()
-        
-        def upsert(old_count, new_count):
-            app.logger.info("change count for %s. old[%s] - new[%s]" % (name, old_count, new_count))
-            
-            data = {"category": category,
-                    'count': new_count, 
-                    'lastUpdated': utils.utcnow()}
-            col.update_one({"name": name}, {"$set": data}, upsert=True)
-
-        first_init = False
-                
-        while cursor.alive:
-            _count = cursor.count()
-            if not first_init and count == 0:
-                upsert(0, 0)
-                first_init = True
-                            
-            if _count != count:
-                count = _count
-                try:
-                    with app.task_locker(key, 'update.counters', expire=600, timeout=300):
-                        upsert(0, count)
-                except MongoLockLocked as err:
-                    app.logger.warning(str(err))
-                except Exception as err:
-                    app.logger.error(err)
-                                
-            gevent.sleep(counter_sleep)
+        data = {"category": category,
+                'count': new_count, 
+                'lastUpdated': utils.utcnow()}
+        return col_counters.update_one({"name": name}, {"$set": data}, upsert=True)
     
-    greenlets = []
+    def datasets_by_provider():
+        """Datasets count by Provider"""
+        _group_by = {"$group": {"_id": "$provider", "count": {"$sum": 1}}}
+        result = app.widukind_db[constants.COL_DATASETS].aggregate([_group_by])
+        category = "counter.datasets"
+        for r in result:
+            name = "%s.datasets" % r['_id']
+            upsert(category, name, r['count'])
 
-    providers = app.widukind_db[constants.COL_PROVIDERS].distinct("name")
-    for p in providers:
-        query = {"provider": p}
+    def series_by_provider():
+        """Series count by Provider"""
+        _group_by = {"$group": {"_id": "$provider", "count": {"$sum": 1}}}
+        result = app.widukind_db[constants.COL_SERIES].aggregate([_group_by])
+        category = "counter.series"
+        for r in result:
+            name = "%s.series" % r['_id']
+            upsert(category, name, r['count'])
 
-        cursor_datasets = app.widukind_db[constants.COL_DATASETS].find(query,
-                                                                       cursor_type=CursorType.TAILABLE_AWAIT)
-        green = gevent.spawn(update_counter, 
-                             cursor=cursor_datasets, 
-                             name="%s.datasets" % p, 
-                             category="counter.datasets")
+    #TODO: update_many or bulk update
+    def series_by_datasets():
+        """Series count by Provider and Datasets"""        
+        _group_by = {"$group": {"_id": {"provider": "$provider", "datasetCode": "$datasetCode"}, "count": {"$sum": 1}}}
+        result = app.widukind_db[constants.COL_SERIES].aggregate([_group_by])
+        category = "counter.series.bydataset"
+        for r in result:
+            name = "%s.%s.series" % (r['_id']['provider'], r['_id']['datasetCode'])
+            upsert(category, name, r['count'])
+
+    def update_counters():
+        while True:
+            try:
+                with app.task_locker('update.counters', 'update.counters', expire=600, timeout=300):
+                    datasets_by_provider()
+                    series_by_provider()
+                    series_by_datasets()
+            except MongoLockLocked as err:
+                app.logger.warning(str(err))
+            except Exception as err:
+                app.logger.error(err)
+            
+            gevent.sleep(counter_sleep)
+
+    return [gevent.spawn(update_counters)]
         
-        cursor_series = app.widukind_db[constants.COL_SERIES].find(query,
-                                                                       cursor_type=CursorType.TAILABLE_AWAIT)
-        green = gevent.spawn(update_counter, 
-                             cursor=cursor_series, 
-                             name="%s.series" % p, 
-                             category="counter.series")
-        
-        
-    return greenlets
     
 def _conf_auth(app):
     extensions.auth.init_app(app)
