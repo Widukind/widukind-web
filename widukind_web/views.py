@@ -321,7 +321,7 @@ def html_series(provider=None, datasetCode=None):
         return current_app.jsonify(datas)
 
 
-@bp.route('/dataset/<objectid:id>', endpoint="dataset")
+@bp.route('/dataset-by-id/<objectid:id>', endpoint="dataset")
 def html_dataset_by_id(id):
     
     dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({"_id": id})
@@ -345,7 +345,7 @@ def html_dataset_by_id(id):
                            dataset=dataset,
                            count=count_series)
     
-@bp.route('/serie/<objectid:id>', endpoint="serie")
+@bp.route('/series-by-id/<objectid:id>', endpoint="serie")
 def html_serie_by_id(id):
 
     serie = current_app.widukind_db[constants.COL_SERIES].find_one({"_id": id})
