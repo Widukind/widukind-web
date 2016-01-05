@@ -36,14 +36,14 @@
             <tr>
                 <td class="col-md-2">Datasets</td>
                 <td class="col-md-10">
-                    <span class="human-number">{{collection_counters[provider.name+".datasets"].count}}</span>
+                    <span class="human-number">{{counter(provider.name+".datasets")}}</span>
                 </td>
             </tr>
             <tr>
                 <td class="col-md-2">Series</td>
                 <td class="col-md-10">
                     <a href="{{ url_for('.series', provider=provider.name) }}">
-                        <span class="human-number">{{collection_counters[provider.name+".series"].count}}</span>
+                        <span class="human-number">{{counter(provider.name+".series")}}</span>
                     </a>
                 </td>
             </tr>

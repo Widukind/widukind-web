@@ -7,7 +7,7 @@
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
       <li><a href="{{ url_for("views.datasets", provider=serie.provider) }}">{{provider.name}}</a></li>
-      <li><a href="{{ url_for("views.series", provider=provider.name, datasetCode=serie.datasetCode) }}">{{dataset.datasetCode}}</a></li>      
+      <li><a href="{{ url_for("views.series_with_datasetCode", provider=provider.name, datasetCode=serie.datasetCode) }}">{{dataset.datasetCode}}</a></li>      
       <li class="active">{{serie.key}}</li>
     </ol>
 {% endblock %}
@@ -163,7 +163,7 @@
 
 {% endblock %}
 
-{% block scripts %}
+{% block add_scripts %}
     {{super()}}
     
     <script type="text/javascript">

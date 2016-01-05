@@ -148,7 +148,7 @@ def last_datasets():
             "rows": []
         }
         for s in object_list:
-            s['view'] = url_for('.dataset', id=s['_id'])
+            s['view'] = url_for('.dataset-by-slug', slug=s['slug'])
             doc_href = s.get('docHref', None)                        
             if doc_href and not doc_href.lower().startswith('http'):
                 s['docHref'] = None            
@@ -192,7 +192,7 @@ def last_series():
         }
         series = convert_series_period(series)
         for s in series:
-            s['view'] = url_for('.serie', id=s['_id'])
+            s['view'] = url_for('.series-by-slug', slug=s['slug'])
             s['export_csv'] = url_for('download.series_csv', provider=s['provider'], datasetCode=s['datasetCode'], key=s['key'])
             s['view_graphic'] = url_for('.series_plot', id=s['_id'])
             datas["rows"].append(s)
@@ -235,7 +235,7 @@ def html_datasets(provider=None):
             "rows": []
         }
         for o in objects:
-            o['view'] = url_for('.dataset', id=o['_id'])
+            o['view'] = url_for('.dataset-by-slug', slug=o['slug'])
             o['series'] = url_for('.series_with_datasetCode', provider=o['provider'], datasetCode=o['datasetCode'])
             doc_href = o.get('docHref', None)                        
             if doc_href and not doc_href.lower().startswith('http'):
@@ -312,7 +312,7 @@ def html_series(provider=None, datasetCode=None):
         }
         series = convert_series_period(series)
         for s in series:
-            s['view'] = url_for('.serie', id=s['_id'])
+            s['view'] = url_for('.series-by-slug', slug=s['slug'])
             s['export_csv'] = url_for('download.series_csv', provider=s['provider'], datasetCode=s['datasetCode'], key=s['key'])
             #s['export_csv'] = url_for('download.series_csv', provider=s['provider'], datasetCode=s['datasetCode'], key=s['key'])
             s['view_graphic'] = url_for('.series_plot', id=s['_id'])
@@ -321,10 +321,9 @@ def html_series(provider=None, datasetCode=None):
         return current_app.jsonify(datas)
 
 
-@bp.route('/dataset/<objectid:id>', endpoint="dataset")
-def html_dataset_by_id(id):
+def html_dataset_by(query, id):
     
-    dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({"_id": id})
+    dataset = current_app.widukind_db[constants.COL_DATASETS].find_one(query)
     
     if not dataset:
         abort(404)
@@ -344,11 +343,18 @@ def html_dataset_by_id(id):
                            provider=provider,
                            dataset=dataset,
                            count=count_series)
-    
-@bp.route('/serie/<objectid:id>', endpoint="serie")
-def html_serie_by_id(id):
 
-    serie = current_app.widukind_db[constants.COL_SERIES].find_one({"_id": id})
+@bp.route('/slug/dataset/<slug>', endpoint="dataset-by-slug")
+def html_dataset_by_slug(slug):
+    return html_dataset_by({"slug": slug}, slug)
+
+@bp.route('/dataset-by-id/<objectid:id>', endpoint="dataset")
+def html_dataset_by_id(id):
+    return html_dataset_by({"_id": id}, id)
+    
+def html_series_by(query, id):
+
+    serie = current_app.widukind_db[constants.COL_SERIES].find_one(query)
 
     if not serie:
         abort(404)
@@ -381,16 +387,24 @@ def html_serie_by_id(id):
             #TODO: log
             continue
         dim_value = dict(dimensionList[d])[value]
-        dimensions.append((d, dim_value))
+        dimensions.append((dim_value, value))
 
     attributes = []
+    """
     attributeList = dataset['attributeList']
     for d, value in serie['attributes'].items():
         if not d in attributeList:            
             #TODO: log
             continue
-        attr_value = dict(attributeList[d])[value]
-        attributes.append((d, attr_value))
+        for v in value:
+            if v and len(v.strip()) > 0:
+                attr_value = dict(attributeList[d])[v]
+                attributes.append((attr_value, v))
+            else:
+                attributes.append((None, None))
+    """
+    # [..., (None, None), ('provisional', 'p')]
+    # Eurostat - series key: A.CLV05_MEUR.N111G.CH
         
     return render_template("serie.html", 
                            id=id, 
@@ -401,6 +415,14 @@ def html_serie_by_id(id):
                            attributes=attributes,
                            provider=provider,
                            dataset=dataset)
+
+@bp.route('/series-by-id/<objectid:id>', endpoint="serie")
+def html_serie_by_id(id):
+    return html_series_by({"_id": id}, id)
+
+@bp.route('/slug/series/<slug>', endpoint="series-by-slug")
+def html_serie_by_slug(slug):
+    return html_series_by({"slug": slug}, slug)
     
 def datas_from_series(series):
     sd = pandas.Period(ordinal=series['startDate'],
@@ -570,7 +592,7 @@ def search_in_datasets():
                      tags=["search", "datasets"])
 
         for s in object_list:
-            s['view'] = url_for('.dataset', id=s['_id'])
+            s['view'] = url_for('.dataset-by-slug', slug=s['slug'])
         
         return current_app.jsonify(dict(count=len(object_list), object_list=object_list, query=kwargs))
         
@@ -607,7 +629,7 @@ def search_in_series():
                      tags=["search", "series"])
         
         for s in object_list:
-            s['view'] = url_for('.serie', id=s['_id'])
+            s['view'] = url_for('.series-by-slug', slug=s['slug'])
         
         return current_app.jsonify(dict(count=len(object_list), object_list=object_list, query=kwargs))
         
