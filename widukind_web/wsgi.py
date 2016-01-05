@@ -354,9 +354,9 @@ def _conf_processors(app):
     def provider_list():
         #TODO: update or cache !!!
         providers = []
-        projection = {"_id": False, "name": True, "longName": True}
+        projection = {"_id": False, "name": True, "long_name": True}
         for doc in app.widukind_db[constants.COL_PROVIDERS].find({}, projection=projection):
-            providers.append({"name": doc['name'], "longName": doc['longName']})
+            providers.append({"name": doc['name'], "long_name": doc['long_name']})
         return dict(provider_list=providers)
 
     @app.context_processor
