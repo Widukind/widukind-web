@@ -19,7 +19,7 @@ def upsert(db, category, name, new_count):
 
 def datasets_by_provider(db):
     """Datasets count by Provider"""
-    _group_by = {"$group": {"_id": "$provider", "count": {"$sum": 1}}}
+    _group_by = {"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}
     result = db[constants.COL_DATASETS].aggregate([_group_by])
     category = "counter.datasets"
     for r in result:
@@ -28,7 +28,7 @@ def datasets_by_provider(db):
 
 def series_by_provider(db):
     """Series count by Provider"""
-    _group_by = {"$group": {"_id": "$provider", "count": {"$sum": 1}}}
+    _group_by = {"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}
     result = db[constants.COL_SERIES].aggregate([_group_by])
     category = "counter.series"
     for r in result:
@@ -38,7 +38,7 @@ def series_by_provider(db):
 #TODO: update_many or bulk update
 def series_by_datasets(db):
     """Series count by Provider and Datasets"""        
-    _group_by = {"$group": {"_id": {'provider_name': "$provider", "dataset_code": "$dataset_code"}, "count": {"$sum": 1}}}
+    _group_by = {"$group": {"_id": {'provider_name': "$provider_name", "dataset_code": "$dataset_code"}, "count": {"$sum": 1}}}
     result = db[constants.COL_SERIES].aggregate([_group_by])
     category = "counter.series.bydataset"
     for r in result:

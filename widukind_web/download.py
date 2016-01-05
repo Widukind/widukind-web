@@ -53,7 +53,7 @@ def fs_list(limit=10, provider=None, dataset_code=None, doc_type=None):
     
     query = {}
     if provider:
-        query = {"metadata.provider": provider}
+        query = {"metadata.provider_name": provider}
     if dataset_code:
         query = {"metadata.dataset_code": dataset_code}
     if doc_type:

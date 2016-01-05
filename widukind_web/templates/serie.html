@@ -6,8 +6,8 @@
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
-      <li><a href="{{ url_for("views.datasets", provider=serie.provider) }}">{{provider.name}}</a></li>
-      <li><a href="{{ url_for("views.series_with_dataset_code", provider=provider.name, dataset_code=serie.dataset_code) }}">{{dataset.dataset_code}}</a></li>      
+      <li><a href="{{ url_for("views.datasets", provider=provider.name) }}">{{provider.name}}</a></li>
+      <li><a href="{{ url_for("views.series_with_dataset_code", provider=provider.name, dataset_code=dataset.dataset_code) }}">{{dataset.dataset_code}}</a></li>      
       <li class="active">{{serie.key}}</li>
     </ol>
 {% endblock %}
@@ -24,7 +24,7 @@
              <i class="fa fa-area-chart fa-stack-1x fa-inverse"></i>
            </span>
 	    </a>
-	    <a title="Download CSV file" href="{{ url_for('download.series_csv', provider=serie.provider, dataset_code=serie.dataset_code, key=serie.key) }}">
+	    <a title="Download CSV file" href="{{ url_for('download.series_csv', provider=serie.provider_name, dataset_code=serie.dataset_code, key=serie.key) }}">
            <span class="fa-stack fa-lg">
              <i class="fa fa-circle fa-stack-2x"></i>
              <i class="fa fa-table fa-stack-1x fa-inverse"></i>
