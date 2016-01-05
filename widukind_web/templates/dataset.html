@@ -66,7 +66,7 @@
             <tr>
                 <td class="col-md-2">Dimensions</td>
                 <td class="col-md-10">
-                    {% for d in dataset.dimensionList.keys() %}
+                    {% for d in dataset.dimension_list.keys() %}
                         <a href="#dim-{{d}}">{{d}}</a><br/>
                     {% endfor %}
                  </td>
@@ -87,7 +87,7 @@
     </table>
 </div>
 
-{% for dimension, values in dataset.dimensionList.items() %}
+{% for dimension, values in dataset.dimension_list.items() %}
 <a name="dim-{{dimension}}"></a>
 <div class="panel panel-default">
     <div class="panel-heading"><h4>{{ dimension }} <small>(dimension)</small></h4></div>

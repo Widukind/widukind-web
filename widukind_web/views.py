@@ -130,7 +130,7 @@ def last_datasets():
     query = {}
     
     projection = {
-        "dimensionList": False, 
+        "dimension_list": False, 
         "attributeList": False, 
     }
 
@@ -206,7 +206,7 @@ def html_datasets(provider=None):
     is_ajax = request.args.get('json') or request.is_xhr
 
     projection = {
-        "dimensionList": False, 
+        "dimension_list": False, 
         "attributeList": False, 
     }
 
@@ -381,12 +381,12 @@ def html_series_by(query, id):
     values = [z for z in zip(periods, serie['values'])]
     
     dimensions = []
-    dimensionList = dataset['dimensionList']
+    dimension_list = dataset['dimension_list']
     for d, value in serie['dimensions'].items():
-        if not d in dimensionList:
+        if not d in dimension_list:
             #TODO: log
             continue
-        dim_value = dict(dimensionList[d])[value]
+        dim_value = dict(dimension_list[d])[value]
         dimensions.append((dim_value, value))
 
     attributes = []
@@ -574,7 +574,7 @@ def search_in_datasets():
     if form.validate_on_submit():
         
         projection = {
-            "dimensionList": False, 
+            "dimension_list": False, 
             "attributeList": False, 
         }
         
