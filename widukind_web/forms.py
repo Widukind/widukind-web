@@ -152,6 +152,6 @@ class SearchFormSeries(SearchFormDatasets):
     #TODO: end_date = fields.StringField()
     end_date = fields.HiddenField()
     
-    sort = fields.SelectField(choices=constants.CHOICES_SORT_SERIES, default="startDate")
+    sort = fields.SelectField(choices=constants.CHOICES_SORT_SERIES, default="start_date")
         
         

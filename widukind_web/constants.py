@@ -14,7 +14,7 @@ CHOICES_SORT_DATASETS = (
 )
 
 CHOICES_SORT_SERIES = (
-    ("startDate", "start date"),
+    ("start_date", "start date"),
     ("endDate", "end date"),
     ("provider", "provider"),
     ("datasetCode", "dataset"),

@@ -37,9 +37,9 @@ def convert_series_period(series):
     new_series = []
     
     for s in series:
-        start_date = pandas.Period(ordinal=s['startDate'], freq=s['frequency'])
+        start_date = pandas.Period(ordinal=s['start_date'], freq=s['frequency'])
         end_date = pandas.Period(ordinal=s['endDate'], freq=s['frequency'])
-        s['startDate'] = str(start_date)
+        s['start_date'] = str(start_date)
         s['endDate'] = str(end_date)
         new_series.append(s)
         
@@ -259,7 +259,7 @@ def html_series(provider=None, datasetCode=None):
     search_filter = None
     if request.args.get('filter'):
         search_filter = json.loads(request.args.get('filter'))
-        if 'startDate' in search_filter:
+        if 'start_date' in search_filter:
             """
             > Manque la fréquence
             pd.Period("1995", freq="A").ordinal
@@ -372,7 +372,7 @@ def html_series_by(query, id):
         return current_app.jsonify(dict(dataset=result_dataset, serie=result_series))
     
     frequency = serie['frequency']
-    start_date = pandas.Period(ordinal=serie['startDate'], freq=frequency)
+    start_date = pandas.Period(ordinal=serie['start_date'], freq=frequency)
     periods = [str(start_date)]
     for i in range(1, len(serie['values'])):
         start_date +=1
@@ -425,7 +425,7 @@ def html_serie_by_slug(slug):
     return html_series_by({"slug": slug}, slug)
     
 def datas_from_series(series):
-    sd = pandas.Period(ordinal=series['startDate'],
+    sd = pandas.Period(ordinal=series['start_date'],
                        freq=series['frequency'])
 
     periods = []
