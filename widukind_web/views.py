@@ -225,7 +225,7 @@ def html_datasets(provider=None):
         
     datasets = current_app.widukind_db[constants.COL_DATASETS].find(query, 
                                                                     projection=projection,
-                                                                    sort=[('lastUpdate', DESCENDING)])
+                                                                    sort=[('last_update', DESCENDING)])
     
     count, objects = filter_query(datasets)
 

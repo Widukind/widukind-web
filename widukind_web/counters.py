@@ -14,7 +14,7 @@ def upsert(db, category, name, new_count):
     
     data = {"category": category,
             'count': new_count, 
-            'lastUpdated': utils.utcnow()}
+            'last_updated': utils.utcnow()}
     return col_counters.update_one({"name": name}, {"$set": data}, upsert=True)
 
 def datasets_by_provider(db):

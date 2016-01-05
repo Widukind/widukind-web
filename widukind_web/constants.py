@@ -10,7 +10,7 @@ CHOICES_SORT_DATASETS = (
     ("provider", "provider"),
     ("datasetCode", "dataset"),
     ("name", "serie name"),
-    ("lastUpdate", "Last update"),
+    ("last_update", "Last update"),
 )
 
 CHOICES_SORT_SERIES = (

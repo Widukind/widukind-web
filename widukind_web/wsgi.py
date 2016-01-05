@@ -411,12 +411,12 @@ def _conf_sitemap(app):
 
     @extensions.sitemap.register_generator
     def sitemap_datasets():
-        projection = {'_id': False, "lastUpdate": True, "name": True, "provider": True, "datasetCode": True } 
+        projection = {'_id': False, "last_update": True, "name": True, "provider": True, "datasetCode": True } 
         datasets = current_app.widukind_db[constants.COL_DATASETS].find({}, projection=projection)
         for doc in datasets:
             yield ('views.series_with_datasetCode', 
                    {'provider': doc['provider'], 'datasetCode': doc['datasetCode']}, 
-                   doc['lastUpdate'], 
+                   doc['last_update'], 
                    "daily", 0.9)
             
     @extensions.sitemap.register_generator

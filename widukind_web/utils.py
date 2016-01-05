@@ -124,7 +124,7 @@ def categories_to_dict(db, provider_name):
         _tree['code'] = cc['categoryCode']
         _tree['name'] = cc['name']
         _tree['doc_href'] = cc.get('docRef', None)
-        _tree['lastUpdate'] = cc.get('lastUpdate', None)
+        _tree['last_update'] = cc.get('last_update', None)
         _tree['children'] = []
 
         ids = [str(c) for c in cc['children']]
@@ -138,7 +138,7 @@ def categories_to_dict(db, provider_name):
     tree['code'] = root['categoryCode']
     tree['name'] = root['name']
     tree['doc_href'] = root.get('docRef', None)
-    tree['lastUpdate'] = root.get('lastUpdate', None)
+    tree['last_update'] = root.get('last_update', None)
     tree['children'] = []
     
     ids = [str(c) for c in root['children']]
