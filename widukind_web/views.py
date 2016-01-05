@@ -162,7 +162,7 @@ def last_series():
     """
     > projection sur 1 élément du champs array
     > sort sur cet élément d'un champs array
-    pprint(list(db.series.find({}, projection={"key": True, "_id": False, "releaseDates": {"$slice": 1}}).limit(20).sort([("releaseDates.0", -1)])))
+    pprint(list(db.series.find({}, projection={"key": True, "_id": False, "release_dates": {"$slice": 1}}).limit(20).sort([("release_dates.0", -1)])))
     """
     LIMIT = 20
     
@@ -173,7 +173,7 @@ def last_series():
     projection = {
         "dimensions": False, 
         "attributes": False, 
-        "releaseDates": False,
+        "release_dates": False,
         "revisions": False,
     }
 
@@ -275,7 +275,7 @@ def html_series(provider=None, datasetCode=None):
     projection = {
         "dimensions": False, 
         "attributes": False, 
-        "releaseDates": False,
+        "release_dates": False,
         "revisions": False,
         "values": False,
         "dimensions": False,
@@ -610,7 +610,7 @@ def search_in_series():
         projection = {
             "dimensions": False, 
             "attributes": False, 
-            "releaseDates": False,
+            "release_dates": False,
             "revisions": False,
             "values": False
         }
@@ -679,7 +679,7 @@ def ajax_view_cart():
     projection = {
         "dimensions": False, 
         "attributes": False, 
-        "releaseDates": False,
+        "release_dates": False,
         "revisions": False,
         "values": False,
     }
