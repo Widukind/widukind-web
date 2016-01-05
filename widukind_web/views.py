@@ -38,9 +38,9 @@ def convert_series_period(series):
     
     for s in series:
         start_date = pandas.Period(ordinal=s['start_date'], freq=s['frequency'])
-        end_date = pandas.Period(ordinal=s['endDate'], freq=s['frequency'])
+        end_date = pandas.Period(ordinal=s['end_date'], freq=s['frequency'])
         s['start_date'] = str(start_date)
-        s['endDate'] = str(end_date)
+        s['end_date'] = str(end_date)
         new_series.append(s)
         
     return new_series
