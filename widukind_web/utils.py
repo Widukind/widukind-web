@@ -106,7 +106,7 @@ def categories_to_dict(db, provider_name):
     root = None
 
     for doc in docs:
-        if not root and doc['categoryCode'] == '%s_root' % provider_name.lower():
+        if not root and doc['category_code'] == '%s_root' % provider_name.lower():
             root = doc
             continue
         categories[str(doc['_id'])] = doc    
@@ -121,7 +121,7 @@ def categories_to_dict(db, provider_name):
     
     def walktree1(cc):
         _tree = {}
-        _tree['code'] = cc['categoryCode']
+        _tree['code'] = cc['category_code']
         _tree['name'] = cc['name']
         _tree['doc_href'] = cc.get('docRef', None)
         _tree['last_update'] = cc.get('last_update', None)
@@ -135,7 +135,7 @@ def categories_to_dict(db, provider_name):
         
         return _tree
 
-    tree['code'] = root['categoryCode']
+    tree['code'] = root['category_code']
     tree['name'] = root['name']
     tree['doc_href'] = root.get('docRef', None)
     tree['last_update'] = root.get('last_update', None)
