@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
-{% block title %}{{super()}} - Dataset - {{dataset.datasetCode}}{% endblock %}
+{% block title %}{{super()}} - Dataset - {{dataset.dataset_code}}{% endblock %}
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
-      <li><a href="{{ url_for("views.datasets", provider=dataset.provider) }}">{{dataset.provider}}</a></li>
-      <li class="active">{{dataset.datasetCode}}</li>
+      <li><a href="{{ url_for("views.datasets", provider=dataset.provider_name) }}">{{dataset.provider_name}}</a></li>
+      <li class="active">{{dataset.dataset_code}}</li>
     </ol>
 {% endblock %}
 
@@ -19,7 +19,7 @@
         <tbody>
             <tr>
                 <td class="col-md-2">Provider</td>
-                <td class="col-md-10">{{ provider.longName }}</td>
+                <td class="col-md-10">{{ provider.long_name }}</td>
             </tr>
             <tr>
                 <td class="col-md-2">Name</td>
@@ -27,13 +27,13 @@
             </tr>
             <tr>
                 <td class="col-md-2">Last Updated</td>
-                <td class="col-md-10">{{ moment(dataset.lastUpdate).format('LLL') }} ({{ moment(dataset.lastUpdate).fromNow()}})</td>
+                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
             </tr>
             <tr>
                 <td class="col-md-2">Web Site</td>
                 <td class="col-md-10">
-                    {% if dataset.docHref %}
-                        <a href="{{ dataset.docHref }}">{{ dataset.docHref }}</a>
+                    {% if dataset.doc_href %}
+                        <a href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
                     {% else %}
                     &nbsp;
                     {% endif %}                
@@ -42,7 +42,7 @@
             <tr>
                 <td class="col-md-2">Series</td>
                 <td class="col-md-10">
-                    <a href="{{ url_for('.series_with_datasetCode', provider=dataset.provider, datasetCode=dataset.datasetCode) }}"> 
+                    <a href="{{ url_for('.series_with_dataset_code', provider=dataset.provider_name, dataset_code=dataset.dataset_code) }}"> 
                         <span class="human-number">{{count}}</span>
                     </a>
                 </td>
@@ -51,7 +51,7 @@
             <tr>
                 <td class="col-md-2">Export</td>
                 <td class="col-md-10">
-                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider, datasetCode=dataset.datasetCode) }}">
+                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider_name, dataset_code=dataset.dataset_code) }}">
                         <i class="fa fa-download fa-lg"></i>
                     </a>                        
                 </td>                
@@ -66,7 +66,7 @@
             <tr>
                 <td class="col-md-2">Dimensions</td>
                 <td class="col-md-10">
-                    {% for d in dataset.dimensionList.keys() %}
+                    {% for d in dataset.dimension_list.keys() %}
                         <a href="#dim-{{d}}">{{d}}</a><br/>
                     {% endfor %}
                  </td>
@@ -74,8 +74,8 @@
             <tr>
                 <td class="col-md-2">Attributes</td>
                 <td class="col-md-10">
-                    {% if dataset.attributeList %}
-                    {% for a in dataset.attributeList.keys() %}
+                    {% if dataset.attribute_list %}
+                    {% for a in dataset.attribute_list.keys() %}
                         <a href="#attr-{{a}}">{{a}}</a><br/>
                     {% endfor %}
                     {% else %}
@@ -87,7 +87,7 @@
     </table>
 </div>
 
-{% for dimension, values in dataset.dimensionList.items() %}
+{% for dimension, values in dataset.dimension_list.items() %}
 <a name="dim-{{dimension}}"></a>
 <div class="panel panel-default">
     <div class="panel-heading"><h4>{{ dimension }} <small>(dimension)</small></h4></div>
@@ -104,7 +104,7 @@
 </div>
 {% endfor %}
 
-{% for attribute, values in dataset.attributeList.items() %}
+{% for attribute, values in dataset.attribute_list.items() %}
 <a name="attr-{{attribute}}"></a>
 <div class="panel panel-default">
     <div class="panel-heading"><h4>{{ attribute }} <small>(attribute)</small></h4></div>

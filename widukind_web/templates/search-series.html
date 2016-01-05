@@ -76,18 +76,18 @@
         data-page-size="{{ page_size|default('10') }}"
         data-page-list="[10, 25, 50, 100]"
           
-        data-sort-name="startDate"
+        data-sort-name="start_date"
         data-sort-order="asc">
         <thead> 
             <tr>
                 {#<th class="col-md-1" data-field="_id"  data-align="center" data-formatter="seriesButtonFormatter">&nbsp;</th>#}
-                <th class="col-md-1" data-field="provider" data-sortable="true">Provider</th>
-                <th class="col-md-1" data-field="datasetCode" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
+                <th class="col-md-1" data-field='provider_name' data-sortable="true">Provider</th>
+                <th class="col-md-1" data-field="dataset_code" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
                 <th class="col-md-2" data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true">key</th>
                 <th class="col-md-5" data-field="name" data-sortable="true">Name</th>
                 <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
-                <th class="col-md-1" data-field="startDate" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
-                <th class="col-md-1" data-field="endDate" data-align="center" data-sortable="true">End Date</th>
+                <th class="col-md-1" data-field="start_date" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
+                <th class="col-md-1" data-field="end_date" data-align="center" data-sortable="true">End Date</th>
             </tr>
         </thead>
     </table>   

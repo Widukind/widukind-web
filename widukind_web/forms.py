@@ -138,7 +138,7 @@ class SearchFormDatasets(Form):
     
     limit = fields.IntegerField(default=20)
     
-    sort = fields.SelectField(choices=constants.CHOICES_SORT_DATASETS, default="lastUpdate")
+    sort = fields.SelectField(choices=constants.CHOICES_SORT_DATASETS, default="last_update")
         
 class SearchFormSeries(SearchFormDatasets):
     
@@ -152,6 +152,6 @@ class SearchFormSeries(SearchFormDatasets):
     #TODO: end_date = fields.StringField()
     end_date = fields.HiddenField()
     
-    sort = fields.SelectField(choices=constants.CHOICES_SORT_SERIES, default="startDate")
+    sort = fields.SelectField(choices=constants.CHOICES_SORT_SERIES, default="start_date")
         
         

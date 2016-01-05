@@ -21,7 +21,7 @@
 	    data-page-list="[10, 25, 50, 100]">
     <thead>
         <th data-field="name" data-sortable="true">Name</th>
-        <th data-field="longName" data-sortable="true">Long Name</th>
+        <th data-field="long_name" data-sortable="true">Long Name</th>
         <th data-field="datasets" data-sortable="true">Datasets</th>
         <th data-field="series" data-sortable="true">Series</th>
     </thead>
@@ -35,7 +35,7 @@
             </td>
             <td>
                 <a href="{{ url_for('views.datasets', provider=p.name) }}">
-                    {{p.longName}}            
+                    {{p.long_name}}            
                 </a>
             </td>
             <td>

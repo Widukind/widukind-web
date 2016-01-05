@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
-{% block title %}{{super()}} - Series - {{provider.name}} - {{dataset.datasetCode}} - {{serie.key}}{% endblock %}
+{% block title %}{{super()}} - Series - {{provider.name}} - {{dataset.dataset_code}} - {{serie.key}}{% endblock %}
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
-      <li><a href="{{ url_for("views.datasets", provider=serie.provider) }}">{{provider.name}}</a></li>
-      <li><a href="{{ url_for("views.series_with_datasetCode", provider=provider.name, datasetCode=serie.datasetCode) }}">{{dataset.datasetCode}}</a></li>      
+      <li><a href="{{ url_for("views.datasets", provider=provider.name) }}">{{provider.name}}</a></li>
+      <li><a href="{{ url_for("views.series_with_dataset_code", provider=provider.name, dataset_code=dataset.dataset_code) }}">{{dataset.dataset_code}}</a></li>      
       <li class="active">{{serie.key}}</li>
     </ol>
 {% endblock %}
@@ -24,7 +24,7 @@
              <i class="fa fa-area-chart fa-stack-1x fa-inverse"></i>
            </span>
 	    </a>
-	    <a title="Download CSV file" href="{{ url_for('download.series_csv', provider=serie.provider, datasetCode=serie.datasetCode, key=serie.key) }}">
+	    <a title="Download CSV file" href="{{ url_for('download.series_csv', provider=serie.provider_name, dataset_code=serie.dataset_code, key=serie.key) }}">
            <span class="fa-stack fa-lg">
              <i class="fa fa-circle fa-stack-2x"></i>
              <i class="fa fa-table fa-stack-1x fa-inverse"></i>
@@ -41,7 +41,7 @@
         <tbody>            
             <tr>
                 <td class="col-md-2">Provider</td>
-                <td class="col-md-10">{{ provider.longName }}</td>
+                <td class="col-md-10">{{ provider.long_name }}</td>
             </tr>
             <tr>
                 <td class="col-md-2">Dataset</td>
@@ -57,13 +57,13 @@
             </tr>
             <tr>
                 <td class="col-md-2">Last Updated</td>
-                <td class="col-md-10">{{ moment(dataset.lastUpdate).format('LLL') }} ({{ moment(dataset.lastUpdate).fromNow()}})</td>
+                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
             </tr>
             <tr>
                 <td class="col-md-2">Web Site</td>
                 <td class="col-md-10">
-                    {% if dataset.docHref %}
-                        <a target="_blank" href="{{ dataset.docHref }}">{{ dataset.docHref }}</a>
+                    {% if dataset.doc_href %}
+                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
                     {% else %}
                     &nbsp;
                     {% endif %}                
@@ -72,7 +72,7 @@
             <tr>
                 <td class="col-md-2">Periods</td>
                 <td class="col-md-10">
-                    {{pandas_period(serie.startDate, serie.frequency)}} to {{pandas_period(serie.endDate, serie.frequency)}}
+                    {{pandas_period(serie.start_date, serie.frequency)}} to {{pandas_period(serie.end_date, serie.frequency)}}
                  </td>
             </tr>
             <tr>

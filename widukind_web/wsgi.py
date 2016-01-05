@@ -354,9 +354,9 @@ def _conf_processors(app):
     def provider_list():
         #TODO: update or cache !!!
         providers = []
-        projection = {"_id": False, "name": True, "longName": True}
+        projection = {"_id": False, "name": True, "long_name": True}
         for doc in app.widukind_db[constants.COL_PROVIDERS].find({}, projection=projection):
-            providers.append({"name": doc['name'], "longName": doc['longName']})
+            providers.append({"name": doc['name'], "long_name": doc['long_name']})
         return dict(provider_list=providers)
 
     @app.context_processor
@@ -407,16 +407,16 @@ def _conf_sitemap(app):
     def sitemap_providers():
         providers = current_app.widukind_db[constants.COL_PROVIDERS].find({}, projection={'_id': False})
         for doc in providers:
-            yield ('views.datasets', {'provider': doc['name']}, None, "weekly", 0.9)
+            yield ('views.datasets', {'provider_name': doc['name']}, None, "weekly", 0.9)
 
     @extensions.sitemap.register_generator
     def sitemap_datasets():
-        projection = {'_id': False, "lastUpdate": True, "name": True, "provider": True, "datasetCode": True } 
+        projection = {'_id': False, "last_update": True, "name": True, 'provider_name': True, "dataset_code": True } 
         datasets = current_app.widukind_db[constants.COL_DATASETS].find({}, projection=projection)
         for doc in datasets:
-            yield ('views.series_with_datasetCode', 
-                   {'provider': doc['provider'], 'datasetCode': doc['datasetCode']}, 
-                   doc['lastUpdate'], 
+            yield ('views.series_with_dataset_code', 
+                   {'provider_name': doc['provider_name'], 'dataset_code': doc['dataset_code']}, 
+                   doc['last_update'], 
                    "daily", 0.9)
             
     @extensions.sitemap.register_generator

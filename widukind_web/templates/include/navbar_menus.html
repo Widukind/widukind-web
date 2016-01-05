@@ -16,7 +16,7 @@
 				        {% for p in provider_list %}
 				            <li>
 				                <a href="{{ url_for('views.datasets', provider=p.name) }}">
-				                    {{p.name}} - {{p.longName}}
+				                    {{p.name}} - {{p.long_name}}
 				                </a>
 				            </li>
 				        {% endfor %}
@@ -32,7 +32,7 @@
 					  {% for p in provider_list %}
 					      <li>
 					          <a href="{{ url_for('views.categories', provider=p.name) }}">
-					              {{p.name}} - ({{p.longName}})
+					              {{p.name}} - ({{p.long_name}})
 					          </a>
 					      </li>
 					  {% endfor %}

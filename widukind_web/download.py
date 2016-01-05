@@ -49,13 +49,13 @@ def send_file(fileobj, version=-1, mimetype=None, filename=None, cache_for=31536
     response.make_conditional(request)
     return response        
 
-def fs_list(limit=10, provider=None, datasetCode=None, doc_type=None):
+def fs_list(limit=10, provider=None, dataset_code=None, doc_type=None):
     
     query = {}
     if provider:
-        query = {"metadata.provider": provider}
-    if datasetCode:
-        query = {"metadata.datasetCode": datasetCode}
+        query = {"metadata.provider_name": provider}
+    if dataset_code:
+        query = {"metadata.dataset_code": dataset_code}
     if doc_type:
         query = {"metadata.doc_type": doc_type}
         
@@ -74,19 +74,19 @@ def fs_list_dataset():
     
     return fs_list(limit=limit, 
                    provider=None, 
-                   datasetCode=None, 
+                   dataset_code=None, 
                    doc_type="dataset")            
         
-@bp.route('/list/series/<provider>/<datasetCode>')
+@bp.route('/list/series/<provider>/<dataset_code>')
 @bp.route('/list/series/<provider>')
 @bp.route('/list/series')
-def fs_list_series(provider=None, datasetCode=None):
+def fs_list_series(provider=None, dataset_code=None):
     limit = request.args.get('limit', default=20, type=int)
     if limit > 100: limit = 100
     
     return fs_list(limit=limit, 
                    provider=provider, 
-                   datasetCode=datasetCode, 
+                   dataset_code=dataset_code, 
                    doc_type="series")            
 
 def common_download_get(provider_name=None, dataset_code=None, key=None, prefix=None):
@@ -126,43 +126,43 @@ def download_file(id):
     
     return send_file(fileobj)
 
-@bp.route('/dataset/<provider>/<datasetCode>', endpoint="datasets_csv")
-def download_dataset(provider=None, datasetCode=None):
+@bp.route('/dataset/<provider>/<dataset_code>', endpoint="datasets_csv")
+def download_dataset(provider=None, dataset_code=None):
 
-    query = {"provider": provider, "datasetCode": datasetCode}
+    query = {'provider_name': provider, "dataset_code": dataset_code}
     exist =  current_app.widukind_db[constants.COL_DATASETS].count(query) == 1
     if not exist:
-        current_app.logger.error("download csv for not existant dataset[%(datasetCode)s] - provider[%(provider)s]" % query)
+        current_app.logger.error("download csv for not existant dataset[%(dataset_code)s] - provider[%(provider)s]" % query)
         abort(404)
 
     filename, fileobj = common_download_get(provider_name=provider, 
-                                            dataset_code=datasetCode, 
+                                            dataset_code=dataset_code, 
                                             prefix="dataset")
     if not fileobj:
         fileobj = common_download_create(filename=filename, 
                                          export_func=export_files.export_file_csv_dataset_unit,
                                          provider=provider, 
-                                         dataset_code=datasetCode)
+                                         dataset_code=dataset_code)
         
     return send_file(fileobj)
 
-@bp.route('/series/<provider>/<datasetCode>/<key>', endpoint="series_csv")
-def download_series(provider=None, datasetCode=None, key=None):
+@bp.route('/series/<provider>/<dataset_code>/<key>', endpoint="series_csv")
+def download_series(provider=None, dataset_code=None, key=None):
 
-    query = {"provider": provider, "datasetCode": datasetCode, "key": key}
+    query = {'provider_name': provider, "dataset_code": dataset_code, "key": key}
     exist =  current_app.widukind_db[constants.COL_SERIES].count(query) == 1
     if not exist:
-        current_app.logger.error("download csv for not existant serie[%(key)s] - dataset[%(datasetCode)s] - provider[%(provider)s]" % query)
+        current_app.logger.error("download csv for not existant serie[%(key)s] - dataset[%(dataset_code)s] - provider[%(provider)s]" % query)
         abort(404)
 
     filename, fileobj = common_download_get(provider_name=provider, 
-                                            dataset_code=datasetCode, 
+                                            dataset_code=dataset_code, 
                                             prefix="series")
     if not fileobj:
         fileobj = common_download_create(filename=filename, 
                                          export_func=export_files.export_file_csv_series_unit,
                                          provider=provider, 
-                                         dataset_code=datasetCode,
+                                         dataset_code=dataset_code,
                                          key=key)
     
     return send_file(fileobj)

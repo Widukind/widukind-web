@@ -7,17 +7,17 @@ SESSION_TIMEZONE_KEY = "current_tz"
 SESSION_THEME_KEY = "current_theme"
 
 CHOICES_SORT_DATASETS = (
-    ("provider", "provider"),
-    ("datasetCode", "dataset"),
+    ('provider_name', 'provider_name'),
+    ("dataset_code", "dataset"),
     ("name", "serie name"),
-    ("lastUpdate", "Last update"),
+    ("last_update", "Last update"),
 )
 
 CHOICES_SORT_SERIES = (
-    ("startDate", "start date"),
-    ("endDate", "end date"),
-    ("provider", "provider"),
-    ("datasetCode", "dataset"),
+    ("start_date", "start date"),
+    ("end_date", "end date"),
+    ('provider_name', 'provider_name'),
+    ("dataset_code", "dataset"),
     ("name", "serie name"),
     ("key", "serie key"),
 )

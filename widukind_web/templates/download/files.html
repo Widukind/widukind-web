@@ -23,8 +23,8 @@
                         <i class="fa fa-download fa-lg"></i>
                     </a>
                 </td>
-                <td>{{_file.metadata.provider}}</td>
-                <td>{{_file.metadata.datasetCode}}</td>
+                <td>{{_file.metadata.provider_name}}</td>
+                <td>{{_file.metadata.dataset_code}}</td>
                 <td>{{_file.filename}}</td>
                 <td>
                     {{ moment(_file.upload_date).format('LL') }} ({{ moment(_file.upload_date).fromNow()}})

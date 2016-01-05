@@ -17,7 +17,7 @@
         <tbody>
             <tr>
                 <td class="col-md-2">Name</td>
-                <td class="col-md-10">{{ provider.longName }}</td>
+                <td class="col-md-10">{{ provider.long_name }}</td>
             </tr>
             <tr>
                 <td class="col-md-2">Region</td>
@@ -68,14 +68,14 @@
         data-pagination-h-align="left"
         data-pagination-detail-h-align="right"
         data-pagination-v-align="top" 
-	    data-sort-name="lastUpdate"
+	    data-sort-name="last_update"
 	    data-sort-order="desc">
 	    <thead> 
 	        <tr>
-                <th class="col-md-1" data-field="docHref" data-formatter="datasetButtonFormatter">&nbsp;</th>
+                <th class="col-md-1" data-field="doc_href" data-formatter="datasetButtonFormatter">&nbsp;</th>
 	            <th data-field="name" data-formatter="datasetNameFormatter" data-sortable="true">Name</th>
-                <th data-field="datasetCode" data-sortable="true">Code</th>
-	            <th data-field="lastUpdate" data-formatter="datasetLastUpdateFormatter"data-sortable="true">Last Update</th>
+                <th data-field="dataset_code" data-sortable="true">Code</th>
+	            <th data-field="last_update" data-formatter="datasetLastUpdateFormatter"data-sortable="true">Last Update</th>
 	        </tr>
 	    </thead>
 	</table>
