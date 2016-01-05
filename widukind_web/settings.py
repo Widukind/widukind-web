@@ -30,6 +30,8 @@ class Config(object):
     SENTRY_DSN = config('WIDUKIND_SENTRY_DSN', None)
     
     SESSION_ENGINE_ENABLE = config('WIDUKIND_SESSION_ENGINE_ENABLE', False, cast=bool)
+
+    COUNTERS_ENABLE = config('WIDUKIND_COUNTERS_ENABLE', True, cast=bool)
     
     DEFAULT_THEME = config('WIDUKIND_THEME', 'darkly')
     
@@ -117,6 +119,8 @@ class Dev(Config):
 class Test(Config):
 
     MONGODB_URL = config('WIDUKIND_MONGODB_URL', 'mongodb://localhost/widukind_test')
+    
+    COUNTERS_ENABLE = False
 
     TESTING = True    
     

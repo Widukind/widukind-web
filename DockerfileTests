@@ -30,6 +30,7 @@ RUN pip install ${GUNICORN_RELEASE}
 WORKDIR /code/
 
 RUN pip install -r requirements/default.txt
+RUN pip install -r requirements/tests.txt
 RUN pip install -e .
 
 RUN mkdir -vp /etc/gunicorn

@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import os
-
-from unittest import mock
 from flask_testing import TestCase as BaseTestCase
+
+from widukind_common.utils import create_or_update_indexes
+from widukind_common import tests_tools as utils
+
+from widukind_web.utils import create_or_update_indexes as local_create_or_update_indexes 
 
 class TestCase(BaseTestCase):
     
-    ENVIRON = {
-               
-    }
-    
-    def _set_environ(self):
-        return self.ENVIRON
-
-    @mock.patch.dict(os.environ)
     def setUp(self):
-        BaseTestCase.setUp(self)
-        os.environ.update(self._set_environ())
+        super().setUp()
+        self.db = self.app.widukind_db
+        utils.clean_mongodb(self.db)
+        create_or_update_indexes(self.db, force_mode=True)
+        local_create_or_update_indexes(self.db, force_mode=True)
 
     def create_app(self):
-        app = Flask(__name__)
-        app.config['TESTING'] = True
+        from widukind_web import wsgi
+        app = wsgi.create_app('widukind_web.settings.Test')
         return app

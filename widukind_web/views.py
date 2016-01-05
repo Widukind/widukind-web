@@ -22,7 +22,7 @@ from pymongo import ASCENDING, DESCENDING
 from bson import ObjectId
 import pandas
 
-from dlstats.utils import search_series_tags, search_datasets_tags
+from widukind_common.tags import search_series_tags, search_datasets_tags
 
 from widukind_web import constants
 from widukind_web import forms
