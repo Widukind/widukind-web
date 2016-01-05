@@ -129,7 +129,7 @@ def download_file(id):
 @bp.route('/dataset/<provider>/<datasetCode>', endpoint="datasets_csv")
 def download_dataset(provider=None, datasetCode=None):
 
-    query = {"provider": provider, "datasetCode": datasetCode}
+    query = {'provider_name': provider, "datasetCode": datasetCode}
     exist =  current_app.widukind_db[constants.COL_DATASETS].count(query) == 1
     if not exist:
         current_app.logger.error("download csv for not existant dataset[%(datasetCode)s] - provider[%(provider)s]" % query)
@@ -149,7 +149,7 @@ def download_dataset(provider=None, datasetCode=None):
 @bp.route('/series/<provider>/<datasetCode>/<key>', endpoint="series_csv")
 def download_series(provider=None, datasetCode=None, key=None):
 
-    query = {"provider": provider, "datasetCode": datasetCode, "key": key}
+    query = {'provider_name': provider, "datasetCode": datasetCode, "key": key}
     exist =  current_app.widukind_db[constants.COL_SERIES].count(query) == 1
     if not exist:
         current_app.logger.error("download csv for not existant serie[%(key)s] - dataset[%(datasetCode)s] - provider[%(provider)s]" % query)

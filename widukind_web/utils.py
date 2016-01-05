@@ -102,7 +102,7 @@ def categories_to_dict(db, provider_name):
     tree = {}
     categories = {}
     
-    docs = db[constants.COL_CATEGORIES].find({"provider": provider_name})    
+    docs = db[constants.COL_CATEGORIES].find({'provider_name': provider_name})    
     root = None
 
     for doc in docs:
@@ -112,7 +112,7 @@ def categories_to_dict(db, provider_name):
         categories[str(doc['_id'])] = doc    
 
     if not root:
-        provider_root = db[constants.COL_PROVIDERS].find_one({"provider": provider_name})
+        provider_root = db[constants.COL_PROVIDERS].find_one({'provider_name': provider_name})
         root = {
                 
         }

@@ -38,10 +38,10 @@ def series_by_provider(db):
 #TODO: update_many or bulk update
 def series_by_datasets(db):
     """Series count by Provider and Datasets"""        
-    _group_by = {"$group": {"_id": {"provider": "$provider", "datasetCode": "$datasetCode"}, "count": {"$sum": 1}}}
+    _group_by = {"$group": {"_id": {'provider_name': "$provider", "datasetCode": "$datasetCode"}, "count": {"$sum": 1}}}
     result = db[constants.COL_SERIES].aggregate([_group_by])
     category = "counter.series.bydataset"
     for r in result:
-        name = "%s.%s.series" % (r['_id']['provider'], r['_id']['datasetCode'])
+        name = "%s.%s.series" % (r['_id']['provider_name'], r['_id']['datasetCode'])
         upsert(db, category, name, r['count'])
 
