@@ -9,7 +9,7 @@ from flask_wtf import Form
 from bson import ObjectId 
 
 from widukind_web import constants 
-from dlstats.utils import get_mongo_db
+from widukind_common.utils import get_mongo_db
 
 class QuerySetSelectField(fields.SelectFieldBase):
 

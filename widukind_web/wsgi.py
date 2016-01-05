@@ -224,7 +224,7 @@ def _conf_sentry(app):
     
 def _conf_db(app):
     import gridfs
-    from dlstats.utils import get_mongo_db
+    from widukind_common.utils import get_mongo_db
     from widukind_web.utils import create_or_update_indexes
     app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL"))
     app.widukind_fs = gridfs.GridFS(app.widukind_db)
@@ -497,7 +497,7 @@ def create_app(config='widukind_web.settings.Prod'):
     #if app.config.get('SESSION_ENGINE_ENABLE', False):
     #    from flask_mongoengine import MongoEngineSessionInterface
     #    app.session_interface = MongoEngineSessionInterface(extensions.db)
-        
+    
     _conf_errors(app)
     
     _conf_cache(app)
@@ -524,7 +524,8 @@ def create_app(config='widukind_web.settings.Prod'):
     
     _conf_locker(app)
     
-    _conf_counters(app)
+    if app.config.get('COUNTERS_ENABLE', True):        
+        _conf_counters(app)
     
     app.wsgi_app = ProxyFix(app.wsgi_app)
 

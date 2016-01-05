@@ -9,7 +9,7 @@ from werkzeug.wsgi import wrap_file
 from bson import ObjectId
 import gridfs
 
-from dlstats.tasks import export_files
+from widukind_common.tasks import export_files
 
 from widukind_web import constants
 

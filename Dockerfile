@@ -22,18 +22,7 @@ ADD docker/*.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/*.sh
 RUN /usr/local/bin/install-miniconda.sh
 
-ENV DLSTATS_BUILD ${DLSTATS_BUILD:-https://github.com/Widukind/dlstats.git}
-ENV PYSDMX_BUILD ${PYSDMX_BUILD:-https://github.com/Widukind/pysdmx.git}
 ENV GUNICORN_RELEASE ${GUNICORN_RELEASE:-https://github.com/benoitc/gunicorn/tarball/master}
-
-RUN git clone ${PYSDMX_BUILD} \
-    && cd pysdmx \
-    && pip install -e .
-
-RUN git clone ${DLSTATS_BUILD} \
-    && cd dlstats \
-    && pip install -r requirements.txt \
-    && pip install --no-deps -e .
 
 #BUG gevent on stable release    
 RUN pip install ${GUNICORN_RELEASE}
