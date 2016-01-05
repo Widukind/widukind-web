@@ -149,9 +149,9 @@ def last_datasets():
         }
         for s in object_list:
             s['view'] = url_for('.dataset-by-slug', slug=s['slug'])
-            doc_href = s.get('docHref', None)                        
+            doc_href = s.get('doc_href', None)                        
             if doc_href and not doc_href.lower().startswith('http'):
-                s['docHref'] = None            
+                s['doc_href'] = None            
             datas["rows"].append(s)
 
         # pagination client - return rows only
@@ -237,9 +237,9 @@ def html_datasets(provider=None):
         for o in objects:
             o['view'] = url_for('.dataset-by-slug', slug=o['slug'])
             o['series'] = url_for('.series_with_datasetCode', provider=o['provider'], datasetCode=o['datasetCode'])
-            doc_href = o.get('docHref', None)                        
+            doc_href = o.get('doc_href', None)                        
             if doc_href and not doc_href.lower().startswith('http'):
-                o['docHref'] = None
+                o['doc_href'] = None
             datas["rows"].append(o)
 
         return current_app.jsonify(datas)
