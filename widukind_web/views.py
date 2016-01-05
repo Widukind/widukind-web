@@ -131,7 +131,7 @@ def last_datasets():
     
     projection = {
         "dimension_list": False, 
-        "attributeList": False, 
+        "attribute_list": False, 
     }
 
     if not is_ajax:
@@ -207,7 +207,7 @@ def html_datasets(provider=None):
 
     projection = {
         "dimension_list": False, 
-        "attributeList": False, 
+        "attribute_list": False, 
     }
 
     provider_doc = None
@@ -391,14 +391,14 @@ def html_series_by(query, id):
 
     attributes = []
     """
-    attributeList = dataset['attributeList']
+    attribute_list = dataset['attribute_list']
     for d, value in serie['attributes'].items():
-        if not d in attributeList:            
+        if not d in attribute_list:            
             #TODO: log
             continue
         for v in value:
             if v and len(v.strip()) > 0:
-                attr_value = dict(attributeList[d])[v]
+                attr_value = dict(attribute_list[d])[v]
                 attributes.append((attr_value, v))
             else:
                 attributes.append((None, None))
@@ -575,7 +575,7 @@ def search_in_datasets():
         
         projection = {
             "dimension_list": False, 
-            "attributeList": False, 
+            "attribute_list": False, 
         }
         
         kwargs = get_search_datas(form, search_type="datasets")

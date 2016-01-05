@@ -74,8 +74,8 @@
             <tr>
                 <td class="col-md-2">Attributes</td>
                 <td class="col-md-10">
-                    {% if dataset.attributeList %}
-                    {% for a in dataset.attributeList.keys() %}
+                    {% if dataset.attribute_list %}
+                    {% for a in dataset.attribute_list.keys() %}
                         <a href="#attr-{{a}}">{{a}}</a><br/>
                     {% endfor %}
                     {% else %}
@@ -104,7 +104,7 @@
 </div>
 {% endfor %}
 
-{% for attribute, values in dataset.attributeList.items() %}
+{% for attribute, values in dataset.attribute_list.items() %}
 <a name="attr-{{attribute}}"></a>
 <div class="panel panel-default">
     <div class="panel-heading"><h4>{{ attribute }} <small>(attribute)</small></h4></div>
