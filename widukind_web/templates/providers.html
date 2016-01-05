@@ -40,12 +40,12 @@
             </td>
             <td>
                 <a href="{{ url_for('views.datasets', provider=p.name) }}">
-                    <span class="human-number">{{collection_counters[p.name+".datasets"].count}}</span>
+                    <span class="human-number">{{counter(p.name+".datasets")}}</span>
                 </a>
             </td>
             <td>
                 <a href="{{ url_for('views.series', provider=p.name) }}">
-                    <span class="human-number">{{collection_counters[p.name+".series"].count}}</span>
+                    <span class="human-number">{{counter(p.name+".series")}}</span>
                 </a>
             </td>
         </tr>        

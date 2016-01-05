@@ -340,10 +340,16 @@ def _conf_processors(app):
         cursor = col.find({}, 
                           projection={'_id': False}) #, "name": True, "count": True})
         for r in cursor:
-            d[r['name']] = r  
+            d[r['name']] = r
+            
+        def counter(key):
+            if key in d:
+                return d[key]['count']
+            else:
+                return 0
         
-        return dict(collection_counters=d) 
-
+        return dict(collection_counters=d, counter=counter)
+    
     @app.context_processor
     def provider_list():
         #TODO: update or cache !!!
