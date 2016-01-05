@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
-{% block title %}{{super()}} - Dataset - {{dataset.datasetCode}}{% endblock %}
+{% block title %}{{super()}} - Dataset - {{dataset.dataset_code}}{% endblock %}
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
       <li><a href="{{ url_for("views.datasets", provider=dataset.provider) }}">{{dataset.provider}}</a></li>
-      <li class="active">{{dataset.datasetCode}}</li>
+      <li class="active">{{dataset.dataset_code}}</li>
     </ol>
 {% endblock %}
 
@@ -42,7 +42,7 @@
             <tr>
                 <td class="col-md-2">Series</td>
                 <td class="col-md-10">
-                    <a href="{{ url_for('.series_with_datasetCode', provider=dataset.provider, datasetCode=dataset.datasetCode) }}"> 
+                    <a href="{{ url_for('.series_with_dataset_code', provider=dataset.provider, dataset_code=dataset.dataset_code) }}"> 
                         <span class="human-number">{{count}}</span>
                     </a>
                 </td>
@@ -51,7 +51,7 @@
             <tr>
                 <td class="col-md-2">Export</td>
                 <td class="col-md-10">
-                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider, datasetCode=dataset.datasetCode) }}">
+                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider, dataset_code=dataset.dataset_code) }}">
                         <i class="fa fa-download fa-lg"></i>
                     </a>                        
                 </td>                

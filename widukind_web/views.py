@@ -193,7 +193,7 @@ def last_series():
         series = convert_series_period(series)
         for s in series:
             s['view'] = url_for('.series-by-slug', slug=s['slug'])
-            s['export_csv'] = url_for('download.series_csv', provider=s['provider_name'], datasetCode=s['datasetCode'], key=s['key'])
+            s['export_csv'] = url_for('download.series_csv', provider=s['provider_name'], dataset_code=s['dataset_code'], key=s['key'])
             s['view_graphic'] = url_for('.series_plot', id=s['_id'])
             datas["rows"].append(s)
 
@@ -236,7 +236,7 @@ def html_datasets(provider=None):
         }
         for o in objects:
             o['view'] = url_for('.dataset-by-slug', slug=o['slug'])
-            o['series'] = url_for('.series_with_datasetCode', provider=o['provider_name'], datasetCode=o['datasetCode'])
+            o['series'] = url_for('.series_with_dataset_code', provider=o['provider_name'], dataset_code=o['dataset_code'])
             doc_href = o.get('doc_href', None)                        
             if doc_href and not doc_href.lower().startswith('http'):
                 o['doc_href'] = None
@@ -245,16 +245,16 @@ def html_datasets(provider=None):
         return current_app.jsonify(datas)
     
 
-@bp.route('/series/<provider>/<datasetCode>', endpoint="series_with_datasetCode")
+@bp.route('/series/<provider>/<dataset_code>', endpoint="series_with_dataset_code")
 @bp.route('/series/<provider>', endpoint="series")
 @bp.route('/series', endpoint="all_series")
-def html_series(provider=None, datasetCode=None):
+def html_series(provider=None, dataset_code=None):
 
     is_ajax = request.args.get('json') or request.is_xhr
     
     query = {}
     if provider: query['provider_name'] = provider
-    if datasetCode: query['datasetCode'] = datasetCode
+    if dataset_code: query['dataset_code'] = dataset_code
     
     search_filter = None
     if request.args.get('filter'):
@@ -289,7 +289,7 @@ def html_series(provider=None, datasetCode=None):
 
     if not is_ajax:
         dataset = None
-        if datasetCode:
+        if dataset_code:
             dataset = current_app.widukind_db[constants.COL_DATASETS].find_one(query)
         
         provider_doc = None 
@@ -313,8 +313,8 @@ def html_series(provider=None, datasetCode=None):
         series = convert_series_period(series)
         for s in series:
             s['view'] = url_for('.series-by-slug', slug=s['slug'])
-            s['export_csv'] = url_for('download.series_csv', provider=s['provider_name'], datasetCode=s['datasetCode'], key=s['key'])
-            #s['export_csv'] = url_for('download.series_csv', provider=s['provider_name'], datasetCode=s['datasetCode'], key=s['key'])
+            s['export_csv'] = url_for('download.series_csv', provider=s['provider_name'], dataset_code=s['dataset_code'], key=s['key'])
+            #s['export_csv'] = url_for('download.series_csv', provider=s['provider_name'], dataset_code=s['dataset_code'], key=s['key'])
             s['view_graphic'] = url_for('.series_plot', id=s['_id'])
             #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
             datas["rows"].append(s)
@@ -337,7 +337,7 @@ def html_dataset_by(query, id):
     provider = current_app.widukind_db[constants.COL_PROVIDERS].find_one({"name": dataset['provider_name']})
 
     count_series = current_app.widukind_db[constants.COL_SERIES].count({'provider_name': dataset['provider_name'],
-                                                                        "datasetCode": dataset['datasetCode']})
+                                                                        "dataset_code": dataset['dataset_code']})
     return render_template("dataset.html", 
                            id=id, 
                            provider=provider,
@@ -362,7 +362,7 @@ def html_series_by(query, id):
     provider = current_app.widukind_db[constants.COL_PROVIDERS].find_one({"name": serie['provider_name']})
 
     dataset = current_app.widukind_db[constants.COL_DATASETS].find_one({'provider_name': serie['provider_name'],
-                                                                        "datasetCode": serie['datasetCode']})
+                                                                        "dataset_code": serie['dataset_code']})
 
     is_ajax = request.args.get('json') or request.is_xhr
     
@@ -646,12 +646,12 @@ def category_tree_view(provider):
     
     tree = _category_tree(provider)
     
-    #dataset_codes = current_app.widukind_db[constants.COL_DATASETS].distinct("datasetCode", {'provider_name': provider})
-    dataset_projection = {"_id": True, "datasetCode": True}
+    #dataset_codes = current_app.widukind_db[constants.COL_DATASETS].distinct("dataset_code", {'provider_name': provider})
+    dataset_projection = {"_id": True, "dataset_code": True}
     dataset_codes = {}
     for doc in current_app.widukind_db[constants.COL_DATASETS].find({'provider_name': provider}, 
                                                                     dataset_projection):
-        dataset_codes[doc['datasetCode']] = doc['_id']
+        dataset_codes[doc['dataset_code']] = doc['_id']
     
     if is_ajax:
         return current_app.jsonify(tree)
