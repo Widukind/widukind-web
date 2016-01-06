@@ -26,10 +26,6 @@
                 <td class="col-md-10">{{ dataset.name }}</td>
             </tr>
             <tr>
-                <td class="col-md-2">Last Updated</td>
-                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
-            </tr>
-            <tr>
                 <td class="col-md-2">Web Site</td>
                 <td class="col-md-10">
                     {% if dataset.doc_href %}
@@ -57,6 +53,18 @@
                 </td>                
             </tr>
             #}
+            <tr>
+                <td class="col-md-2">Last Updated</td>
+                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Last Download</td>
+                <td class="col-md-10">{{ moment(dataset.download_last).format('LLL') }} ({{ moment(dataset.download_last).fromNow()}})</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">First Download</td>
+                <td class="col-md-10">{{ moment(dataset.download_first).format('LLL') }} ({{ moment(dataset.download_first).fromNow()}})</td>
+            </tr>
             {% if dataset.notes %}
             <tr>
                 <td class="col-md-2">Notes</td>
