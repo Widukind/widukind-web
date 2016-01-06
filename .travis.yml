@@ -17,7 +17,7 @@ env:
 before_install:
   - docker pull $MONGO_IMAGE
   - docker pull $REDIS_IMAGE
-  - docker run -d --name=mongodb $MONGO_IMAGE mongod --smallfiles --noauth --directoryperdb 
+  - docker run -d --name=mongodb $MONGO_IMAGE mongod --noauth 
   - docker run -d --name=redis $REDIS_IMAGE redis-server --appendonly yes 
   - docker build -t widukind/web -f DockerfileTests .
   - pip install coveralls

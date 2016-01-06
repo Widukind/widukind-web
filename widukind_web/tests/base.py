@@ -12,6 +12,7 @@ class TestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.db = self.app.widukind_db
+        self.assertEqual(self.db.name, "widukind_test")
         utils.clean_mongodb(self.db)
         create_or_update_indexes(self.db, force_mode=True)
         local_create_or_update_indexes(self.db, force_mode=True)
