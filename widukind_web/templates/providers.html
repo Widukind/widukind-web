@@ -15,12 +15,23 @@
 		data-toggle="table"
 		data-classes="table table-hover table-condensed"
 		data-mobile-responsive="true"
-	    data-pagination="true" 
+		data-striped="true"
+		data-show-toggle="true"
+		data-show-columns="true"
+		data-search="true"
+		data-search-align="left"
+		data-buttons-align="left"
+		data-toolbar-align="right"
+		data-pagination-h-align="left"
+		data-pagination-detail-h-align="right"
+		data-pagination-v-align="top"
+	    data-pagination="true"
 	    data-side-pagination="client"
 	    data-page-size="{{ page_size|default('20') }}"
 	    data-page-list="[10, 25, 50, 100]">
     <thead>
         <th data-field="name" data-sortable="true">Name</th>
+        <th data-field="version" data-sortable="false" data-visible="false">Version</th>
         <th data-field="long_name" data-sortable="true">Long Name</th>
         <th data-field="datasets" data-sortable="true">Datasets</th>
         <th data-field="series" data-sortable="true">Series</th>
@@ -32,6 +43,9 @@
                 <a href="{{ url_for('views.datasets', provider=p.name) }}">
                     {{p.name}}
                 </a>
+            </td>
+            <td>
+            	{{p.version}}
             </td>
             <td>
                 <a href="{{ url_for('views.datasets', provider=p.name) }}">

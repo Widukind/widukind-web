@@ -14,7 +14,7 @@ var options = {
 
 {%- for value in datas %}
    {%- if not loop.first %}
-   datas.push([new Date("{{value.0}}"), {{value.1|float}}]);
+   datas.push([new Date("{{value.0}}"), parseFloat("{{value.1|float}}")]);
    {%- endif %}
 {%- endfor %}
 
