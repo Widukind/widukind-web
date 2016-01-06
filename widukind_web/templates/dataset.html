@@ -28,7 +28,7 @@
             <tr>
                 <td class="col-md-2">Web Site</td>
                 <td class="col-md-10">
-                    {% if dataset.doc_href %}
+                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
                         <a href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
                     {% else %}
                     &nbsp;
