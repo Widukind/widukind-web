@@ -9,7 +9,7 @@ SESSION_THEME_KEY = "current_theme"
 CHOICES_SORT_DATASETS = (
     ('provider_name', 'provider_name'),
     ("dataset_code", "dataset"),
-    ("name", "serie name"),
+    ("name", "name"),
     ("last_update", "Last update"),
 )
 
@@ -18,7 +18,7 @@ CHOICES_SORT_SERIES = (
     ("end_date", "end date"),
     ('provider_name', 'provider_name'),
     ("dataset_code", "dataset"),
-    ("name", "serie name"),
-    ("key", "serie key"),
+    ("name", "series name"),
+    ("key", "series key"),
 )
 
