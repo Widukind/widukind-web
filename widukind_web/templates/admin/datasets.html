@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Datasets for {{ provider.name }}{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li><a href="{{ url_for("admin.providers") }}">Providers</a></li>      
+      <li class="active">{{ provider.name }}</li>      
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<table class="table table-hover table-condensed">	    
+    <thead>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Enable</th>
+    </thead>    
+    <tbody>
+        {% for obj in datasets %}
+        <tr>
+            <td>
+                <a href="{{ url_for('views.dataset-by-slug', slug=obj.slug) }}">
+                    {{obj.dataset_code}}
+                </a>
+            </td>
+            <td>
+				{{obj.name}}            
+            </td>
+            <td>
+                {% if obj.enable %} 
+	                <a href="{{ url_for('.dataset_enable', slug=obj.slug) }}" type="button" class="btn btn-success btn-xs">
+	                    Activate
+	                </a>
+                {% else %}
+	                <a href="{{ url_for('.dataset_enable', slug=obj.slug) }}" type="button" class="btn btn-danger btn-xs">
+	                    Deactivate
+	                </a>                
+                {% endif %}
+            </td>
+        </tr>        
+        {% endfor %}
+    </tbody>
+</table>    
+
+
+{% endblock %}
+

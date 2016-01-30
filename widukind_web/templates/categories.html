@@ -35,20 +35,6 @@
 {% block add_scripts %}
     {{super()}}
     
-    {#
-    {% raw %}
-	<script id="template" type="x-tmpl-mustache">
-    {text: "{{ name }}" , state: {expanded: {{expanded}} }}
-	</script>	
-	{% endraw %}
-	#}
-    
-    {#	
-    var template = $('#template').html();
-    Mustache.parse(template);   // optional, speeds up future uses
-    var rendered = Mustache.render(template, {name: "Luke"});
-    #}	
-    
     <script type="text/javascript">
         
     /*
@@ -90,6 +76,9 @@
         	expandIcon: 'fa fa-plus-circle',
         	//levels: 5,
         	//backColor: 'green'
+        	onNodeSelected: function(event, data) {
+        		console.log("onNodeSelected : ", data);
+        	}
         });
         
         var search = function(e) {

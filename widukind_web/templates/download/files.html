@@ -19,7 +19,7 @@
         {% for _file in files %}
             <tr>
                 <td class="col-md-1">
-                    <a class="icon" href="{{ url_for('download.download-file-by-id', id=_file._id) }}" title="Download">
+                    <a class="icon" href="{{ url_for('download.download-file-by-id', unid=_file._id) }}" title="Download">
                         <i class="fa fa-download fa-lg"></i>
                     </a>
                 </td>

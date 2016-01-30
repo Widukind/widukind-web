@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Providers{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Providers</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<table class="table table-hover table-condensed">	    
+    <thead>
+        <th>Name</th>
+        <th>Long Name</th>
+        <th>&nbsp;<th>
+        <th>&nbsp;<th>
+    </thead>    
+    <tbody>
+        {% for obj in providers %}
+        <tr>
+            <td>
+            	<a href="{{ url_for('views.datasets', slug=obj.slug) }}">
+                	{{obj.name}}
+                </a>
+            </td>
+            <td>
+				{{obj.long_name}}            
+            </td>
+            <td>
+            	<a href="{{ url_for('admin.datasets', slug=obj.slug) }}" type="button" class="btn btn-primary btn-xs">
+					Datasets ({{datasets_counters[obj.name]|default('0')}})
+				</a>
+            </td>
+            <td>
+                {% if obj.enable %} 
+	                <a href="{{ url_for('.provider_enable', slug=obj.slug) }}" type="button" class="btn btn-success btn-xs">
+	                    Activate
+	                </a>
+                {% else %}
+	                <a href="{{ url_for('.provider_enable', slug=obj.slug) }}" type="button" class="btn btn-danger btn-xs">
+	                    Deactivate
+	                </a>                
+                {% endif %}
+            </td>
+        </tr>        
+        {% endfor %}
+    </tbody>
+</table>    
+
+
+{% endblock %}
+

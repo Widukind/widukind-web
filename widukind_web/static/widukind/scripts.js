@@ -77,6 +77,10 @@ function seriesKeyLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">' + row.key +'</a>';
 }
 
+function seriesNameLinkFormatter(value, row){
+    return '<a href="' + row.view + '" title="Show detail">' + row.name +'</a>';
+}
+
 function seriesButtonFormatter(value, row, line){
     return [
             '<div class="btn-group btn-group-xs btn-group-justified" role="group">',

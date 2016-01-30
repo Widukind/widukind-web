@@ -53,41 +53,6 @@ def _conf_converters(app):
         
     app.url_map.converters['objectid'] = BSONObjectIdConverter
     
-def _conf_themes(app):
-    
-    @app.before_request
-    def current_theme():
-        if not constants.SESSION_THEME_KEY in session:
-            session[constants.SESSION_THEME_KEY] = app.config.get('DEFAULT_THEME', 'slate')
-        g.theme = session.get(constants.SESSION_THEME_KEY)
-            
-    @app.context_processor
-    def inject_theme():
-        try:
-            return {
-                constants.SESSION_THEME_KEY: g.theme.lower(),
-                'current_theme_url': url_for('static', filename='themes/bootswatch/%s/bootstrap.min.css' % g.theme.lower()),
-                'themes': THEMES,                        
-            }
-        except AttributeError:
-            return {
-                constants.SESSION_THEME_KEY: app.config.get('DEFAULT_THEME', 'slate'),
-                'current_theme_url': url_for('static', filename='themes/bootswatch/%s/bootstrap.min.css' % self.config('DEFAULT_THEME', 'slate')),
-                'themes': THEMES,
-            }
-
-    @app.route('/change-theme', endpoint="changetheme") 
-    def change_theme():
-        new_theme = request.args.get('theme', None)
-        next = request.args.get('next') or request.referrer or '/'
-        try:
-            if new_theme:
-                session[constants.SESSION_THEME_KEY] = new_theme
-        except (Exception, err):
-            pass 
-        return redirect(next)
-
-
 def _conf_logging(debug=False, 
                   stdout_enable=True, 
                   syslog_enable=False,
@@ -309,12 +274,74 @@ def _conf_auth(app):
     
     @app.context_processor
     def is_auth():
-        return dict(is_logged=extensions.auth.authenticate())        
+        def _is_logged():
+            if session.get("is_logged"):
+                return True
+            
+            result = extensions.auth.authenticate()
+            
+            if result:
+                session["is_logged"] = True
+                return True
+        
+        return dict(is_logged=_is_logged)        
     
 def _conf_mail(app):
     extensions.mail.init_app(app)
 
+def _conf_periods(app):
+    
+    import pandas
+    
+    def get_ordinal_from_period(date_str, freq=None):
+        if not freq in ['A', 'M', 'Q', 'W']:
+            return pandas.Period(date_str, freq=freq).ordinal
+        
+        key = "p-to-o-%s.%s" % (date_str, freq)
+        value = cache.get(key)
+        if value:
+            return value
+        
+        value = pandas.Period(date_str, freq=freq).ordinal
+        cache.set(key, value, timeout=300)
+        return value
+    
+    def get_period_from_ordinal(date_ordinal, freq=None):
+        if not freq in ['A', 'M', 'Q', 'W']:
+            return str(pandas.Period(ordinal=date_ordinal, freq=freq))
+    
+        key = "o-to-p-%s.%s" % (date_ordinal, freq)
+        value = cache.get(key)
+        if value:
+            return value
+        
+        value = str(pandas.Period(ordinal=date_ordinal, freq=freq))
+        cache.set(key, value, timeout=300)
+        return value
+    
+    app.get_ordinal_from_period = get_ordinal_from_period
+    app.get_period_from_ordinal = get_period_from_ordinal
+    
+    @app.context_processor
+    def convert_pandas_period():
+        def convert(date_ordinal, frequency):
+            return get_period_from_ordinal(date_ordinal, frequency)
+        return dict(pandas_period=convert)
+    
+
 def _conf_processors(app):
+
+    @app.context_processor
+    def versions():
+        from pkg_resources import get_distribution
+        packages = ["widukind-web", "widukind-common", "pandas", "gevent", "pymongo"]
+        _versions = {}
+        for p in packages:
+            try:
+                _versions[p] = get_distribution(p).version
+            except:
+                _versions[p] = "None"
+        return dict(versions=_versions)
     
     @app.context_processor
     def cart():
@@ -332,6 +359,7 @@ def _conf_processors(app):
             return s.split()
         return dict(split=_split)
     
+    """
     @app.context_processor
     def collection_counters():
         col = current_app.widukind_db[constants.COL_COUNTERS]
@@ -349,30 +377,25 @@ def _conf_processors(app):
                 return 0
         
         return dict(collection_counters=d, counter=counter)
+    """
     
     @app.context_processor
     def provider_list():
         #TODO: update or cache !!!
-        providers = []
-        projection = {"_id": False, "name": True, "long_name": True}
-        for doc in app.widukind_db[constants.COL_PROVIDERS].find({}, projection=projection):
-            providers.append({"name": doc['name'], "long_name": doc['long_name']})
-        return dict(provider_list=providers)
+        #providers = []
+        query = {"enable": True}
+        projection = {"_id": False, "name": True, "slug": True,
+                      "long_name": True, "enable": True}
+        cursor = app.widukind_db[constants.COL_PROVIDERS].find(query, projection)
+            #providers.append({"name": doc['name'], "long_name": doc['long_name']})
+        return dict(provider_list=cursor)
 
     @app.context_processor
     def frequencies():
         def frequency(value):
             return constants.FREQUENCIES_DICT.get(value, "Unknow")
         return dict(frequency=frequency)
-            
-    @app.context_processor
-    def convert_pandas_period():
-        def convert(date, frequency):
-            import pandas
-            sd = pandas.Period(ordinal=date, freq=frequency)
-            return str(sd)
-        return dict(pandas_period=convert)
-    
+                
 def _conf_bootstrap(app):
     from flask_bootstrap import WebCDN
     from flask_bootstrap import Bootstrap
@@ -445,6 +468,7 @@ def _conf_errors(app):
         is_json = request.args.get('json') or request.is_xhr
         values = dict(error="Server Error", original_error=error, referrer=request.referrer)
         if is_json:
+            values['original_error'] = str(values['original_error'])
             return app.jsonify(values), 500
         return render_template('errors/500.html', **values), 500
     
@@ -453,12 +477,15 @@ def _conf_errors(app):
         is_json = request.args.get('json') or request.is_xhr
         values = dict(error="404 Error", original_error=error, referrer=request.referrer)
         if is_json:
+            values['original_error'] = str(values['original_error'])
             return app.jsonify(values), 404
         return render_template('errors/404.html', **values), 404
 
 def _conf_jsonify(app):
 
     from widukind_web import json
+    #from bson import json_util as json
+    from pprint import pprint
     
     def jsonify(obj):
         content = json.dumps(obj)
@@ -490,8 +517,6 @@ def create_app(config='widukind_web.settings.Prod'):
     
     _conf_bootstrap(app)
     
-    #_conf_themes(app)
-    
     _conf_sentry(app)
     
     #if app.config.get('SESSION_ENGINE_ENABLE', False):
@@ -514,6 +539,8 @@ def create_app(config='widukind_web.settings.Prod'):
 
     _conf_processors(app)
     
+    _conf_periods(app)
+    
     _conf_auth(app)
     
     _conf_sitemap(app)
@@ -522,10 +549,10 @@ def create_app(config='widukind_web.settings.Prod'):
     
     _conf_mail(app)
     
-    _conf_locker(app)
+    #_conf_locker(app)
     
-    if app.config.get('COUNTERS_ENABLE', True):        
-        _conf_counters(app)
+    #if app.config.get('COUNTERS_ENABLE', True):        
+    #    _conf_counters(app)
     
     app.wsgi_app = ProxyFix(app.wsgi_app)
 

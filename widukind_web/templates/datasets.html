@@ -13,7 +13,8 @@
 {% block page %}
 
 <div class="panel panel-default">
-    <table class="table table-striped table-condensed table-responsive">
+	<div class="table-responsive">
+    <table class="table table-striped table-condensed">
         <tbody>
             <tr>
                 <td class="col-md-2">Name</td>
@@ -36,26 +37,16 @@
             <tr>
                 <td class="col-md-2">Datasets</td>
                 <td class="col-md-10">
-                    <span class="human-number">{{counter(provider.name+".datasets")}}</span>
+                    <span class="human-number">{{datasets_count}}</span>
                 </td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Series</td>
-                <td class="col-md-10">
-                    <a href="{{ url_for('.series', provider=provider.name) }}">
-                        <span class="human-number">{{counter(provider.name+".series")}}</span>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Version</td>
-                <td class="col-md-10">{{ provider.version }}</td>
             </tr>
         </tbody>
     </table>
+    </div>
 
+	<div class="table-responsive">
 	<table id="datasets" 
-	    data-url="{{ url_for("views.datasets", provider=provider.name) }}"    
+	    data-url="{{ url_for("views.datasets", slug=provider.slug) }}"    
 	    data-toggle="table" 
 	    data-classes="table table-hover table-condensed"  
 	    data-striped="true"
@@ -84,6 +75,7 @@
 	        </tr>
 	    </thead>
 	</table>
+	</div>
 	
 </div>
 
