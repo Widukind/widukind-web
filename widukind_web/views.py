@@ -318,7 +318,7 @@ def all_series_for_dataset_slug(slug):
             s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
             #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
             datas["rows"].append(s)
-        pprint(datas)
+        #pprint(datas)
         return current_app.jsonify(datas)
 
 @bp.route('/slug/dataset/<slug>', endpoint="dataset-by-slug")
