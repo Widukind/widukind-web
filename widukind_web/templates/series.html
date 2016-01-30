@@ -131,7 +131,7 @@
 		                    {% set attribute = series.attributes[key] %}
 		                       <tr>
 		                           <td class="col-md-3">{{ dataset.concepts[key]|default(key) }}</td>
-		                           <td class="col-md-9">{{ dataset.codelists[key][attribute]|default(attribute) }} (attribute)</td>
+		                           <td class="col-md-9">{{ dataset.codelists[key][attribute]|default(attribute) }} ({{attribute}})</td>
 		                       </tr>
 		                    {% endif %}
 	                    {% endfor %}
