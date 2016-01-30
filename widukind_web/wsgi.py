@@ -172,8 +172,6 @@ def _conf_logging_mail(app):
 def _conf_logging_errors(app):
     
     def log_exception(sender, exception, **extra):
-        print("log_exception.exception : ", exception)
-        print("log_exception;extra : ", extra)
         sender.logger.error(str(exception))
         
     from flask import got_request_exception
@@ -411,6 +409,8 @@ def _conf_sitemap(app):
     from functools import wraps
     from flask_sitemap import sitemap_page_needed
     
+    from widukind_web import queries
+    
     CACHE_KEY = 'sitemap-page-{0}'
     
     @sitemap_page_needed.connect
@@ -428,14 +428,16 @@ def _conf_sitemap(app):
 
     @extensions.sitemap.register_generator
     def sitemap_providers():
-        providers = current_app.widukind_db[constants.COL_PROVIDERS].find({}, projection={'_id': False, 'name': True})
+        query = {"enable": True}
+        providers = queries.col_providers().find(query, {'_id': False, 'slug': True})
         for doc in providers:
-            yield ('views.datasets', {'provider': doc['name']}, None, "weekly", 0.9)
+            yield ('views.datasets', {'slug': doc['slug']}, None, "weekly", 0.9)
 
     @extensions.sitemap.register_generator
     def sitemap_datasets():
+        query = {"enable": True}
         projection = {'_id': False, "download_last": True, "slug": True} 
-        datasets = current_app.widukind_db[constants.COL_DATASETS].find({}, projection=projection)
+        datasets = queries.col_datasets().find(query, projection)
         for doc in datasets:
             yield ('views.dataset-by-slug', 
                    {'slug': doc['slug']}, 
