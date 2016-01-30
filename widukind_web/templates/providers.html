@@ -33,8 +33,8 @@
 	    #}
 	    >
     <thead>
-        <th data-field="name" data-sortable="true">Name</th>
-        <th data-field="long_name" data-sortable="true">Long Name</th>
+        <th class="col-md-4" data-field="long_name" data-sortable="true">Long Name</th>
+        <th class="col-md-2"  data-field="name" data-sortable="true">Name</th>
         <th data-field="region" data-sortable="true">Region</th>
         <th data-field="datasets" data-sortable="true">Datasets</th>
         <th data-field="series" data-sortable="true">Series</th>
@@ -43,12 +43,12 @@
         {% for obj in providers %}
         <tr>
             <td>
-                <a href="{{ url_for('views.datasets', slug=obj.slug) }}">
-                    {{obj.name}}
-                </a>
+            	<a href="{{ url_for('views.datasets', slug=obj.slug) }}">
+					{{obj.long_name}}
+				</a>
             </td>
             <td>
-				{{obj.long_name}}
+				{{obj.name}}
             </td>
             <td>
                 {{obj.region}}            
