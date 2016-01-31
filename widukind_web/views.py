@@ -317,6 +317,9 @@ def all_series_for_dataset_slug(slug):
                                       )
             s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
             #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
+            if s['frequency'] in constants.FREQUENCIES_DICT:
+                s['frequency'] = constants.FREQUENCIES_DICT[s['frequency']]
+            
             datas["rows"].append(s)
         #pprint(datas)
         return current_app.jsonify(datas)
