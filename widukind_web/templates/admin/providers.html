@@ -37,11 +37,11 @@
             <td>
                 {% if obj.enable %} 
 	                <a href="{{ url_for('.provider_enable', slug=obj.slug) }}" type="button" class="btn btn-success btn-xs">
-	                    Activate
+	                    Deactivate
 	                </a>
                 {% else %}
 	                <a href="{{ url_for('.provider_enable', slug=obj.slug) }}" type="button" class="btn btn-danger btn-xs">
-	                    Deactivate
+	                    Reactivate
 	                </a>                
                 {% endif %}
             </td>
