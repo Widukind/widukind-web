@@ -16,27 +16,35 @@
     <thead>
         <th>Code</th>
         <th>Name</th>
-        <th>Enable</th>
+        <th>Series</th>
+        <th>&nbsp;</th>
     </thead>    
     <tbody>
         {% for obj in datasets %}
         <tr>
             <td>
+            	{% if obj.enable %}
                 <a href="{{ url_for('views.dataset-by-slug', slug=obj.slug) }}">
                     {{obj.dataset_code}}
                 </a>
+                {% else %}
+                	{{obj.dataset_code}}
+                {% endif %}                
             </td>
             <td>
 				{{obj.name}}            
             </td>
             <td>
+				{{series_counters[provider.name]["datasets"][obj.dataset_code]}}            
+            </td>            
+            <td>
                 {% if obj.enable %} 
 	                <a href="{{ url_for('.dataset_enable', slug=obj.slug) }}" type="button" class="btn btn-success btn-xs">
-	                    Activate
+	                    Deactivate
 	                </a>
                 {% else %}
 	                <a href="{{ url_for('.dataset_enable', slug=obj.slug) }}" type="button" class="btn btn-danger btn-xs">
-	                    Deactivate
+	                    Activate
 	                </a>                
                 {% endif %}
             </td>

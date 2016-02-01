@@ -19,13 +19,10 @@ def all_providers():
     cursor = queries.col_providers().find({})
     providers = [doc for doc in cursor]
     
-    datasets_counters = queries.datasets_counter()
-    #series_counters = queries.series_counter()
+    datasets_counters = queries.datasets_counter_status()
     
     return render_template("admin/providers.html", providers=providers, 
-                           datasets_counters=datasets_counters,
-                           #series_counters=series_counters
-                           )
+                           datasets_counters=datasets_counters)
 
 @bp.route('/datasets/<slug>', endpoint="datasets")
 @auth.required
@@ -35,10 +32,16 @@ def all_datasets_for_provider_slug(slug):
     if not provider:
         abort(404)
 
-    datasets = queries.col_datasets().find({"provider_name": provider["name"]})
+    projection = {"dimension_list": False, "attribute_list": False,
+                  "concepts": False, "codelists": False}
+    datasets = queries.col_datasets().find({"provider_name": provider["name"]},
+                                           projection)
+    
+    series_counters = queries.series_counter(match={"provider_name": provider["name"]})
 
     return render_template("admin/datasets.html", 
-                           provider=provider, 
+                           provider=provider,
+                           series_counters=series_counters, 
                            datasets=datasets)
 
 @bp.route('/enable/provider/<slug>', endpoint="provider_enable")
