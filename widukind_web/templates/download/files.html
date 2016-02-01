@@ -11,6 +11,9 @@
         <th class="col-md-1">&nbsp;</th>        
         <th>Provider</th>
         <th>Dataset Code</th>
+        {% if doc_type == "series" %}
+        	<th>Series</th>
+        {% endif %}
         <th>Filename</th>
         <th>Created Date</th>
         <th>Length (bytes)</th>
@@ -25,6 +28,9 @@
                 </td>
                 <td>{{_file.metadata.provider_name}}</td>
                 <td>{{_file.metadata.dataset_code}}</td>
+		        {% if doc_type == "series" %}
+		        	<td>{{_file.metadata.slug}}</td>
+		        {% endif %}                
                 <td>{{_file.filename}}</td>
                 <td>
                     {{ moment(_file.upload_date).format('LL') }} ({{ moment(_file.upload_date).fromNow()}})
