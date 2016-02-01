@@ -53,7 +53,7 @@
             <tr>
                 <td class="col-md-2">Export</td>
                 <td class="col-md-10">
-                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider_name, dataset_code=dataset.dataset_code) }}">
+                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', slug=dataset.slug) }}">
                         <i class="fa fa-download fa-lg"></i>
                     </a>                        
                 </td>                
