@@ -95,12 +95,12 @@ def _conf_logging(debug=False,
         'loggers': {
             '': {
                 'handlers': [],
-                'level': 'INFO',
+                'level': LEVEL_DEFAULT,
                 'propagate': False,
             },
             prog_name: {
                 #'handlers': [],
-                'level': 'INFO',
+                'level': LEVEL_DEFAULT,
                 'propagate': True,
             },
         },
@@ -140,7 +140,7 @@ def _conf_logging(debug=False,
     #werkzeug.handlers = []
              
     logging.config.dictConfig(LOGGING)
-    logger = logging.getLogger(prog_name)
+    logger = logging.getLogger('')
     
     return logger
 
@@ -464,6 +464,23 @@ def _conf_bp(app):
     app.register_blueprint(admin.bp, url_prefix='/_cepremap/admin')
 
 def _conf_errors(app):
+
+    from werkzeug import exceptions as ex
+
+    class DisabledElement(ex.HTTPException):
+        code = 307
+        description = 'Disabled element'
+    abort.mapping[307] = DisabledElement
+
+    @app.errorhandler(307)
+    def disable_error(error):
+        is_json = request.args.get('json') or request.is_xhr
+        values = dict(error="307 Error", original_error=error, referrer=request.referrer)
+        print(dir(error), type(error))
+        if is_json:
+            values['original_error'] = str(values['original_error'])
+            return app.jsonify(values), 307
+        return render_template('errors/307.html', **values), 307
     
     @app.errorhandler(500)
     def error_500(error):
