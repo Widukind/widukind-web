@@ -147,7 +147,6 @@
                  </td>
             </tr>            
             <tr>
-                {#% if revision_dates %#}
                 <td class="col-md-12" colspan="2">
                 
                     <div class="table-responsive">
@@ -156,12 +155,9 @@
 		                    	{% if loop.first %}
 		                    	<th class="success">Period</th>
 		                    	<th class="success">Current</th>
-
-		                    	{% if value.attributes %}
-		                    	{% for attr in value.attributes.keys() %}
-		                    		<th class="success">&nbsp;</th>		                    	
-		                    	{% endfor %}
-		                    	{% endif %}
+		                    	{% if obs_attributes %}
+								<th class="success">Attributes</th>
+								{% endif %}
 		                    	
 		                    	{% for rev in revision_dates|sort %}
 		                    	<th class="success">
@@ -171,15 +167,20 @@
 								<tbody>		                    	
 		                    	{% endif %}
 	                           <tr>
-	                               <td class="col-md-1">{{ value.period }}</td>
-	                               <td>
-	                               	   {{ value.value }}
-	                               </td>
+	                               	<td class="col-md-1">{{ value.period }}</td>
+	                               	<td>
+	                               		{{ value.value }}
+	                               	</td>
 	                               
 			                    	{% if value.attributes %}
 			                    	{% for attr_key, attr_value in value.attributes.items() %}
 			                    		<td class="col-md-1">
-			                    		{{ dataset.codelists[attr_key][attr_value]|default(attr_value) }}
+			                    		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+			                    			{{attr_value}}
+			                    			{#
+			                    			{{ dataset.codelists[attr_key][attr_value]|default(attr_value) }}
+			                    			#}
+			                    		</a>
 			                    		</td>		                    	
 			                    	{% endfor %}
 			                    	{% endif %}
@@ -204,42 +205,39 @@
                         </tbody>
                     </table>
                     </div>
-
-				{#
-                	{% else %}
-                
-                <td class="col-md-2">Values</td>
-                <td class="col-md-10">
-                    <div class="table-responsive">
-                    <table class="table table-striped table-condensed table-responsive">
-                        <tbody>                     
-		                    {% for value in series["values"] %}
-	                           <tr>
-	                               <td class="col-md-2">{{ value.period }}</td>
-	                               <td class="col-md-8">
-	                               	   {{ value.value }}
-	                               </td>
-	                               <td class="col-md-2">
-										{% if value.revisions %}
-										<a href="" class="revision-link">
-											Revisions ({{value.revisions|length}})
-										</a>
-										{% endif %}
-	                               </td>
-	                           </tr>
-		                    {% endfor %}                 
-                        </tbody>
-                    </table>
-                    </div>
-                    {% endif %}
-                    #}
-                    
                 </td>
             </tr>
         </tbody>
     </table>
 	</div>    
 </div>
+
+{% if obs_attributes %}
+<a name="obs_attributes"></a>
+{% for key in obs_attributes %}
+
+	<a name="obs_attributes_{{key}}"></a>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4>{{ dataset.concepts[key]|default(key) }}</h4>
+		</div>
+		<div class="panel-body">
+		{% for k, v in dataset.codelists[key].items() %}
+		<div class="row">
+			<div class="col-md-1">
+				<a name="obs_attributes_{{key}}_{{k}}"></a>
+				{{ k }} 
+			</div>         	
+			<div class="col-md-11">
+				: {{ v }}
+			</div>
+		</div>	
+		{% endfor %}
+		</div>
+	</div>
+
+{% endfor %}
+{% endif %}
 
 <a name="tags"></a>
 <div class="panel panel-default">

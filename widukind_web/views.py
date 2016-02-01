@@ -146,12 +146,12 @@ def last_datasets():
             "total": count,
             "rows": []
         }
-        for s in object_list:
-            s['view'] = url_for('.dataset-by-slug', slug=s['slug'])
-            doc_href = s.get('doc_href', None)                        
-            if doc_href and not doc_href.lower().startswith('http'):
-                s['doc_href'] = None            
-            datas["rows"].append(s)
+        for obj in object_list:
+            obj['view'] = url_for('.dataset-by-slug', slug=obj['slug'])
+            #doc_href = obj.get('doc_href', None)                        
+            #if doc_href and not doc_href.lower().startswith('http'):
+            #    obj['doc_href'] = None            
+            datas["rows"].append(obj)
 
         # pagination client - return rows only
         return current_app.jsonify(datas["rows"])
@@ -380,6 +380,7 @@ def series_with_slug(slug):
     
     max_revisions = 0
     revision_dates = []
+    obs_attributes = []
     for v in series["values"]:
         if "revisions" in v:
             revision_dates.extend([r["revision_date"] for r in v["revisions"]])
@@ -387,6 +388,10 @@ def series_with_slug(slug):
             count = len(v["revisions"])
             if count > max_revisions:
                 max_revisions = count
+        if v.get("attributes"):
+            for attr in v["attributes"].keys():
+                if not attr in obs_attributes:
+                    obs_attributes.append(attr)       
     
     revision_dates.reverse()
     
@@ -395,6 +400,7 @@ def series_with_slug(slug):
                            provider=provider,
                            dataset=dataset,
                            is_reverse=is_reverse,
+                           obs_attributes=obs_attributes,
                            revision_dates=list(set(revision_dates)),
                            max_revisions=max_revisions)
     
@@ -532,8 +538,6 @@ def record_query(query=None, result_count=0, form=None, tags=[]):
 @bp.route('/search/datasets', methods=('GET', 'POST'), endpoint="search_datasets")
 def search_in_datasets():
 
-    is_ajax = request.args.get('json') or request.is_xhr
-    
     form = get_search_form(forms.SearchFormDatasets)
     
     if form.validate_on_submit():
@@ -568,8 +572,6 @@ def search_in_datasets():
 @bp.route('/search/series', methods=('GET', 'POST'), endpoint="search_series")
 def search_in_series():
     
-    is_ajax = request.args.get('json') or request.is_xhr
-
     form = get_search_form(forms.SearchFormSeries)
     
     if form.validate_on_submit():
@@ -603,8 +605,9 @@ def search_in_series():
                                         object_list=object_list, 
                                         query=kwargs))
         
-    return render_template('search-series.html', form=form, search_type="series")
-
+    return render_template('search-series.html', 
+                           form=form, 
+                           search_type="series")
 
 @bp.route('/tree/<provider>', defaults={'path': ''})
 @bp.route('/tree/<provider>/<path:path>')
