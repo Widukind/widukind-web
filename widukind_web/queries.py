@@ -26,23 +26,71 @@ def datasets_counter(db=None, match=None):
     if match:
         pipelines.append({"$match": match})
 
+    project = {
+        "_id": False,
+        "provider_name": True
+    }
+    pipelines.append({"$project": project})
+
     pipelines.append({
         "$group": {"_id": "$provider_name", "count": {"$sum": 1}}}
     )
-    datasets_count = col_datasets(db).aggregate(pipelines)
+    datasets_count = col_datasets(db).aggregate(pipelines, allowDiskUse=True)
     return dict([(d["_id"], d["count"]) for d in datasets_count])
 
+def datasets_counter_status(db=None, match=None):
+    pipelines = []
+    
+    if match:
+        pipelines.append({"$match": match})
+
+    project = {
+        "_id": False,
+        "provider_name": True,
+        "enable": True
+    }
+    pipelines.append({"$project": project})
+
+    pipelines.append({
+        "$group": {"_id": {"provider": "$provider_name", "enable": "$enable"}, "count": {"$sum": 1}}}
+    )
+    datasets_count = col_datasets(db).aggregate(pipelines, allowDiskUse=True)
+    
+    ds_enable = {}
+    ds_disable = {}
+    all_ds = {}
+    for d in datasets_count:
+        provider = d["_id"]["provider"]
+        all_ds[provider] = d["count"]
+        if d["_id"]["enable"]:
+            ds_enable[provider] = d["count"]
+        else: 
+            ds_disable[provider] = d["count"] 
+    
+    return {
+        "datasets": all_ds,
+        "enabled": ds_enable,
+        "disabled": ds_disable,
+    }
+    
 def series_counter(db=None, match=None):
     pipelines = []
     
     if match:
         pipelines.append({"$match": match})
 
+    project = {
+        "_id": False,
+        "provider_name": True,
+        "dataset_code": True,
+    }
+    pipelines.append({"$project": project})
+
     pipelines.append({
         "$group": { "_id": {"provider": "$provider_name", "dataset_code": "$dataset_code"}, 
                    "count": {"$sum": 1}}}
     )
-    series_count = col_series(db).aggregate(pipelines)
+    series_count = col_series(db).aggregate(pipelines, allowDiskUse=True)
 
     counters = {}
     for d in series_count:
