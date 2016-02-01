@@ -48,6 +48,10 @@ function datasetLastUpdateFormatter(value, row) {
     return new String(moment(value).format('LL')) + " (" + new String((moment(value).fromNow())) + ")";
 }
 
+function datasetDownloadLastFormatter(value, row) {
+    return new String(moment(value).format('LL')) + " (" + new String((moment(value).fromNow())) + ")";
+}
+
 function createdFormatter(value, row) {
     return new String(moment(value).format('L')) + " (" + new String((moment(value).fromNow())) + ")";
 }

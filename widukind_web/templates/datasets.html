@@ -8,7 +8,9 @@
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
       <li class="active">{{ provider.name }}</li>
     </ol>
-{% endblock %}                                    
+{% endblock %}
+
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}{% endblock %}
 
 {% block page %}
 
@@ -71,7 +73,7 @@
 	            <th data-field="name" data-formatter="datasetNameFormatter" data-sortable="true">Name</th>
                 <th data-field="dataset_code" data-sortable="true">Code</th>
 	            <th data-field="last_update" data-formatter="datasetLastUpdateFormatter"data-sortable="true">Last Update</th>
-	            <th data-field="last_download" data-formatter="datasetLastUpdateFormatter"data-sortable="true">Last Download</th>
+	            <th data-field="download_last" data-formatter="datasetDownloadLastFormatter"data-sortable="true">Last Download</th>
 	        </tr>
 	    </thead>
 	</table>

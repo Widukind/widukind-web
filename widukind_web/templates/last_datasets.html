@@ -13,7 +13,7 @@
 
 <div class="panel panel-default">
 	<table id="datasets_table" 
-	    data-url="{{ url_for("views.last_datasets") }}" 
+	    data-url="{{ url_for(".last_datasets") }}" 
         data-toggle="table" 
         data-classes="table table-hover table-condensed"  
         data-striped="true"
@@ -40,7 +40,7 @@
                 <th data-field='provider_name' data-sortable="true">Provider</th>
                 <th data-field="dataset_code" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
                 <th data-field="last_update" data-formatter="datasetLastUpdateFormatter" data-sortable="true">Last Update</th>
-                <th data-field="last_download" data-formatter="datasetLastUpdateFormatter"data-sortable="true">Last Download</th>
+                <th data-field="download_last" data-formatter="datasetDownloadLastFormatter"data-sortable="true">Last Download</th>
 	        </tr>
 	    </thead>
 	</table>
