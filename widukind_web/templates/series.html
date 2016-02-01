@@ -12,6 +12,8 @@
     </ol>
 {% endblock %}
 
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}, {{series.key}}, {{series.name}}{% endblock %}
+
 {% block page %}
 
 <a name="home"></a>

@@ -15,7 +15,7 @@
     </ol>
 {% endblock %}
 
-{% block meta_keywords %}{{provider.name}},{{provider.long_name}}{% if dataset %},{{ dataset.name }},{{ dataset.dataset_code }}{% endif %}{% endblock %}
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
 
 {% block page %}
 
