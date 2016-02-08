@@ -136,7 +136,8 @@ def last_datasets():
         "dimension_list": False, 
         "attribute_list": False,
         "concepts": False, 
-        "codelists": False, 
+        "codelists": False,
+        "tags": False, 
     }
     _object_list = queries.col_datasets().find(query, projection)
     count, object_list = filter_query(_object_list, limit=LIMIT, execute=True)
@@ -148,9 +149,6 @@ def last_datasets():
         }
         for obj in object_list:
             obj['view'] = url_for('.dataset-by-slug', slug=obj['slug'])
-            #doc_href = obj.get('doc_href', None)                        
-            #if doc_href and not doc_href.lower().startswith('http'):
-            #    obj['doc_href'] = None            
             datas["rows"].append(obj)
 
         # pagination client - return rows only
@@ -225,7 +223,11 @@ def all_datasets_for_provider_slug(slug):
         "dimension_list": False, 
         "attribute_list": False,
         "concepts": False,
-        "codelists": False 
+        "codelists": False,
+        "tags": False,
+        "notes": False,         
+        "attribute_keys": False,
+        "dimension_keys": False,
     }
 
     datasets = queries.col_datasets().find(query, 
@@ -255,9 +257,12 @@ def all_datasets_for_provider_slug(slug):
 def all_series_for_dataset_slug(slug):
 
     is_ajax = request.args.get('json') or request.is_xhr
-    
+
+    ds_projection = {"_id": False, "slug": True, "name": True,
+                     "provider_name": True, "dataset_code": True}    
     dataset = queries.col_datasets().find_one({"enable": True,
-                                       "slug": slug})
+                                               "slug": slug},
+                                              ds_projection)
     
     if not dataset:
         abort(404)
@@ -265,33 +270,25 @@ def all_series_for_dataset_slug(slug):
     query = {"provider_name": dataset["provider_name"],
              "dataset_code": dataset["dataset_code"]}
     
+    """    
     search_filter = None
     if request.args.get('filter'):
         search_filter = json.loads(request.args.get('filter'))
         if 'start_date' in search_filter:
-            """
-            > Manque la fréquence
-            pd.Period("1995", freq="A").ordinal
-            """
+            # Manque la fréquence
+            #pd.Period("1995", freq="A").ordinal
+    """
         
     #print("search_filter : ", search_filter, type(search_filter))
     
+    #TODO: Gérer dans tableau pour filtrage dynamique
     search_tags = request.args.get('tags')
     if search_tags:
         tags = [t.strip().lower() for t in search_tags.split()]
         query["tags"] =  {"$all": tags}
     
-    projection = {
-        "dimensions": False, 
-        "attributes": False, 
-        #"release_dates": False,
-        #"revisions": False,
-        "values.revisions": False,
-        "notes": False
-    }
-    
-    if search_filter:
-        filter.update(search_filter)
+    #if search_filter:
+    #    filter.update(search_filter)
         
     if not is_ajax:
         provider_doc = queries.col_providers().find_one({"name": dataset["provider_name"]})
@@ -299,6 +296,13 @@ def all_series_for_dataset_slug(slug):
         return render_template("series_list.html", 
                                provider=provider_doc, 
                                dataset=dataset)
+
+    projection = {
+        "dimensions": False, 
+        "attributes": False, 
+        "values.revisions": False,
+        "notes": False
+    }
     
     series = queries.col_series().find(query, projection)
     count, series = filter_query(series)
@@ -310,6 +314,7 @@ def all_series_for_dataset_slug(slug):
         }
         series = convert_series_period(series)
         for s in series:
+            del s["values"]
             s['view'] = url_for('.series-by-slug', slug=s['slug'])
             s['export_csv'] = url_for('download.series_csv', 
                                       slug=s['slug'], 
@@ -336,6 +341,7 @@ def dataset_with_slug(slug):
     is_ajax = request.args.get('json') or request.is_xhr
     
     if is_ajax:
+        '''debug mode'''
         result = render_template_string("{{ dataset|pprint }}", 
                                         dataset=dataset)
         return current_app.jsonify(result)
@@ -374,13 +380,15 @@ def series_with_slug(slug):
     is_ajax = request.args.get('json') or request.is_xhr
     
     if is_ajax:
+        '''debug mode'''
         result_dataset = render_template_string("{{ dataset|pprint }}", dataset=dataset)
         result_series = render_template_string("{{ series|pprint }}", series=series)
         return current_app.jsonify(dict(dataset=result_dataset, series=result_series))
     
     max_revisions = 0
     revision_dates = []
-    obs_attributes = []
+    obs_attributes_keys = []
+    obs_attributes_values = []
     for v in series["values"]:
         if "revisions" in v:
             revision_dates.extend([r["revision_date"] for r in v["revisions"]])
@@ -389,9 +397,9 @@ def series_with_slug(slug):
             if count > max_revisions:
                 max_revisions = count
         if v.get("attributes"):
-            for attr in v["attributes"].keys():
-                if not attr in obs_attributes:
-                    obs_attributes.append(attr)       
+            for key, attr in v["attributes"].items():
+                obs_attributes_keys.append(key)
+                obs_attributes_values.append(attr)       
     
     revision_dates.reverse()
     
@@ -400,7 +408,8 @@ def series_with_slug(slug):
                            provider=provider,
                            dataset=dataset,
                            is_reverse=is_reverse,
-                           obs_attributes=obs_attributes,
+                           obs_attributes_keys=list(set(obs_attributes_keys)),
+                           obs_attributes_values=list(set(obs_attributes_values)),
                            revision_dates=list(set(revision_dates)),
                            max_revisions=max_revisions)
     
@@ -496,6 +505,7 @@ def get_search_datas(form, search_type="datasets"):
     kwargs = {}
     
     if providers:
+        #str or array if multiple choices
         kwargs["provider_name"] = providers
     
     if limit:
