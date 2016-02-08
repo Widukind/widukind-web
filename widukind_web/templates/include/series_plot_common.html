@@ -5,16 +5,17 @@ $(document).ready(function(){
 var datas = [];
 
 var options = {
-    labels: ['Date', 'Value'],
-    title: 'Series - {{series.key}}',
+    labels: ['Period', 'Value'],
+    title: '{{series.key}}',
     titleHeight: 32,
     includeZero: true,
     showRangeSelector: true
 }
 
 {%- for value in datas %}
-   {%- if not loop.first %}
-   datas.push([new Date("{{value.0}}"), parseFloat("{{value.1|float}}")]);
+   {%- if not loop.first -%}
+   {#datas.push([new Date("{{value.0}}"), parseFloat("{{value.1|float}}")]);#}
+   datas.push(["{{value.0}}", parseFloat("{{value.1|float}}")]);   
    {%- endif %}
 {%- endfor %}
 
