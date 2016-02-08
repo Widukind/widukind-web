@@ -107,7 +107,7 @@
 		                    {% if key in series.dimensions %}
 		                    {% set dimension = series.dimensions[key] %}
 		                       <tr>
-		                       {# TODO: link to dimension in dataset #}
+		                       	   {# TODO: link to dimension in dataset #}
 		                           <td class="col-md-3">
 										{{ dataset.concepts[key]|default(key) }}
 								   </td>
@@ -134,9 +134,12 @@
 	                    {% for key in dataset.attribute_keys %}	                    
 		                    {% if key in series.attributes %}
 		                    {% set attribute = series.attributes[key] %}
+		                    {% set attribute_value = dataset.codelists[key][attribute]|default(attribute) %}
 		                       <tr>
 		                           <td class="col-md-3">{{ dataset.concepts[key]|default(key) }}</td>
-		                           <td class="col-md-9">{{ dataset.codelists[key][attribute]|default(attribute) }} ({{attribute}})</td>
+		                           <td class="col-md-9">
+		                           	{{ attribute_value }}{% if attribute != attribute_value %} ({{attribute}}){% endif %}
+		                           </td>
 		                       </tr>
 		                    {% endif %}
 	                    {% endfor %}
@@ -157,10 +160,7 @@
 		                    	{% if loop.first %}
 		                    	<th class="success">Period</th>
 		                    	<th class="success">Current</th>
-		                    	{% if obs_attributes %}
-								<th class="success">Attributes</th>
-								{% endif %}
-		                    	
+
 		                    	{% for rev in revision_dates|sort %}
 		                    	<th class="success">
 		                    		{{ moment(rev).format('LL') }}
@@ -170,36 +170,50 @@
 		                    	{% endif %}
 	                           <tr>
 	                               	<td class="col-md-1">{{ value.period }}</td>
-	                               	<td>
-	                               		{{ value.value }}
+	                               	
+	                               	<td class="col-md-1">
+	                               		<ul class="list-inline">
+	                               			
+	                               			<li>{{ value.value }}</li>
+	                               			
+	                               			{%- if value.attributes -%}
+											<li class="pull-right">											
+			                               		{%- for attr_key, attr_value in value.attributes.items() -%}
+				                               		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+					                               		{{ attr_value }}
+				                               		</a>
+			                               		{%- endfor -%}											
+											</li>
+											{%- endif -%}
+	                               		</ul>
 	                               	</td>
-	                               
-			                    	{% if value.attributes %}
-			                    	{% for attr_key, attr_value in value.attributes.items() %}
-			                    		<td class="col-md-1">
-			                    		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
-			                    			{{attr_value}}
-			                    			{#
-			                    			{{ dataset.codelists[attr_key][attr_value]|default(attr_value) }}
-			                    			#}
-			                    		</a>
-			                    		</td>		                    	
-			                    	{% endfor %}
-			                    	{% endif %}
-	                               
+	                               	
 									{% for rev in revision_dates|sort %}
 									<td>
+									<ul class="list-inline">
 										{% set found = False %}
 										{% for v in value.revisions %}
 											{% if v.revision_date == rev %}
-												{{v.value}}
+												<li>{{ v.value }}</li>
 												{% set found = True %}
+												{#												
+		                               			{%- if v.attributes -%}
+												<li class="pull-right">											
+				                               		{%- for attr_key, attr_value in v.attributes.items() -%}
+					                               		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+						                               		{{ attr_value }}
+					                               		</a>
+				                               		{%- endfor -%}											
+												</li>
+												{%- endif -%}
+												#}
 												{#{% break %}#}
 											{% endif %}
 										{% endfor %}
 										{% if not found %}
 											&nbsp;
 										{% endif %}
+	                               	</ul>
 	                               	</td>	   
 	                               	{% endfor %}
 	                           </tr>
@@ -214,9 +228,9 @@
 	</div>    
 </div>
 
-{% if obs_attributes %}
+{% if obs_attributes_keys %}
 <a name="obs_attributes"></a>
-{% for key in obs_attributes %}
+{% for key in obs_attributes_keys %}
 
 	<a name="obs_attributes_{{key}}"></a>
 	<div class="panel panel-default">
@@ -225,6 +239,7 @@
 		</div>
 		<div class="panel-body">
 		{% for k, v in dataset.codelists[key].items() %}
+		{% if k in obs_attributes_values %}
 		<div class="row">
 			<div class="col-md-1">
 				<a name="obs_attributes_{{key}}_{{k}}"></a>
@@ -234,6 +249,7 @@
 				: {{ v }}
 			</div>
 		</div>	
+		{% endif %}
 		{% endfor %}
 		</div>
 	</div>
@@ -311,16 +327,22 @@
 		   });
 		}
 	
-		$(document).ready(function(){			
-            
-		    $("#export_graphic").click(function(e){
+		$(document).ready(function(){
+			
+			function toogle_graphic() {
 		    	var p = $("#graphdiv_contenair").parent();
 		    	if ( p.is(":visible") ) {
 		    		p.hide();
 		    	} else {
 		    		p.show()
 		    		update_csv_data();
-		    	}
+		    	}				
+			}
+			
+			toogle_graphic();
+			            
+		    $("#export_graphic").click(function(e){
+		    	toogle_graphic();
 		        e.preventDefault();
 		    });     
 		});
