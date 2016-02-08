@@ -52,8 +52,8 @@ def datasets_counter_status(db=None, match=None):
     pipelines.append({"$project": project})
 
     pipelines.append({
-        "$group": {"_id": {"provider": "$provider_name", "enable": "$enable"}, "count": {"$sum": 1}}}
-    )
+        "$group": {"_id": {"provider": "$provider_name", "enable": "$enable"}, "count": {"$sum": 1}}
+    })
     datasets_count = col_datasets(db).aggregate(pipelines, allowDiskUse=True)
     
     ds_enable = {}
@@ -61,11 +61,15 @@ def datasets_counter_status(db=None, match=None):
     all_ds = {}
     for d in datasets_count:
         provider = d["_id"]["provider"]
-        all_ds[provider] = d["count"]
+
+        if not provider in all_ds:
+            all_ds[provider] = 0
+        all_ds[provider] += d["count"]
+        
         if d["_id"]["enable"]:
             ds_enable[provider] = d["count"]
         else: 
-            ds_disable[provider] = d["count"] 
+            ds_disable[provider] = d["count"]
     
     return {
         "datasets": all_ds,
