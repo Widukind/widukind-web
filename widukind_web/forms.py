@@ -134,11 +134,15 @@ class SearchFormDatasets(Form):
                                             label_attr='name',
                                             allow_blank=True,
                                             #blank_text=""
+                                            query={"enable": True},
                                             )
     
     limit = fields.IntegerField(default=20)
     
-    sort = fields.SelectField(choices=constants.CHOICES_SORT_DATASETS, default="last_update")
+    sort = fields.SelectField(choices=constants.CHOICES_SORT_DATASETS, 
+                              default="last_update")
+    
+    #TODO: DESC
         
 class SearchFormSeries(SearchFormDatasets):
     
