@@ -30,15 +30,15 @@
         data-classes="table table-hover table-condensed"  
         data-striped="true"
         data-mobile-responsive="true"
-        data-check-on-init="true"
+        {#data-check-on-init="true"#}
         
-        data-card-view="true"        
-        data-show-toggle="true"
+        {#data-card-view="true"#}        
+        {#data-show-toggle="true"#}
         data-show-refresh="false"
-        data-show-columns="true"
+        {#data-show-columns="true"#}
         data-show-pagination-switch="false" 
         data-flat="true"
-        data-search="true"
+        {#data-search="true"#}
         data-search-align="left"
         data-buttons-align="left"
         data-toolbar-align="right"
@@ -59,14 +59,12 @@
         data-side-pagination="server"  
         data-page-size="{{ page_size|default('10') }}"
         data-page-list="[10, 25, 50, 100]"  
-
-        data-sort-name="start_date"
-        data-sort-order="asc">
+		>
 	    <thead> 
 	        <tr>
                 <th class="col-md-1" data-field="_id" data-align="center" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false" data-searchable="false">&nbsp;</th>
 	            <th class="col-md-1" data-field="dataset_code" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
-                <th class="col-md-2" data-field="key" {#data-formatter="seriesKeyLinkFormatter"#} data-sortable="true">key</th>
+                <th class="col-md-2" data-field="key" data-sortable="true">key</th>
                 <th class="col-md-5" data-field="name" data-formatter="seriesNameLinkFormatter" data-sortable="true">Name</th>
                 <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
 	            <th class="col-md-1" data-field="start_date" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         

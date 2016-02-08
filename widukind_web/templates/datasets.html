@@ -46,7 +46,6 @@
     </table>
     </div>
 
-	<div class="table-responsive">
 	<table id="datasets" 
 	    data-url="{{ url_for("views.datasets", slug=provider.slug) }}"    
 	    data-toggle="table" 
@@ -65,8 +64,8 @@
         data-pagination-h-align="left"
         data-pagination-detail-h-align="right"
         data-pagination-v-align="top" 
-	    data-sort-name="last_update"
-	    data-sort-order="desc">
+	    {#data-sort-name="last_update"
+	    data-sort-order="desc"#}>
 	    <thead> 
 	        <tr>
                 <th class="col-md-1" data-field="doc_href" data-formatter="datasetButtonFormatter">&nbsp;</th>
@@ -77,7 +76,6 @@
 	        </tr>
 	    </thead>
 	</table>
-	</div>
 	
 </div>
 

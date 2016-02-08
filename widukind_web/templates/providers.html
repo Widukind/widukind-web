@@ -25,19 +25,12 @@
 		data-pagination-h-align="left"
 		data-pagination-detail-h-align="right"
 		data-pagination-v-align="top"
-	    data-pagination="false"
-	    {#
-	    data-side-pagination="client"
-	    data-page-size="{{ page_size|default('20') }}"
-	    data-page-list="[10, 25, 50, 100]"
-	    #}
-	    >
+	    data-pagination="false">
     <thead>
         <th class="col-md-4" data-field="long_name" data-sortable="true">Long Name</th>
         <th class="col-md-2"  data-field="name" data-sortable="true">Name</th>
         <th data-field="region" data-sortable="true">Region</th>
         <th data-field="datasets" data-sortable="true">Datasets</th>
-        <th data-field="series" data-sortable="true">Series</th>
     </thead>
     <tbody>
         {% for obj in providers %}
@@ -57,13 +50,6 @@
                 <a href="{{ url_for('views.datasets', slug=obj.slug) }}">
                     <span class="human-number">{{counters[obj.name]|default('0')}}</span>
                 </a>
-            </td>
-            <td>
-            {#
-                <a href="{{ url_for('views.series', slug=obj.slug) }}">
-                    <span class="human-number">{{counter(obj.name+".series")}}</span>
-                </a>
-            #}
             </td>
         </tr>        
         {% endfor %}
