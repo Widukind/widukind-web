@@ -18,48 +18,37 @@
 		data-striped="true"
 		data-show-toggle="true"
 		data-show-columns="true"
-		data-search="true"
+		data-search="false"
 		data-search-align="left"
 		data-buttons-align="left"
 		data-toolbar-align="right"
 		data-pagination-h-align="left"
 		data-pagination-detail-h-align="right"
 		data-pagination-v-align="top"
-	    data-pagination="true"
-	    data-side-pagination="client"
-	    data-page-size="{{ page_size|default('20') }}"
-	    data-page-list="[10, 25, 50, 100]">
+	    data-pagination="false">
     <thead>
-        <th data-field="name" data-sortable="true">Name</th>
-        <th data-field="version" data-sortable="false" data-visible="false">Version</th>
-        <th data-field="long_name" data-sortable="true">Long Name</th>
+        <th class="col-md-4" data-field="long_name" data-sortable="true">Long Name</th>
+        <th class="col-md-2"  data-field="name" data-sortable="true">Name</th>
+        <th data-field="region" data-sortable="true">Region</th>
         <th data-field="datasets" data-sortable="true">Datasets</th>
-        <th data-field="series" data-sortable="true">Series</th>
     </thead>
     <tbody>
-        {% for p in providers %}
+        {% for obj in providers %}
         <tr>
             <td>
-                <a href="{{ url_for('views.datasets', provider=p.name) }}">
-                    {{p.name}}
-                </a>
+            	<a href="{{ url_for('views.datasets', slug=obj.slug) }}">
+					{{obj.long_name}}
+				</a>
             </td>
             <td>
-            	{{p.version}}
+				{{obj.name}}
             </td>
             <td>
-                <a href="{{ url_for('views.datasets', provider=p.name) }}">
-                    {{p.long_name}}            
-                </a>
+                {{obj.region}}            
             </td>
             <td>
-                <a href="{{ url_for('views.datasets', provider=p.name) }}">
-                    <span class="human-number">{{counter(p.name+".datasets")}}</span>
-                </a>
-            </td>
-            <td>
-                <a href="{{ url_for('views.series', provider=p.name) }}">
-                    <span class="human-number">{{counter(p.name+".series")}}</span>
+                <a href="{{ url_for('views.datasets', slug=obj.slug) }}">
+                    <span class="human-number">{{counters[obj.name]|default('0')}}</span>
                 </a>
             </td>
         </tr>        

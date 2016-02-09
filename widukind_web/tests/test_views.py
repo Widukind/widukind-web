@@ -29,7 +29,6 @@ class ViewsTestCase(TestCase):
 
         /views/categories/<provider>   views.categories GET,
         /views/dataset-by-id/<objectid:id> views.dataset GET,
-        /views/datasets                views.all_datasets GET,
         /views/datasets/<provider>     views.datasets GET,
         /views/last-datasets           views.last_datasets GET,
         /views/last-series             views.last_series GET,
@@ -37,7 +36,6 @@ class ViewsTestCase(TestCase):
         /views/providers               views.providers GET,
         /views/search/datasets         views.search_datasets GET,,POST
         /views/search/series           views.search_series GET,,POST
-        /views/series                  views.all_series GET,
         /views/series-by-id/<objectid:id> views.serie GET,
         /views/series/<provider>       views.series GET,
         /views/series/<provider>/<dataset_code> views.series_with_dataset_code GET,

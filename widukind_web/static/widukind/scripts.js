@@ -45,7 +45,11 @@ function toggle_content(options){
 */
 
 function datasetLastUpdateFormatter(value, row) {
-    return new String(moment(value).format('LL')) + " (" + new String((moment(value).fromNow())) + ")";
+    return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
+}
+
+function datasetDownloadLastFormatter(value, row) {
+    return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
 }
 
 function createdFormatter(value, row) {
@@ -77,24 +81,39 @@ function seriesKeyLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">' + row.key +'</a>';
 }
 
+function seriesNameLinkFormatter(value, row){
+    return '<a href="' + row.view + '" title="Show detail">' + row.name +'</a>';
+}
+
 function seriesButtonFormatter(value, row, line){
+    var _html = [];
+    _html.push('<div class="btn-group btn-group-xs btn-group-justified" role="group">');
+
+    if (row.export_csv){
+    	_html.push('<a class="btn btn-xs" href="' + row.export_csv + '" title="CSV Export">');
+		_html.push('<i class="fa fa-file-excel-o fa-lg"></i>');                          
+		_html.push('</a>');
+    }
+    
+    if (row.view_graphic) {
+		_html.push('<a target="_blank" class="btn btn-xs view_graphic" rel="'+ line + '" href="' + row.view_graphic + '" title="Graphic">');
+		_html.push('<i class="fa fa-area-chart fa-lg"></i>');
+		_html.push('</a>');
+    }
+    
+    _html.push('</div>');
+    return _html.join('');
+    /*
     return [
             '<div class="btn-group btn-group-xs btn-group-justified" role="group">',
             
-                 '<a class="btn btn-xs" href="' + row.export_csv + '" title="CSV Export">',
-                    '<i class="fa fa-file-excel-o fa-lg"></i>',                          
-                 '</a>',
-
-                '<a target="_blank" class="btn btn-xs view_graphic" rel="'+ line + '" href="' + row.view_graphic + '" title="Graphic">',
-                  '<i class="fa fa-area-chart fa-lg"></i>',                          
-                '</a>',
-            
-                //'<a class="btn btn-xs add_cart" href="#" data-series-id="' + row._id + '" title="Add Cart">',
+                //'<a class="btn btn-xs add_cart" href="#" data-series-id="' + row.slug + '" title="Add Cart">',
                 //  '<i class="fa fa-shopping-cart fa-lg"></i>',                          
                 //'</a>',
             
             '</div>'
     ].join('');
+    */
 }
 
 function addCart(url){

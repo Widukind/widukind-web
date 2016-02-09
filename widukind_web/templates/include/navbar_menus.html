@@ -15,7 +15,7 @@
 				        
 				        {% for p in provider_list %}
 				            <li>
-				                <a href="{{ url_for('views.datasets', provider=p.name) }}">
+				                <a href="{{ url_for('views.datasets', slug=p.slug) }}">
 				                    {{p.name}} - {{p.long_name}}
 				                </a>
 				            </li>
@@ -65,10 +65,6 @@
 		        </li>
 				
 				{#
-				<a class="btn btn-default navbar-btn" target="sitemap" href="{{ url_for("flask_sitemap.sitemap") }}"><i class="fa fa-sitemap fa-fw"></i> SiteMap</a>
-				#}
-				
-				{#
 				{% if cart and cart_count > 0 %}
 				<a class="btn btn-default navbar-btn" id="card_btn">
 				    <i class="fa fa-shopping-cart fa-fw"></i> Cart <span id="badge_cart" class="badge">{{ cart_count }}</span>
@@ -82,12 +78,13 @@
 				{% endif %}
 				#}            
 		
-		        {% if is_logged %}
+		        {% if is_logged() %}
 		        <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                         <i class="fa fa-settings fa-fw"></i> Admin <span class="caret"></span>
                     </a>
 					<ul class="dropdown-menu">
+						<li><a href="{{ url_for("admin.providers") }}">Providers</a></li>
 						<li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
 						<li><a href="{{ url_for("admin.logs") }}">Logs</a></li>
 						<li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>						

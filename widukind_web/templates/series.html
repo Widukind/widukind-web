@@ -1,84 +1,283 @@
 {% extends "layout.html" %}
 
-{% block title %}{{super()}} - {{provider.name}} Series{% endblock %}
+{% block title %}{{super()}} - Series - {{provider.name}} - {{dataset.dataset_code}} - {{series.key}}{% endblock %}
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
-      <li><a href="{{ url_for("views.datasets", provider=provider.name) }}">{{provider.name}}</a></li>      
-      {% if dataset %}
-      <li class="active">{{dataset.dataset_code}}</li>
-      {% else %}
-      <li class="active">All Series</li>
-      {% endif %}      
+      <li><a href="{{ url_for("views.datasets", slug=provider.slug) }}">{{provider.name}}</a></li>
+      <li><a href="{{ url_for('views.series_by_dataset_slug', slug=dataset.slug) }}">{{dataset.dataset_code}}</a></li>      
+      <li class="active">{{series.key}}</li>
     </ol>
 {% endblock %}
 
-{% block meta_keywords %}{{provider.name}},{{provider.long_name}}{% if dataset %},{{ dataset.name }},{{ dataset.dataset_code }}{% endif %}{% endblock %}
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}, {{series.key}}, {{series.name}}{% endblock %}
 
 {% block page %}
 
+<a name="home"></a>
+
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h4>{{ provider.name }} {% if dataset %}- {{ dataset.dataset_code }} - Series{% else %} - All Series{% endif %}</h4>
-     </div>
+    	<div class="row">
+	    	<div class="col-md-1">
+			    <a title="Show Graphic" id="export_graphic" href="#">
+		           <span class="fa-stack fa-lg">
+		             <i class="fa fa-circle fa-stack-2x"></i>
+		             <i class="fa fa-area-chart fa-stack-1x fa-inverse"></i>
+		           </span>
+			    </a>
+			    <a title="Download CSV file" href="{{ url_for('download.series_csv', slug=series.slug) }}">
+		           <span class="fa-stack fa-lg">
+		             <i class="fa fa-circle fa-stack-2x"></i>
+		             <i class="fa fa-table fa-stack-1x fa-inverse"></i>
+		           </span>	       
+			    </a>
+	        </div>
+	        <div class="col-md-11">
+				<h4>{{ provider.name }} - {{ dataset.dataset_code }} - {{ series.key }}</h4>	        
+			</div>
+  		</div>        
+    </div>
+    <div class="panel-body" style="display: none;">        
+       <div id="graphdiv_contenair" class="contenair"></div>
+    </div>
+</div>    
 
-	<table id="series" 
-	    {% if dataset %}        
-	    data-url="{{ url_for(".series_with_dataset_code", provider=provider.name, dataset_code=dataset.dataset_code) }}"
-	    {% else %}
-	    data-url="{{ url_for(".series", provider=provider.name) }}"    
-	    {% endif %}
+<div class="panel panel-default table-responsive">
+	<div class="table-responsive">
+    <table class="table table-striped table-condensed">
+        <tbody>            
+            <tr>
+                <td class="col-md-2">Provider</td>
+                <td class="col-md-10">
+                	<a href="{{ url_for(".datasets", slug=provider.slug) }}">
+                	{{ provider.long_name }}
+                	</a>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Dataset</td>
+                <td class="col-md-10">
+                	<a href="{{ url_for(".dataset-by-slug", slug=dataset.slug) }}">
+                		{{ dataset.dataset_code }} - {{ dataset.name }}
+                	</a>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Name</td>
+                <td class="col-md-10">{{ series.name }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Key</td>
+                <td class="col-md-10">{{ series.key }}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Last Updated</td>
+                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Web Site</td>
+                <td class="col-md-10">
+                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
+                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
+                    {% else %}
+	                    <a href="{{ provider.website }}">{{ provider.website }}</a>
+                    {% endif %}                
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Periods</td>
+                <td class="col-md-10">
+                	{{series["values"][0].period}} to {{series["values"][-1].period}}
+                 </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Frequency</td>
+                <td class="col-md-10">{{frequency(series.frequency)}}</td>
+            </tr>
+            <tr>
+                <td class="col-md-2">Dimensions</td>
+                <td class="col-md-10">
+                	<div class="table-responsive">
+                    <table class="table table-striped table-condensed">
+	                    <tbody>
+	                    {% for key in dataset.dimension_keys %}	                    
+		                    {% if key in series.dimensions %}
+		                    {% set dimension = series.dimensions[key] %}
+		                       <tr>
+		                       	   {# TODO: link to dimension in dataset #}
+		                           <td class="col-md-3">
+										{{ dataset.concepts[key]|default(key) }}
+								   </td>
+		                           <td class="col-md-9">
+		                           		{{ dataset.codelists[key][dimension]|default(dimension) }} ({{dimension}})
+		                           </td>
+		                       </tr>
+		                    {% endif %}
+	                    {% endfor %}
+	                    </tbody>
+                    </table>
+                   	</div>
+                 </td>
+            </tr>
+            <tr>
+                <td class="col-md-2" id="display-attributes">
+                	Attributes <i class="fa fa-eye fa-lg"></i>
+                </td>
+                <td class="col-md-10">
+                	<div class="attributes" style="display: none">
+                    {% if series.attributes %}
+                    <table class="table table-striped table-condensed table-responsive">
+                        <tbody>
+	                    {% for key in dataset.attribute_keys %}	                    
+		                    {% if key in series.attributes %}
+		                    {% set attribute = series.attributes[key] %}
+		                    {% set attribute_value = dataset.codelists[key][attribute]|default(attribute) %}
+		                       <tr>
+		                           <td class="col-md-3">{{ dataset.concepts[key]|default(key) }}</td>
+		                           <td class="col-md-9">
+		                           	{{ attribute_value }}{% if attribute != attribute_value %} ({{attribute}}){% endif %}
+		                           </td>
+		                       </tr>
+		                    {% endif %}
+	                    {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        None
+                    {% endif %}
+                    </div>       
+                 </td>
+            </tr>            
+            <tr>
+                <td class="col-md-12" colspan="2">
+                
+                    <div class="table-responsive">
+                    <table class="table table-striped table-condensed table-bordered table-hover">
+		                    {% for value in series["values"]|reverse %}
+		                    	{% if loop.first %}
+		                    	<th class="success">Period</th>
+		                    	<th class="success">Current</th>
 
-        data-toggle="table" 
-        data-classes="table table-hover table-condensed"  
-        data-striped="true"
-        data-mobile-responsive="true"
-        data-check-on-init="true"
-        
-        data-card-view="true"        
-        data-show-toggle="true"
-        data-show-refresh="false"
-        data-show-columns="true"
-        data-show-pagination-switch="false" 
-        data-flat="true"
-        data-search="true"
-        data-search-align="left"
-        data-buttons-align="left"
-        data-toolbar-align="right"
-        data-pagination-h-align="left"
-        data-pagination-detail-h-align="right"
-        data-pagination-v-align="top"
-	    
-	    {#data-strict-search="true"#}
-	    data-search-time-out="500"
-	    data-trim-on-search="true"    
+		                    	{% for rev in revision_dates|sort %}
+		                    	<th class="success">
+		                    		{{ moment(rev).format('LL') }}
+		                    	</th>
+								{% endfor %}
+								<tbody>		                    	
+		                    	{% endif %}
+	                           <tr>
+	                               	<td class="col-md-1">{{ value.period }}</td>
+	                               	
+	                               	<td class="col-md-1">
+	                               		<ul class="list-inline">
+	                               			
+	                               			<li>{{ value.value }}</li>
+	                               			
+	                               			{%- if value.attributes -%}
+											<li class="pull-right">											
+			                               		{%- for attr_key, attr_value in value.attributes.items() -%}
+				                               		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+					                               		{{ attr_value }}
+				                               		</a>
+			                               		{%- endfor -%}											
+											</li>
+											{%- endif -%}
+	                               		</ul>
+	                               	</td>
+	                               	
+									{% for rev in revision_dates|sort %}
+									<td>
+									<ul class="list-inline">
+										{% set found = False %}
+										{% for v in value.revisions %}
+											{% if v.revision_date == rev %}
+												<li>{{ v.value }}</li>
+												{% set found = True %}
+												{#												
+		                               			{%- if v.attributes -%}
+												<li class="pull-right">											
+				                               		{%- for attr_key, attr_value in v.attributes.items() -%}
+					                               		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+						                               		{{ attr_value }}
+					                               		</a>
+				                               		{%- endfor -%}											
+												</li>
+												{%- endif -%}
+												#}
+												{#{% break %}#}
+											{% endif %}
+										{% endfor %}
+										{% if not found %}
+											&nbsp;
+										{% endif %}
+	                               	</ul>
+	                               	</td>	   
+	                               	{% endfor %}
+	                           </tr>
+		                    {% endfor %}                 
+                        </tbody>
+                    </table>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+	</div>    
+</div>
 
-        data-cookie="true"
-        data-cookie-id-table="saveId"
-        
-	    data-filter-control="false"
-	    
-        data-pagination="true" 
-        data-side-pagination="server"  
-        data-page-size="{{ page_size|default('10') }}"
-        data-page-list="[10, 25, 50, 100]"  
+{% if obs_attributes_keys %}
+<a name="obs_attributes"></a>
+{% for key in obs_attributes_keys %}
 
-        data-sort-name="start_date"
-        data-sort-order="asc">
-	    <thead> 
-	        <tr>
-                <th class="col-md-1" data-field="_id" data-align="center" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false" data-searchable="false">&nbsp;</th>
-	            <th class="col-md-1" data-field="dataset_code" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
-                <th class="col-md-2" data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true">key</th>
-                <th class="col-md-5" data-field="name" data-sortable="true">Name</th>
-                <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
-	            <th class="col-md-1" data-field="start_date" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
-	            <th class="col-md-1" data-field="end_date" data-align="center" data-sortable="true">End Date</th>
-	        </tr>
-	    </thead>
-	</table>
+	<a name="obs_attributes_{{key}}"></a>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4>{{ dataset.concepts[key]|default(key) }}</h4>
+		</div>
+		<div class="panel-body">
+		{% for k, v in dataset.codelists[key].items() %}
+		{% if k in obs_attributes_values %}
+		<div class="row">
+			<div class="col-md-1">
+				<a name="obs_attributes_{{key}}_{{k}}"></a>
+				{{ k }} 
+			</div>         	
+			<div class="col-md-11">
+				: {{ v }}
+			</div>
+		</div>	
+		{% endif %}
+		{% endfor %}
+		</div>
+	</div>
+
+{% endfor %}
+{% endif %}
+
+<a name="tags"></a>
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>Tags</h4></div>
+    <table class="table table-striped table-condensed table-responsive">
+        <tbody>
+            <tr>
+                <td class="col-md-2">Tags</td>
+                <td class="col-md-10">{{series.tags|join(", ")}}</td>
+            </tr>                        
+        </tbody>
+    </table>       
+</div>
+
+<a id="debug" class="btn btn-default btn-sm" href="#"><i class="fa fa-cog"></i> Debug</a>
+
+<div class="debug" style="display: none">
+    <h2>Series:</h2>
+	<pre id="debug_object_series"></pre>
+
+	<h2>Dataset:</h2>
+	<pre id="debug_object_datasets"></pre>
 </div>
 
 {% endblock %}
@@ -87,22 +286,69 @@
     {{super()}}
     
     <script type="text/javascript">
-
     $(document).ready(function(){
-    	/*
-    	var $table = $('#series');
-    	$table.on('load-success.bs.table', function (datas) {
-    		//addCart("{{ url_for('views.card_add') }}");
-    		
-    	}).on('search.bs.table', function(ev, text){
-    		console.log("search : ", ev, text); //text=A
-    	}).on('column-search.bs.table', function(ev, field, text){
-    		console.log("search column : ", ev, field, text); //text=A, field=frequency
-    	});
-    	*/
-        
-    });    
+    	
+        $("#display-attributes").click(function(e){
+            e.preventDefault();
+            $(".attributes").toggle();
+        });
+    	
+        $("#debug").click(function(e){
+            e.preventDefault();
+            if ( $(".debug").is(":visible") ) {
+            	$(".debug").toggle();	
+            } else {
+	 		   	$.ajax({
+			        url: "{{ url_for('.series-by-slug', slug=series.slug) }}",
+			        cache: false,
+			        success: function(result) {
+			        	$("#debug_object_series").text(result.series);
+			        	$("#debug_object_datasets").text(result.dataset);
+			        }
+			   	});
+	 		   $(".debug").toggle();
+            }
+        });
+    	        
+    });
+    </script>
+    
+	<script type="text/javascript">
 	
-	</script>
+	    function update_csv_data(){
+		   $.ajax({
+		        url: "{{ url_for('.series_plot', slug=series.slug) }}",
+		        cache: false,
+		        complete: function(jqXHR, textStatus){
+		            if (textStatus == "success"){
+		            	$("#graphdiv_contenair").html(jqXHR.responseText);
+		            }
+		        }
+		   });
+		}
+	
+		$(document).ready(function(){
+			
+			function toogle_graphic() {
+		    	var p = $("#graphdiv_contenair").parent();
+		    	if ( p.is(":visible") ) {
+		    		p.hide();
+		    	} else {
+		    		p.show()
+		    		update_csv_data();
+		    	}				
+			}
+			
+			toogle_graphic();
+			            
+		    $("#export_graphic").click(function(e){
+		    	toogle_graphic();
+		        e.preventDefault();
+		    });     
+		});
+	   
+	
+	</script>    
+    
 {% endblock %}
-
+  

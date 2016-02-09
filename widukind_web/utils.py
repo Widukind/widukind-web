@@ -95,30 +95,15 @@ def stats():
 
 def categories_to_dict(db, provider_name):
 
-    """
-    > voir dans une seule dimension (sans children) mais avec des points de séparation
-    """
-    
     tree = {}
     categories = {}
     
-    docs = db[constants.COL_CATEGORIES].find({'provider_name': provider_name})    
-    root = None
+    """
+    Utiliser l'id dans le lien parent ?
+    """
+    docs = dict([(doc["slug"], doc) for doc in db[constants.COL_CATEGORIES].find({'provider_name': 
+                                                                                  provider_name})])    
 
-    for doc in docs:
-        if not root and doc['category_code'] == '%s_root' % provider_name.lower():
-            root = doc
-            continue
-        categories[str(doc['_id'])] = doc    
-
-    if not root:
-        provider_root = db[constants.COL_PROVIDERS].find_one({'provider_name': provider_name})
-        root = {
-                
-        }
-        
-        return tree
-    
     def walktree1(cc):
         _tree = {}
         _tree['code'] = cc['category_code']

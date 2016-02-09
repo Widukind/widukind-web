@@ -6,16 +6,32 @@
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
-      <li><a href="{{ url_for("views.datasets", provider=dataset.provider_name) }}">{{dataset.provider_name}}</a></li>
+      <li><a href="{{ url_for("views.datasets", slug=provider.slug) }}">{{provider.name}}</a></li>
       <li class="active">{{dataset.dataset_code}}</li>
     </ol>
 {% endblock %}
+
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
 
 {% block page %}
 
 <a name="home"></a>
 <div class="panel panel-default">
-    <table class="table table-striped table-condensed table-responsive">
+    <div class="panel-heading">
+    	<div class="row">
+	    	<div class="col-md-2">
+	        	<h4>{{ provider.name }} - {{ dataset.dataset_code }}</h4>
+	        </div>
+	        <div class="col-md-10">
+				<a href="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}" type="button" class="btn btn-success active">
+					Series <span class="badge">{{count}}</span>
+				</a>
+			</div>
+  		</div>        
+     </div>
+
+	<div class="table-responsive">
+    <table class="table table-striped table-condensed">
         <tbody>
             <tr>
                 <td class="col-md-2">Provider</td>
@@ -29,25 +45,17 @@
                 <td class="col-md-2">Web Site</td>
                 <td class="col-md-10">
                     {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
-                        <a href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
+                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
                     {% else %}
-                    &nbsp;
+	                    <a href="{{ provider.website }}">{{ provider.website }}</a>
                     {% endif %}                
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Series</td>
-                <td class="col-md-10">
-                    <a href="{{ url_for('.series_with_dataset_code', provider=dataset.provider_name, dataset_code=dataset.dataset_code) }}"> 
-                        <span class="human-number">{{count}}</span>
-                    </a>
                 </td>
             </tr>
             {#
             <tr>
                 <td class="col-md-2">Export</td>
                 <td class="col-md-10">
-                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', provider=dataset.provider_name, dataset_code=dataset.dataset_code) }}">
+                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', slug=dataset.slug) }}">
                         <i class="fa fa-download fa-lg"></i>
                     </a>                        
                 </td>                
@@ -74,56 +82,61 @@
             <tr>
                 <td class="col-md-2">Dimensions</td>
                 <td class="col-md-10">
-                    {% for d in dataset.dimension_list.keys() %}
-                        <a href="#dim-{{d}}">{{d}}</a><br/>
+                    {% for d in dataset.dimension_keys %}
+                        <a href="#dim-{{d}}">{{dataset.concepts[d]}}</a><br/>
                     {% endfor %}
                  </td>
             </tr>            
             <tr>
                 <td class="col-md-2">Attributes</td>
                 <td class="col-md-10">
-                    {% if dataset.attribute_list %}
-                    {% for a in dataset.attribute_list.keys() %}
-                        <a href="#attr-{{a}}">{{a}}</a><br/>
+                    {% if dataset.attribute_keys %}
+                    {% for a in dataset.attribute_keys %}
+                        <a href="#attr-{{a}}">{{dataset.concepts[a]}}</a><br/>
                     {% endfor %}
                     {% else %}
-                        Not Attributes
+                        None
                     {% endif %}
                  </td>
             </tr>
         </tbody>
     </table>
+    </div>
 </div>
 
-{% for dimension, values in dataset.dimension_list.items() %}
-<a name="dim-{{dimension}}"></a>
+{% for key in dataset.dimension_keys %}
+{% set dimension = dataset.codelists[key] %}
+<a name="dim-{{key}}"></a>
 <div class="panel panel-default">
-    <div class="panel-heading"><h4>{{ dimension }} <small>(dimension)</small></h4></div>
+    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(dimension)</small></h4></div>
+    <div class="table-responsive">
     <table class="table table-striped table-condensed table-responsive">
         <tbody>
-        {% for v in values %}
+        {% for key, value in dimension.items() %}
             <tr>
-                <td class="col-md-2">{{v.0}}</td>
-                <td class="col-md-10">{{v.1}}</td>
+                <td class="col-md-2">{{key}}</td>
+                <td class="col-md-10">{{value}}</td>
             </tr>
         {% endfor %}
         </tbody>
-    </table>       
+    </table>
+    </div>
 </div>
 {% endfor %}
 
-{% for attribute, values in dataset.attribute_list.items() %}
-<a name="attr-{{attribute}}"></a>
+{% for key in dataset.attribute_keys %}
+{% set attribute = dataset.codelists[key] %}
+<a name="attr-{{key}}"></a>
 <div class="panel panel-default">
-    <div class="panel-heading"><h4>{{ attribute }} <small>(attribute)</small></h4></div>
+    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(attribute)</small></h4></div>
     <table class="table table-striped table-condensed table-responsive">
         <tbody>
-        {% for v in values %}
+        {% for key, value in attribute.items() %}
             <tr>
-                <td class="col-md-2">{{v.0}}</td>
-                <td class="col-md-10">{{v.1}}</td>
+                <td class="col-md-2">{{key}}</td>
+                <td class="col-md-10">{{value}}</td>
             </tr>
-        {% endfor %}        
+        {% endfor %}
         </tbody>
     </table>       
 </div>
@@ -162,7 +175,7 @@
             	$(".debug").toggle();	
             } else {
 	 		   	$.ajax({
-			        url: "{{ url_for('.dataset', id=dataset._id) }}",
+			        url: "{{ url_for('.dataset-by-slug', slug=dataset.slug) }}",
 			        cache: false,
 			        complete: function(jqXHR, textStatus){
 			            if (textStatus == "success"){
