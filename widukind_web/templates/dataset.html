@@ -83,7 +83,7 @@
                 <td class="col-md-2">Dimensions</td>
                 <td class="col-md-10">
                     {% for d in dataset.dimension_keys %}
-                        <a href="#dim-{{d}}">{{dataset.concepts[d]}}</a><br/>
+                        <a href="#dim-{{d}}">{{dataset.concepts[d]}} ({{d}})</a><br/>
                     {% endfor %}
                  </td>
             </tr>            
@@ -92,7 +92,7 @@
                 <td class="col-md-10">
                     {% if dataset.attribute_keys %}
                     {% for a in dataset.attribute_keys %}
-                        <a href="#attr-{{a}}">{{dataset.concepts[a]}}</a><br/>
+                        <a href="#attr-{{a}}">{{dataset.concepts[a]}} ({{a}})</a><br/>
                     {% endfor %}
                     {% else %}
                         None
