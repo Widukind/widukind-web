@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-
 from decouple import config
 gettext = lambda s: s
 
@@ -9,6 +7,10 @@ class Config(object):
     
     BOOTSTRAP_SERVE_LOCAL = True
     
+    BASE_URL_API_EVIEWS = config('WIDUKIND_BASE_URL_API_EVIEWS', "http://widukind-api.cepremap.org/api/v1/eviews")
+    BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "http://widukind-api.cepremap.org/api/v1/json")
+    BASE_URL_API_R = config('WIDUKIND_BASE_URL_API_R', "http://widukind-api.cepremap.org/api/v1/r")
+
     GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
     
     CACHE_TYPE = config('WIDUKIND_CACHE_TYPE', "simple")

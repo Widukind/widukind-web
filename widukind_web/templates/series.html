@@ -21,7 +21,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
     	<div class="row">
-	    	<div class="col-md-1">
+	    	<div class="col-md-2">
 			    <a title="Show Graphic" id="export_graphic" href="#">
 		           <span class="fa-stack fa-lg">
 		             <i class="fa fa-circle fa-stack-2x"></i>
@@ -34,11 +34,39 @@
 		             <i class="fa fa-table fa-stack-1x fa-inverse"></i>
 		           </span>	       
 			    </a>
+			    <a id="api-infos" title="Link for R Api">
+		           <span class="fa-stack fa-lg">
+		             <i class="fa fa-circle fa-stack-2x"></i>
+		             <i class="fa fa-info-circle fa-stack-1x fa-inverse"></i>
+		           </span>	       
+			    </a>
 	        </div>
-	        <div class="col-md-11">
+	        <div class="col-md-10">
 				<h4>{{ provider.name }} - {{ dataset.dataset_code }} - {{ series.key }}</h4>	        
 			</div>
-  		</div>        
+  		</div>
+  		<div id="infos" class="row" style="display: none;">
+  			<div id="infos-content" class="col-md-12">
+  				<table class="table">
+  					<tr>
+  						<td class="col-md-2">
+  							<h5 class="pull-right">Api R :</h5>
+  						</td>
+  						<td>
+  							<input class="form-control" type="text" value="{{ config.BASE_URL_API_R}}/series/{{series.slug}}" />
+  						</td>
+  					</tr>
+  					<tr>
+  						<td class="col-md-2">
+  							<h5 class="pull-right">Api JSON :</h5>
+  						</td>
+  						<td>
+  							<input class="form-control" type="text" value="{{ config.BASE_URL_API_JSON}}/series/{{series.slug}}" />
+  						</td>
+  					</tr>
+  				</table>
+  			</div>
+  		</div>
     </div>
     <div class="panel-body" style="display: none;">        
        <div id="graphdiv_contenair" class="contenair"></div>
@@ -328,7 +356,7 @@
 		}
 	
 		$(document).ready(function(){
-			
+	
 			function toogle_graphic() {
 		    	var p = $("#graphdiv_contenair").parent();
 		    	if ( p.is(":visible") ) {
@@ -345,6 +373,12 @@
 		    	toogle_graphic();
 		        e.preventDefault();
 		    });     
+		    
+		    $("#api-infos").click(function(e){
+		        e.preventDefault();
+		        $("#infos").toggle();
+		    });     
+		    		    
 		});
 	   
 	
