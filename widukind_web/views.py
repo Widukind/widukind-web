@@ -46,6 +46,17 @@ def convert_series_period(series_list):
         
     return new_series
 
+def datas_from_series(series):
+    
+    import pandas
+    
+    sd = pandas.Period(ordinal=series['start_date'],
+                       freq=series['frequency'])
+
+    for value in series["values"]:
+        sd +=1
+        yield sd.to_timestamp().strftime("%Y-%m-%d"), value["value"]
+
 def filter_query(cursor, 
                  skip=None, limit=None, sort=None, sort_desc=None,
                  search=None, 
@@ -107,9 +118,8 @@ def filter_query(cursor,
     
     return count, cursor
 
-#@cache.cached(timeout=360)
-
 @bp.route('/providers', endpoint="providers")
+@cache.cached(timeout=360)
 def all_providers():
             
     cursor = queries.col_providers().find({"enable": True}, {'_id': False})
@@ -454,8 +464,8 @@ def send_file_csv(fileobj, mimetype=None, content_length=0):
     response.make_conditional(request)
     return response
 
-
 @bp.route('/plot/series/<slug>', endpoint="series_plot")
+@cache.cached(360)
 def plot_series(slug):
     
     is_ajax = request.args.get('json') or request.is_xhr
@@ -475,10 +485,10 @@ def plot_series(slug):
     if not dataset:
         abort(404)
 
-    datas = []
-    datas.append(["Dates", "Values"])
-    for value in series["values"]:
-        datas.append([value["period"], value["value"]])
+    datas = []    
+    datas.append(("Dates", "Values"))
+    for period, value in datas_from_series(series):
+        datas.append((period, value))
     
     return render_template(tmpl,
                            is_ajax=is_ajax, 
@@ -648,7 +658,7 @@ def search_in_series():
                            search_type="series")
 
 @bp.route('/tree/<provider>', endpoint="tree_root")
-@cache.memoize(360)
+@cache.cached(360)
 def tree_view(provider):
 
     _provider = queries.col_providers().find_one({"slug": provider, 
