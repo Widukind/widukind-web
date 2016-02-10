@@ -6,18 +6,17 @@ var datas = [];
 
 var options = {
     labels: ['Period', 'Value'],
-    title: '{{series.key}}',
+    title: "{{series.name|safe}}",
     titleHeight: 32,
     includeZero: true,
-    showRangeSelector: true
-}
+    showRangeSelector: false
+};
 
-{%- for value in datas %}
-   {%- if not loop.first -%}
-   {#datas.push([new Date("{{value.0}}"), parseFloat("{{value.1|float}}")]);#}
-   datas.push(["{{value.0}}", parseFloat("{{value.1|float}}")]);   
-   {%- endif %}
-{%- endfor %}
+{% for value in datas -%}
+{%- if not loop.first -%}
+datas.push([new Date("{{value.0}}"), parseFloat("{{value.1|float}}")]);
+{% endif -%}
+{%- endfor -%}
 
 new Dygraph("graphdiv", datas, options);
 
