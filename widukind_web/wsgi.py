@@ -292,7 +292,7 @@ def _conf_periods(app):
     import pandas
     
     def get_ordinal_from_period(date_str, freq=None):
-        if not freq in ['A', 'M', 'Q', 'W']:
+        if not freq in constants.CACHE_FREQUENCY:
             return pandas.Period(date_str, freq=freq).ordinal
         
         key = "p-to-o-%s.%s" % (date_str, freq)
@@ -305,7 +305,7 @@ def _conf_periods(app):
         return value
     
     def get_period_from_ordinal(date_ordinal, freq=None):
-        if not freq in ['A', 'M', 'Q', 'W']:
+        if not freq in constants.CACHE_FREQUENCY:
             return str(pandas.Period(ordinal=date_ordinal, freq=freq))
     
         key = "o-to-p-%s.%s" % (date_ordinal, freq)
