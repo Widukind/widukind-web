@@ -5,7 +5,7 @@
 
 {% block page %}
 
-<form class="form-inline">
+<div class="form-inline">
 <div class="form-group">
     <label for="input-search" class="sr-only">Search Tree:</label>
     <input type="input" class="col-xs-4 form-control" id="input-search" placeholder="Type to search..." value="">
@@ -14,11 +14,19 @@
 <button type="button" class="btn btn-default" id="btn-clear-search">Clear</button>
 <button type="button" class="btn btn-default" id="btn-collapse-all"><i class="fa fa-minus-circle"></i> Collapse All</button>
 <button type="button" class="btn btn-default" id="btn-expand-all"><i class="fa fa-plus-circle"></i> Expand All</button>
-</form>
+</div>
 
 <br/>
 
-<div id="tree"></div>
+<div class="row">
+	<div class="col-md-5">
+		<div id="tree"></div>
+	</div>
+	<div class="col-md-7">
+		<div id="dataset-select"></div>
+	</div>
+</div>
+
 
 {% endblock %}
 
@@ -26,58 +34,81 @@
 {% block menu_left %}
 <div id="tree"></div>
 {% endblock %}
-#}
 
 {% block menu_left_attrs %}class="col-md-4"{% endblock %}
 
 {% block site_content_attrs %}class="col-md-6"{% endblock %}
+#}
 
 {% block add_scripts %}
     {{super()}}
     
     <script type="text/javascript">
-        
-    /*
-    nodes: [
-            {text: "Industrial countries' effective exchange rates excluding new Member States - monthly data" ,state: {expanded: false}},
-            {text: "Industrial countries' effective exchange rates excluding new Member States - annual data - <a href=\"/views/dataset/566154b6dedffc60659e712a\">" + "Industrial countries' effective exchange rates excluding new Member States - annual data" + '</a>', state: {expanded: false}},          
-              {text: "Industrial countries' effective exchange rates excluding new Member States - quarterly data",state: {expanded: false}}
-    ]    
-    */
 
+	var dataset_codes = {{dataset_codes|tojson}};
+	
 	var tree = [
-	{% with childrens = tree.children %}
+	{%- with childrens = categories.values() -%}
 	    {%- for item in childrens recursive %}
-            {%- if item.code in dataset_codes -%}
-            { text: "{{ item.name|safe }} - <a href=\"{{ url_for('views.dataset', id=dataset_codes[item.code]) }}\"><i class=\"fa fa-link fa-fw\"></i></a>", state: {expanded: false},
-            {%- else -%}
-            { text: "{{ item.name|safe }}", state: {expanded: false},  
-            {%- endif -%}			
-			{%- if item.children -%}
-		    nodes: [{{ loop(item.children) }}]
-		    {#}},
-		    {%- else -%}
-		    #}
-		    {%- endif -%}
-		    },
-	    {%- endfor -%}
-	{% endwith %}
+        	{ 
+        		text: "{{ item.name|e|safe }}",
+        		state: {expanded: false},
+        		{%- if item.datasets %}
+        		nodes:
+        		[
+        		{%- for ds in item.datasets %}
+        			{ 
+        				text: "{{ ds.name|e|safe }}", 
+        				{% if ds.dataset_code in dataset_codes -%}
+        					href: "{{dataset_codes[ds.dataset_code].url}}",
+        					state: {expanded: false},
+        				{%- else -%}
+        					selectable: false,
+        					state: {disabled: true, expanded: false},
+        				{%- endif %}
+        			},
+        		{%- endfor %}
+        		]
+        		{%- endif -%}
+	    	{%- if item.children %}
+	    		nodes: [{{ loop(item.children) }}]},
+	    	{%- else %}
+	    		},
+			{%- endif %}
+        	{#},#}        	
+	    {% endfor -%}
+	{%- endwith -%}
 	];
-    
+
+	{#
+   		{%- if item.datasets %}
+		tags: [{%- for ds in item.datasets %}"{{ds.dataset_code}}",{%- endfor %}],
+		{%- endif -%}
+		
+	#}
+	
     $(document).ready(function(){
 
     	//TODO: utiliser un spin de chargement pour page et event comme expand et search
     	
-    	//https://github.com/jonmiles/bootstrap-treeview
     	var $searchableTree = $('#tree').treeview({
         	data: tree,
         	enableLinks: false,
         	showTags: false,
         	expandIcon: 'fa fa-plus-circle',
-        	//levels: 5,
         	//backColor: 'green'
         	onNodeSelected: function(event, data) {
-        		console.log("onNodeSelected : ", data);
+        		if (data.href) {
+		 		   	$.ajax({
+				        url: data.href,
+				        cache: false,
+				        success: function(result) {
+				        	$("#dataset-select").html(result.html);
+				        }				        
+				   	});
+        		} else {
+        			$('#tree').treeview('toggleNodeExpanded', [ data.nodeId, { silent: true } ]);
+        		}
         	}
         });
         
@@ -89,6 +120,7 @@
               revealResults: true
             };
             var results = $searchableTree.treeview('search', [ pattern, options ]);
+            console.log("results : ", results);
             /*
             var output = '<p>' + results.length + ' matches found</p>';
             $.each(results, function (index, result) {
@@ -98,7 +130,10 @@
             $('#search-output').html(output);
           }
 
-          //$('#btn-search').on('click', search);
+          $('#btn-search').on('click', function(e){
+        	  e.preventDefault();
+        	  search();
+          });
 
           $('#btn-clear-search').on('click', function (e) {
             $searchableTree.treeview('clearSearch');

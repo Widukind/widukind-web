@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
 from pprint import pprint
 
 from flask import (Blueprint, 
@@ -10,7 +11,6 @@ from flask import (Blueprint,
                    url_for, 
                    session, 
                    flash, 
-                   json, 
                    abort)
 
 from werkzeug.wsgi import wrap_file
@@ -329,6 +329,34 @@ def all_series_for_dataset_slug(slug):
         #pprint(datas)
         return current_app.jsonify(datas)
 
+@bp.route('/ajax/slug/dataset/<slug>', endpoint="ajax-dataset-by-slug")
+def ajax_dataset_with_slug(slug):
+
+    query = {"enable": True, "slug": slug}
+    dataset = queries.col_datasets().find_one(query)
+        
+    if not dataset:
+        abort(404)
+
+    provider = queries.col_providers().find_one({"name": dataset['provider_name']})
+
+    #from flask.globals import _request_ctx_stack
+    #ctx = _request_ctx_stack.top
+    #jinja_env = ctx.app.jinja_env
+    jinja_env = current_app.jinja_env
+    jinja_env.globals.update(dict(moment=current_app.extensions['moment']))
+    template = jinja_env.get_template('dataset-ajax.html')
+
+    count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
+                                               "dataset_code": dataset['dataset_code']})
+    
+    result = template.render(dataset=dataset, 
+                             provider=provider, 
+                             count=count_series)
+    
+    return current_app.jsonify(dict(html=result))
+
+
 @bp.route('/slug/dataset/<slug>', endpoint="dataset-by-slug")
 def dataset_with_slug(slug):
 
@@ -619,68 +647,57 @@ def search_in_series():
                            form=form, 
                            search_type="series")
 
-@bp.route('/tree/<provider>', defaults={'path': ''})
-@bp.route('/tree/<provider>/<path:path>')
-def tree(provider, path=None):
-    abort(404)
-    
+@bp.route('/tree/<provider>', endpoint="tree_root")
+@cache.memoize(360)
+def tree_view(provider):
+
     _provider = queries.col_providers().find_one({"slug": provider, 
                                                   "enable": True})
     if not _provider:
         abort(404)
-
-    current_category = None
-    
-    query = {"provider_name": _provider["name"], "enable": True}
-    all_parents = []
-    parent_url = None
-    
-    if path:
-        slug = path.split('/')[-1]
-        current_category = queries.col_categories().find_one({"slug": slug})
-
-        if current_category.get("all_parents"):
-            all_parents.extend(current_category["all_parents"])
-        parent_url = url_for(".tree", provider=provider, path=slug)
         
-        query["parent"] = current_category["category_code"]
-    else:
-        query["parent"] = None
-    
-    categories = queries.col_categories().find(query)
-    
-    return render_template('tree.html', 
-                           path=path,
-                           provider=_provider,
-                           all_parents=all_parents,
-                           parent_url=parent_url,
-                           categories=categories,
-                           current_category=current_category,
-                           query=query)
-    
-#@cache.memoize(360)
-def _category_tree(provider):
-    return utils.categories_to_dict(current_app.widukind_db, provider)
+    provider_name = _provider["name"]
 
-@bp.route('/categories/<provider>', endpoint="categories")
-@bp.route('/categories/<provider>/<parent>', endpoint="categories-branch")
-def category_tree_view(provider, parent=None):
-    abort(404)
+    query = {"provider_name": provider_name, 
+             "enable": True}
+    cursor = queries.col_categories().find(query, {"_id": False})
+    cursor = cursor.sort([("position", 1), ("category_code", 1)])
     
-    is_ajax = request.args.get('json') or request.is_xhr
+    categories = OrderedDict([(doc["category_code"], doc ) for doc in cursor])
+    ds_codes = []
     
-    tree = _category_tree(provider)
+    for_remove = []
+    for cat in categories.values():
+        if cat.get("parent"):
+            parent = categories[cat.get("parent")]
+            if not "children" in parent:
+                parent["children"] = []
+            parent["children"].append(cat)
+            for_remove.append(cat["category_code"])
+        if cat.get("datasets"):
+            for ds in cat.get("datasets"):
+                ds_codes.append(ds["dataset_code"])
+
+    for r in for_remove:
+        categories.pop(r)
+
+    ds_query = {'provider_name': provider_name,
+                "enable": True,
+                "dataset_code": {"$in": list(set(ds_codes))}}
+    ds_projection = {"_id": True, "dataset_code": True, "slug": True}
+    cursor = queries.col_datasets().find(ds_query, ds_projection)
     
-    #dataset_codes = queries.col_datasets().distinct("dataset_code", {'provider_name': provider})
-    dataset_projection = {"_id": True, "dataset_code": True}
     dataset_codes = {}
-    for doc in queries.col_datasets().find({'provider_name': provider}, dataset_projection):
-        dataset_codes[doc['dataset_code']] = doc['_id']
-    
-    if is_ajax:
-        return current_app.jsonify(tree)
-    
-    return render_template('categories.html', tree=tree, dataset_codes=dataset_codes)
+    for doc in cursor:
+        dataset_codes[doc['dataset_code']] = {
+            "slug": doc['slug'],
+            "url": url_for('views.ajax-dataset-by-slug', slug=doc["slug"])
+        }
+
+    return render_template('categories.html', 
+                           provider=_provider,
+                           categories=categories,
+                           dataset_codes=dataset_codes)
 
 @bp.route('/series/cart/add', endpoint="card_add")#, methods=('POST',))
 def ajax_add_cart():
@@ -729,6 +746,12 @@ def tag_prefetch_series():
     """
     TODO: notion de selection provider ?
     
+    View pour tagsinput et typehead - voir TODO.rst
+    
+    Même chose avec:
+        - provider
+        - provider/dataset pour series
+    
     >>> len(db.tags.series.distinct("name", {"count": {"$gte": 20}}))
     576
     >>> len(db.tags.series.distinct("name", {"count": {"$gte": 10}}))
@@ -745,14 +768,13 @@ def tag_prefetch_series():
     712    
     """
     
-    
-    
     provider = request.args.get('provider_name')
     limit = request.args.get('limit', default=200, type=int)
+    count = request.args.get('count', default=10, type=int)
     
     col = current_app.widukind_db[constants.COL_TAGS_SERIES]
     
-    query = {"count": {"$gte": 5}}
+    query = {"count": {"$gte": count}}
     if provider:
         query["providers.name"] = {"$in": [provider]}
     
@@ -763,7 +785,6 @@ def tag_prefetch_series():
     query = {}
     docs = col.find(query, projection=projection).sort("count", DESCENDING).limit(limit)
     tags = [doc['name'] for doc in docs]
-    #print(tags)
     return current_app.jsonify(tags)
     
 

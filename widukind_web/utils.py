@@ -4,7 +4,6 @@ import logging
 import os
 
 from pymongo import ASCENDING, DESCENDING
-from pymongo import MongoClient
 
 from widukind_web import constants
 
@@ -13,13 +12,6 @@ UPDATE_INDEXES = False
 import arrow
 
 logger = logging.getLogger(__name__)
-
-"""
-def get_mongo_db(uri):
-    #TODO: tz_aware
-    client = MongoClient(uri)
-    return client.get_default_database()
-"""    
 
 def create_or_update_indexes(db, force_mode=False):
     """Create or update MongoDB indexes"""
@@ -92,43 +84,3 @@ def stats():
         logger.error(str(err))
         return {}
         
-
-def categories_to_dict(db, provider_name):
-
-    tree = {}
-    categories = {}
-    
-    """
-    Utiliser l'id dans le lien parent ?
-    """
-    docs = dict([(doc["slug"], doc) for doc in db[constants.COL_CATEGORIES].find({'provider_name': 
-                                                                                  provider_name})])    
-
-    def walktree1(cc):
-        _tree = {}
-        _tree['code'] = cc['category_code']
-        _tree['name'] = cc['name']
-        _tree['doc_href'] = cc.get('docRef', None)
-        _tree['last_update'] = cc.get('last_update', None)
-        _tree['children'] = []
-
-        ids = [str(c) for c in cc['children']]
-        
-        for id, doc in categories.items():
-            if id in ids:
-                _tree['children'].append(walktree1(doc))
-        
-        return _tree
-
-    tree['code'] = root['category_code']
-    tree['name'] = root['name']
-    tree['doc_href'] = root.get('docRef', None)
-    tree['last_update'] = root.get('last_update', None)
-    tree['children'] = []
-    
-    ids = [str(c) for c in root['children']]
-    for id, doc in categories.items():
-        if id in ids:
-            tree['children'].append(walktree1(doc))
-
-    return tree

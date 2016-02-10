@@ -386,7 +386,7 @@ def _conf_processors(app):
                       "long_name": True, "enable": True}
         cursor = app.widukind_db[constants.COL_PROVIDERS].find(query, projection)
             #providers.append({"name": doc['name'], "long_name": doc['long_name']})
-        return dict(provider_list=cursor)
+        return dict(provider_list=list(cursor))
 
     @app.context_processor
     def frequencies():
