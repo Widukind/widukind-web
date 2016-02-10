@@ -5,6 +5,13 @@
 
 {% block page %}
 
+<style>
+.node-tree:hover:not(.node-disabled)
+{
+  background-color: #0a1b21;
+}
+</style>
+
 <div class="form-inline">
 <div class="form-group">
     <label for="input-search" class="sr-only">Search Tree:</label>
@@ -30,16 +37,6 @@
 
 {% endblock %}
 
-{#
-{% block menu_left %}
-<div id="tree"></div>
-{% endblock %}
-
-{% block menu_left_attrs %}class="col-md-4"{% endblock %}
-
-{% block site_content_attrs %}class="col-md-6"{% endblock %}
-#}
-
 {% block add_scripts %}
     {{super()}}
     
@@ -63,7 +60,6 @@
         					href: "{{dataset_codes[ds.dataset_code].url}}",
         					state: {expanded: false},
         				{%- else -%}
-        					selectable: false,
         					state: {disabled: true, expanded: false},
         				{%- endif %}
         			},
@@ -71,11 +67,11 @@
         		]
         		{%- endif -%}
 	    	{%- if item.children %}
-	    		nodes: [{{ loop(item.children) }}]},
+	    		nodes: [{{ loop(item.children) }}]
+	    	},
 	    	{%- else %}
-	    		},
+	    	},
 			{%- endif %}
-        	{#},#}        	
 	    {% endfor -%}
 	{%- endwith -%}
 	];
@@ -120,25 +116,25 @@
               revealResults: true
             };
             var results = $searchableTree.treeview('search', [ pattern, options ]);
-            console.log("results : ", results);
             /*
+            console.log("results : ", results);
             var output = '<p>' + results.length + ' matches found</p>';
             $.each(results, function (index, result) {
               output += '<p>- ' + result.text + '</p>';
             });
-            */
             $('#search-output').html(output);
+            */
           }
 
           $('#btn-search').on('click', function(e){
-        	  e.preventDefault();
         	  search();
+        	  //e.preventDefault();
           });
 
           $('#btn-clear-search').on('click', function (e) {
             $searchableTree.treeview('clearSearch');
             $('#input-search').val('');
-            $('#search-output').html('');
+            //$('#search-output').html('');
           });
           
           $('#btn-expand-all').on('click', function (e) {
