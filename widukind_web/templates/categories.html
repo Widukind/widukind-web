@@ -5,10 +5,19 @@
 
 {% block page %}
 
+{#
+<pre>
+{{ categories|pprint }}
+</pre>
+#}
+
 <style>
 .node-tree:hover:not(.node-disabled)
 {
   background-color: #0a1b21;
+}
+.treeview {
+	padding: 0;
 }
 </style>
 
@@ -26,10 +35,16 @@
 <br/>
 
 <div class="row">
-	<div class="col-md-5">
-		<div id="tree"></div>
+	<div class="col-md-4">
+		<div class="panel panel-default">
+		    <div class="panel-heading">
+		    	<h4>{{ provider.name }}</h4>
+		    </div>
+		    <div class="panel-body" id="tree">
+		    </div>
+		</div>		    
 	</div>
-	<div class="col-md-7">
+	<div class="col-md-8">
 		<div id="dataset-select"></div>
 	</div>
 </div>
