@@ -73,6 +73,8 @@
     </div>
 </div>    
 
+{% set dataset_url = url_for(".dataset-by-slug", slug=dataset.slug) %}
+
 <div class="panel panel-default table-responsive">
 	<div class="table-responsive">
     <table class="table table-striped table-condensed">
@@ -88,7 +90,7 @@
             <tr>
                 <td class="col-md-2">Dataset</td>
                 <td class="col-md-10">
-                	<a href="{{ url_for(".dataset-by-slug", slug=dataset.slug) }}">
+                	<a href="{{ dataset_url }}">
                 		{{ dataset.dataset_code }} - {{ dataset.name }}
                 	</a>
                 </td>
@@ -135,9 +137,10 @@
 		                    {% if key in series.dimensions %}
 		                    {% set dimension = series.dimensions[key] %}
 		                       <tr>
-		                       	   {# TODO: link to dimension in dataset #}
 		                           <td class="col-md-3">
+		                           		<a href="{{ dataset_url }}#dim-{{key}}-{{dimension}}" target="{{ dataset.dataset_code }}">
 										{{ dataset.concepts[key]|default(key) }}
+										</a>
 								   </td>
 		                           <td class="col-md-9">
 		                           		{{ dataset.codelists[key][dimension]|default(dimension) }} ({{dimension}})

@@ -1,7 +1,3 @@
-	            <li>
-	                <a href="{{ url_for("views.last_datasets") }}"><i class="fa fa-table fa-fw"></i> Last Datasets</a>
-	            </li>
-
 				<li class="dropdown">
 	                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 	                    <i class="fa fa-object-group fa-fw"></i> Providers <span class="caret"></span>
@@ -36,18 +32,6 @@
 				            </li>
 				        {% endfor %}
 				    </ul>
-				</li>
-				
-				<li class="dropdown">
-	                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-	                    <i class="fa fa-download fa-fw"></i> Download <span class="caret"></span>
-	                  </a>
-				      <ul class="dropdown-menu">
-				{#
-				        <li><a href="{{ url_for("download.fs_list_dataset") }}">Datasets CSV</a></li>
-				#}
-				        <li><a href="{{ url_for("download.fs_list_series") }}">Series CSV</a></li>
-				      </ul>
 				</li>
 				
 				{# TODO: 		
