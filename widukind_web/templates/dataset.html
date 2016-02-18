@@ -2,6 +2,24 @@
 
 {% block title %}{{super()}} - Dataset - {{dataset.dataset_code}}{% endblock %}
 
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    {% include "include/form-css.html" with context %}
+	<style type="text/css">
+	input[type="radio"].styled:checked+label:after {
+	    font-family: 'FontAwesome';
+	    content: '';
+	}
+	</style>    
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% include "include/form-js.html" with context %}
+{% endblock %}
+
 {% block breadcrumb %}
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
@@ -11,110 +29,184 @@
     </ol>
 {% endblock %}
 
-{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
-
 {% block page %}
 
 <a name="home"></a>
-<div class="panel panel-default">
-    <div class="panel-heading">
-    	<div class="row">
-	    	<div class="col-md-2">
-	        	<h4>{{ provider.name }} - {{ dataset.dataset_code }}</h4>
-	        </div>
-	        <div class="col-md-10">
-				<a href="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}" type="button" class="btn btn-success active">
-					Series <span class="badge">{{count}}</span>
-				</a>
-			</div>
-  		</div>        
-     </div>
+<h4 class="panel-default panel-heading">{{ provider.name }} - {{ dataset.dataset_code }} - {{ dataset.name }}</h4>
 
-	<div class="table-responsive">
-    <table class="table table-striped table-condensed">
-        <tbody>
-            <tr>
-                <td class="col-md-2">Provider</td>
-                <td class="col-md-10">{{ provider.long_name }}</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Name</td>
-                <td class="col-md-10">{{ dataset.name }}</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Web Site</td>
-                <td class="col-md-10">
-                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
-                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
-                    {% else %}
-	                    <a href="{{ provider.website }}">{{ provider.website }}</a>
-                    {% endif %}                
-                </td>
-            </tr>
-            {#
-            <tr>
-                <td class="col-md-2">Export</td>
-                <td class="col-md-10">
-                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', slug=dataset.slug) }}">
-                        <i class="fa fa-download fa-lg"></i>
-                    </a>                        
-                </td>                
-            </tr>
-            #}
-            <tr>
-                <td class="col-md-2">Last Updated</td>
-                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Last Download</td>
-                <td class="col-md-10">{{ moment(dataset.download_last).format('LLL') }} ({{ moment(dataset.download_last).fromNow()}})</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">First Download</td>
-                <td class="col-md-10">{{ moment(dataset.download_first).format('LLL') }} ({{ moment(dataset.download_first).fromNow()}})</td>
-            </tr>
-            {% if dataset.notes %}
-            <tr>
-                <td class="col-md-2">Notes</td>
-                <td class="col-md-10">{{dataset.notes}}</td>
-            </tr>
-            {% endif %}
-            <tr>
-                <td class="col-md-2">Dimensions</td>
-                <td class="col-md-10">
-                    {% for d in dataset.dimension_keys %}
-                        <a href="#dim-{{d}}">{{dataset.concepts[d]}} ({{d}})</a><br/>
-                    {% endfor %}
-                 </td>
-            </tr>            
-            <tr>
-                <td class="col-md-2">Attributes</td>
-                <td class="col-md-10">
-                    {% if dataset.attribute_keys %}
-                    {% for a in dataset.attribute_keys %}
-                        <a href="#attr-{{a}}">{{dataset.concepts[a]}} ({{a}})</a><br/>
-                    {% endfor %}
-                    {% else %}
-                        None
-                    {% endif %}
-                 </td>
-            </tr>
-        </tbody>
-    </table>
-    </div>
+<div class="row">
+	<div class="col-md-12">
+		<ul class="nav nav-tabs">
+		    <li class="active"><a href="#info-tab" data-toggle="tab"><i class="fa fa-info fa-fw"></i> Informations</i></a></li>
+		    <li><a href="#query-tab" data-toggle="tab"><i class="fa fa-search fa-fw"></i> Query</a></li>
+		    <li><a target="{{ dataset.slug }}-series" href="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}"><i class="fa fa-file-excel-o fa-fw"></i> All Series <span class="badge">({{count}})</span></a></li>
+		</ul>
+	</div>
 </div>
+
+<div class="tab-content">
+	<div class="tab-pane active" id="info-tab">
+		<div class="panel panel-default">
+		    <div class="table-responsive">
+		    <table class="table table-striped table-condensed">
+		        <tbody>
+		            <tr>
+		                <td class="col-md-1">Provider</td>
+		                <td class="col-md-5">{{ provider.long_name }}</td>
+		                <td class="col-md-1">Last Updated</td>
+		                <td class="col-md-5">{{ moment(dataset.last_update).format('LLL') }}</td>
+		            </tr>
+		            <tr>
+		                <td class="col-md-1">Web Site</td>
+		                <td class="col-md-5">
+		                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
+		                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
+		                    {% else %}
+			                    <a href="{{ provider.website }}">{{ provider.website }}</a>
+		                    {% endif %}                
+		                </td>
+		                <td class="col-md-1">Last Download</td>
+		                <td class="col-md-5">{{ moment(dataset.download_last).format('LLL') }}</td>
+		            </tr>
+		            {#
+		            <tr>
+		                <td class="col-md-1">First Download</td>
+		                <td class="col-md-5">{{ moment(dataset.download_first).format('LLL') }}</td>
+		            </tr>
+		            <tr>
+		                <td class="col-md-2">Export</td>
+		                <td class="col-md-10">
+		                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', slug=dataset.slug) }}">
+		                        <i class="fa fa-download fa-lg"></i>
+		                    </a>                        
+		                </td>                
+		            </tr>
+		            #}
+		            {% if dataset.notes %}
+		            <tr>
+		                {#<td class="col-md-2">Notes</td>#}
+		                <td class="col-md-12" colspan="4">{{dataset.notes}}</td>
+		            </tr>
+		            {% endif %}
+		            <tr>
+		                <td class="col-md-1">Dimensions</td>
+		                <td class="col-md-5">
+		                    {% for key in dataset.dimension_keys %}
+			                    {% if key in dataset.codelists %}
+			                    	{% set concept = dataset.concepts[key] %}
+			                        <a href="#dim-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+			                    {% endif %}
+		                    {% endfor %}
+		                 </td>
+		                <td class="col-md-1">Attributes</td>
+		                <td class="col-md-5">
+		                    {% if dataset.attribute_keys %}
+			                    {% for key in dataset.attribute_keys %}
+				                    {% if key in dataset.codelists %}
+				                    	{% if dataset.codelists[key] %}
+					                    	{% set concept = dataset.concepts[key] %}
+					                        <a href="#attr-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+					                        {% endif %}
+				                    {% endif %}
+			                    {% endfor %}
+		                    {% else %}
+		                        None
+		                    {% endif %}
+		                 </td>
+		            </tr>
+		        </tbody>
+		    </table>
+		    </div><!-- //end table responsive -->
+		</div>
+	</div><!-- //end tab panel -->
+	<div class="tab-pane" id="query-tab">
+		<div class="panel panel-default">
+			<div class="panel-body">
+			<div class="col-md-8">
+				
+				<form id="query" method="POST" class="form-horizontal" action="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}">
+				
+					{% if dataset.metadata and dataset.metadata.frequencies %}
+					<div class="form-group">
+					    <label class="col-xs-4 control-label">Frequency</label>
+					    <div class="col-xs-6">
+					        {% for freq in dataset.metadata.frequencies %}
+				            <div class="radio">
+				                <input type="radio" name="frequency" value="{{ freq }}" id="{{ freq }}Radio" class="styled" />
+				                <label for="{{ freq }}Radio">{{frequency(freq)}}</label>
+				            </div>
+					        {% endfor %}
+					    </div>
+					</div>
+					{% endif %}
+				
+					{% for key in dataset.dimension_keys %}
+					{% set dimension = dataset.codelists[key] %}
+					<div class="form-group">
+					    <label class="col-xs-4 control-label">{{ dataset.concepts[key] }}</label>
+					    <div class="col-xs-6">
+					        <select name="dim-{{key}}" class="form-control select2-select" multiple>
+					        {% for _key, value in dimension.items() %}
+					        	<option value="{{ _key }}">{{ value }}</option>
+					        {% endfor %}
+					        </select>
+					    </div>
+					</div>					
+					{% endfor %}					
+
+					{% for key in dataset.attribute_keys %}
+						{% if key in dataset.codelists %}
+							{% if dataset.codelists[key] %}
+								{% set attribute = dataset.codelists[key] %}
+								{% if attribute.items() %}
+									<div class="form-group">
+									    <label class="col-xs-4 control-label">{{ dataset.concepts[key] }}</label>
+									    <div class="col-xs-6">
+									        <select name="attr-{{key}}" class="form-control select2-select" multiple>
+									        {% for _key, value in attribute.items() %}
+									        	<option value="{{ _key }}">{{ value }}</option>
+									        {% endfor %}
+									        </select>
+									    </div>
+									</div>
+								{% endif %}
+							{% endif %}			
+						{% endif %}			
+					{% endfor %}					
+					
+			        <div class="form-group">
+			            <label class="col-xs-4 control-label" for="limit">Limits:</label>
+			            <div class="col-xs-6">
+			            	<input name="limit" type="text" class="form-control" value="{{ config.SEARCH_MIN }}" />
+			            </div>
+			        </div>
+			        
+				    <div class="form-group" style="margin-top: 15px;">
+				        <div class="col-xs-4 col-xs-offset-4">
+				            <button type="submit" name="submitButton" class="btn btn-default">Submit</button>
+				        </div>
+				    </div>			                   
+					
+				</form>
+			</div>				
+			</div>
+		</div>
+	</div><!-- //end tab pane -->
+</div><!-- //end tab content -->
 
 {% for key in dataset.dimension_keys %}
 {% set dimension = dataset.codelists[key] %}
 <a name="dim-{{key}}"></a>
 <div class="panel panel-default">
-    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(dimension)</small></h4></div>
+    <div class="panel-heading"><h5>{{ dataset.concepts[key] }} <small>(dimension)</small></h5></div>
     <div class="table-responsive">
     <table class="table table-striped table-condensed table-responsive">
         <tbody>
-        {% for key, value in dimension.items() %}
+        {% for _key, value in dimension.items() %}
             <tr>
-                <td class="col-md-2">{{key}}</td>
+                <td class="col-md-2">                	
+                	<a name="dim-{{key}}-{{_key}}"></a>{{_key}}
+                </td>
                 <td class="col-md-10">{{value}}</td>
             </tr>
         {% endfor %}
@@ -125,21 +217,28 @@
 {% endfor %}
 
 {% for key in dataset.attribute_keys %}
-{% set attribute = dataset.codelists[key] %}
-<a name="attr-{{key}}"></a>
-<div class="panel panel-default">
-    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(attribute)</small></h4></div>
-    <table class="table table-striped table-condensed table-responsive">
-        <tbody>
-        {% for key, value in attribute.items() %}
-            <tr>
-                <td class="col-md-2">{{key}}</td>
-                <td class="col-md-10">{{value}}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>       
-</div>
+	{% if key in dataset.codelists %}
+		{% if dataset.codelists[key] %}
+			{% set attribute = dataset.codelists[key] %}
+			<a name="attr-{{key}}"></a>
+			<div class="panel panel-default">
+			    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(attribute)</small></h4></div>
+			    <table class="table table-striped table-condensed table-responsive">
+			        <tbody>
+			        {% for _key, value in attribute.items() %}
+			            <tr>
+			                <td class="col-md-2">
+			                	<a name="attr-{{key}}-{{_key}}"></a>
+			                	{{_key}}
+			                </td>
+			                <td class="col-md-10">{{value}}</td>
+			            </tr>
+			        {% endfor %}
+			        </tbody>
+			    </table>       
+			</div>
+		{% endif %}
+	{% endif %}
 {% endfor %}
 
 <a name="tags"></a>
@@ -168,7 +267,66 @@
     
     <script type="text/javascript">
     $(document).ready(function(){
-        
+    	
+    	$('.select2-select').select2({
+    		placeholder: "Select an option",
+    		allowClear: true,
+    		closeOnSelect: true,
+    		maximumSelectionLength: 3,
+    	}).val("ALL").trigger("change");
+    	
+        var $search_form = $('#query').formValidation({
+            framework: 'bootstrap',
+            excluded: [':disabled', ':hidden', ':not(:visible)'],
+            icon: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            live: 'submitted',
+            
+            fields: {
+            	frequency: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The frequency is required'
+                        },
+                    }
+                },
+                limit: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The limit is required'
+                        },
+                        between: {
+                            min: {{ config.SEARCH_MIN }},
+                            max: {{ config.SEARCH_MAX }},
+                            message: 'The limit must be between {{ config.SEARCH_MIN }} and {{ config.SEARCH_MAX }}'
+                        }                            
+                    }
+                },
+            },
+        })
+        .on('err.field.fv', function(e, data) {
+        	//data.fv.disableSubmitButtons(false);
+            if (data.fv.getSubmitButton()) {
+                data.fv.disableSubmitButtons(false);
+            }        	
+        })
+        .on('success.field.fv', function(e, data) {
+        	//data.fv.disableSubmitButtons(false);
+            if (data.fv.getSubmitButton()) {
+                data.fv.disableSubmitButtons(false);
+            }        	
+        })
+        .on('success.form.fv', function(e) {
+            e.preventDefault();
+            //work...
+			var $form = $(e.target),
+                fv    = $(e.target).data('formValidation');            
+        	fv.defaultSubmit();
+        });
+
         $("#debug").click(function(e){
             e.preventDefault();
             if ( $(".debug").is(":visible") ) {

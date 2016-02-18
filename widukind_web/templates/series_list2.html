@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - {{provider.name}} - {{dataset.dataset_code}} - Series List{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    {% include "include/form-css.html" with context %}
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js" type="text/javascript" ></script>
+
+	<style type="text/css">
+	input[type="radio"].styled:checked+label:after {
+	    font-family: 'FontAwesome';
+	    content: '';
+	}
+	</style>    
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% include "include/form-js.html" with context %}
+{% endblock %}
+
+
+
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li><a href="{{ url_for("views.providers") }}">Providers</a></li>      
+      <li><a href="{{ url_for("views.datasets", slug=provider.slug) }}">{{provider.name}}</a></li>      
+      {% if dataset %}
+      <li class="active">{{dataset.dataset_code}}</li>
+      {% else %}
+      <li class="active">All Series</li>
+      {% endif %}      
+    </ol>
+{% endblock %}
+
+{% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
+
+{% block page %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4>{{ provider.name }} - {{ dataset.dataset_code }} - Series</h4>
+     </div>
+
+	<table id="series" 
+	    data-url="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}"
+        data-toggle="table" 
+        data-classes="table table-hover table-condensed"  
+        data-striped="true"
+        data-mobile-responsive="true"
+        {#data-check-on-init="true"#}
+        
+        {#data-card-view="true"#}        
+        {#data-show-toggle="true"#}
+        data-show-refresh="false"
+        {#data-show-columns="true"#}
+        data-show-pagination-switch="false" 
+        data-flat="true"
+        {#data-search="true"#}
+        data-search-align="left"
+        data-buttons-align="left"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="right"
+        data-pagination-v-align="top"
+	    
+	    {#data-strict-search="true"#}
+	    data-search-time-out="500"
+	    data-trim-on-search="true"    
+
+        data-cookie="true"
+        data-cookie-id-table="saveId"
+        
+	    data-filter-control="false"
+	    
+        data-pagination="true" 
+        data-side-pagination="server"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+		>
+	    <thead> 
+	        <tr>
+                <th class="col-md-1" data-field="_id" data-align="center" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false" data-searchable="false">&nbsp;</th>
+	            <th class="col-md-1" data-field="dataset_code" data-title-tooltip="Dataset Code" data-sortable="true">Dataset</th>
+                <th class="col-md-2" data-field="key" data-sortable="true">key</th>
+                <th class="col-md-5" data-field="name" data-formatter="seriesNameLinkFormatter" data-sortable="true">Name</th>
+                <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
+	            <th class="col-md-1" data-field="start_date" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
+	            <th class="col-md-1" data-field="end_date" data-align="center" data-sortable="true">End Date</th>
+	        </tr>
+	    </thead>
+	</table>
+</div>
+
+{% endblock %}
+
+{% block add_scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+
+    $(document).ready(function(){
+    	/*
+    	var $table = $('#series');
+    	$table.on('load-success.bs.table', function (datas) {
+    		//addCart("{{ url_for('views.card_add') }}");
+    		
+    	}).on('search.bs.table', function(ev, text){
+    		console.log("search : ", ev, text); //text=A
+    	}).on('column-search.bs.table', function(ev, field, text){
+    		console.log("search column : ", ev, field, text); //text=A, field=frequency
+    	});
+    	*/
+        
+    });    
+	
+	</script>
+{% endblock %}
+

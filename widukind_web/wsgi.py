@@ -189,7 +189,7 @@ def _conf_db(app):
     import gridfs
     from widukind_common.utils import get_mongo_db
     from widukind_web.utils import create_or_update_indexes
-    app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL"))
+    app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL"), connect=False)
     app.widukind_fs = gridfs.GridFS(app.widukind_db)
     create_or_update_indexes(app.widukind_db)
 

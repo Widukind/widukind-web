@@ -13,16 +13,8 @@
 {% block styles %}
     {{super()}}
     
-    <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/5.3.0/css/bootstrap-slider.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.2/select2.min.css" />
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.2/select2-bootstrap.min.css" />
-
-    {#    
-    <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.13/daterangepicker.min.css" rel="stylesheet">
-    #}
-    <link href="//cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/css/formValidation.min.css" rel="stylesheet">
-
+    {% include "include/form-css.html" with context %}
+    
 	<style type="text/css">
 	#search_form .col-xs-3, .col-xs-2 {
 	   padding-left: 0;
@@ -94,14 +86,8 @@
 
 {% block add_scripts %}
     {{super()}}
-    
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.2/select2.min.js" type="text/javascript"></script>
-    {#    
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.13/daterangepicker.min.js" type="text/javascript"></script>
-    #}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/js/formValidation.min.js" type="text/javascript"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/js/framework/bootstrap.min.js" type="text/javascript"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/js/language/en_US.min.js" type="text/javascript"></script>
+
+    {% include "include/form-js.html" with context %}
     
     <script type="text/javascript">
         $(document).ready(function(){
