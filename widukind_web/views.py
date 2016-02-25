@@ -246,7 +246,7 @@ def all_series_for_dataset_slug(slug):
     projection = {
         "dimensions": False, 
         "attributes": False, 
-        "values.revisions": False,
+        #"values.revisions": False,
         "notes": False
     }
     
@@ -260,6 +260,12 @@ def all_series_for_dataset_slug(slug):
         }
         series = convert_series_period(series)
         for s in series:
+            is_revisions = False
+            for value in s["values"]:
+                if value.get("revisions"):
+                    is_revisions = True
+                    break
+            s['is_revisions'] = is_revisions
             del s["values"]
             s['view'] = url_for('.series-by-slug', slug=s['slug'])
             s['export_csv'] = url_for('download.series_csv', 
@@ -364,12 +370,13 @@ def series_with_slug(slug):
     obs_attributes_keys = []
     obs_attributes_values = []
     for v in series["values"]:
+        
         if "revisions" in v:
             revision_dates.extend([r["revision_date"] for r in v["revisions"]])
-                
             count = len(v["revisions"])
             if count > max_revisions:
                 max_revisions = count
+        
         if v.get("attributes"):
             for key, attr in v["attributes"].items():
                 obs_attributes_keys.append(key)
@@ -377,10 +384,13 @@ def series_with_slug(slug):
     
     revision_dates.reverse()
     
+    dimension_filter = ".".join([series["dimensions"][key] for key in dataset["dimension_keys"]])
+    
     return render_template("series.html", 
                            series=series,
                            provider=provider,
                            dataset=dataset,
+                           dimension_filter=dimension_filter,
                            is_reverse=is_reverse,
                            obs_attributes_keys=list(set(obs_attributes_keys)),
                            obs_attributes_values=list(set(obs_attributes_values)),
@@ -401,7 +411,7 @@ def send_file_csv(fileobj, mimetype=None, content_length=0):
     return response
 
 @bp.route('/plot/series/<slug>', endpoint="series_plot")
-@cache.cached(360)
+@cache.memoize(360)
 def plot_series(slug):
     
     is_ajax = request.args.get('json') or request.is_xhr
@@ -440,6 +450,7 @@ def get_search_form(form_klass):
 def get_search_datas(form, search_type="datasets"):
 
     providers = None
+    datasets = None
     frequency = None
     limit = None
     sort = None
@@ -461,6 +472,9 @@ def get_search_datas(form, search_type="datasets"):
         limit = int(form.limit.data)
         
     if search_type == "series":
+        
+        if form.datasets.data:
+            datasets = form.datasets.data
         
         frequency_data = form.frequency.data
         if frequency_data and frequency_data not in ["", "All"]:
@@ -489,6 +503,10 @@ def get_search_datas(form, search_type="datasets"):
         kwargs["sort"] = sort
     
     if search_type == "series":
+
+        if datasets:
+            #str or array if multiple choices
+            kwargs["dataset_code"] = datasets
         
         if frequency:
             kwargs["frequency"] = frequency

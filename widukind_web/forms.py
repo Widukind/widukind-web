@@ -146,7 +146,12 @@ class SearchFormDatasets(Form):
         
 class SearchFormSeries(SearchFormDatasets):
     
-    #TODO: datasets col ?
+    datasets = QuerySetSelectMultipleField(colname=constants.COL_DATASETS, 
+                                            id_attr='dataset_code',
+                                            label_attr='dataset_code',
+                                            allow_blank=True,
+                                            query={"enable": True},
+                                            )
     
     frequency = fields.SelectField(choices=[("All", "All")] + list(constants.FREQUENCIES), default="All")
 
