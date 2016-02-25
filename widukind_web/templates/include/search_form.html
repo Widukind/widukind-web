@@ -20,6 +20,11 @@
         </div>
 
         {% if search_type == "series" %}
+        
+	        <div class="form-group">
+	            {{ lib.selectpicker_field(form.datasets, "Datasets:", place_holder="Select an dataset", is_multiple=True, no_label=False) }}
+	        </div>
+
 	        <div class="form-group">
 	            {{ lib.selectpicker_field(form.frequency, "Frequency:", place_holder="Select an frequency", no_label=False) }}
 	        </div>

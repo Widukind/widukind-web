@@ -9,16 +9,11 @@
 {% endif %}
 
     <select id="{{field.name}}" name="{{field.name}}" class="form-control select2-select" {#data-tags="{{data_tags|lower}}"#} data-placeholder="{{place_holder}}" data-allow-clear="false" {% if is_multiple %}multiple="multiple"{% endif -%}>
-        {#
-        {% if add_blank %}
-            <option value=""></option>
-        {% endif %}
-        #}
         {% for opt in field %}
             {% if opt.value == "---" %}
                 <option value="ALL">All</option>    
             {% else %}
-                {{ opt() }}
+                {{ opt(**{"data-foo":"bar"}) }}
             {% endif %}
         {% endfor %}
     </select>
