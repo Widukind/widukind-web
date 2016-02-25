@@ -50,18 +50,26 @@
   				<table class="table">
   					<tr>
   						<td class="col-md-2">
-  							<h5 class="pull-right">Api R :</h5>
+  							<h5 class="pull-right">R :</h5>
   						</td>
   						<td>
-  							<input class="form-control" type="text" value="{{ config.BASE_URL_API_R}}/series/{{series.slug}}" />
+  							<pre>{{ config.BASE_URL_API_R}}/series/{{series.slug}}</pre>
   						</td>
   					</tr>
   					<tr>
   						<td class="col-md-2">
-  							<h5 class="pull-right">Api JSON :</h5>
+  							<h5 class="pull-right">SDMX :</h5>
   						</td>
   						<td>
-  							<input class="form-control" type="text" value="{{ config.BASE_URL_API_JSON}}/series/{{series.slug}}" />
+  							<pre>{{ config.BASE_URL_API_SDMX}}/{{series.provider_name}}/data/{{dataset.dataset_code}}/{{dimension_filter}}</pre>
+  						</td>
+  					</tr>
+  					<tr>
+  						<td class="col-md-2">
+  							<h5 class="pull-right">JSON :</h5>
+  						</td>
+  						<td>
+  							<pre>{{ config.BASE_URL_API_JSON}}/series/{{series.slug}}</pre>
   						</td>
   					</tr>
   				</table>
@@ -192,7 +200,7 @@
 		                    	<th class="success">Period</th>
 		                    	<th class="success">Current</th>
 
-		                    	{% for rev in revision_dates|sort %}
+		                    	{% for rev in revision_dates|sort|reverse %}
 		                    	<th class="success">
 		                    		{{ moment(rev).format('LL') }}
 		                    	</th>
@@ -219,7 +227,7 @@
 	                               		</ul>
 	                               	</td>
 	                               	
-									{% for rev in revision_dates|sort %}
+									{% for rev in revision_dates|sort|reverse %}
 									<td>
 									<ul class="list-inline">
 										{% set found = False %}
