@@ -81,6 +81,15 @@ function seriesKeyLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">' + row.key +'</a>';
 }
 
+function is_revisions_Formatter(value, row){
+	if ( row.is_revisions === true ) {
+    	return '<i class="fa fa-check"></i>';
+    } else {
+    	return '&nbsp;';
+    }
+}
+
+
 function seriesNameLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">' + row.name +'</a>';
 }
