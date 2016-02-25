@@ -7,9 +7,11 @@ class Config(object):
     
     BOOTSTRAP_SERVE_LOCAL = True
     
-    BASE_URL_API_EVIEWS = config('WIDUKIND_BASE_URL_API_EVIEWS', "http://widukind-api.cepremap.org/api/v1/eviews")
-    BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "http://widukind-api.cepremap.org/api/v1/json")
-    BASE_URL_API_R = config('WIDUKIND_BASE_URL_API_R', "http://widukind-api.cepremap.org/api/v1/r")
+    DEFAULT_URL_API = "http://widukind-api.cepremap.org/api/v1"
+    BASE_URL_API_EVIEWS = config('WIDUKIND_BASE_URL_API_EVIEWS', "%s/eviews" % DEFAULT_URL_API)
+    BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)
+    BASE_URL_API_R = config('WIDUKIND_BASE_URL_API_R', "%s/r" % DEFAULT_URL_API)
+    BASE_URL_API_SDMX = config('WIDUKIND_BASE_URL_API_SDMX', "%s/sdmx" % DEFAULT_URL_API)
 
     GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
     
