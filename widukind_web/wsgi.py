@@ -195,7 +195,8 @@ def _conf_db(app):
 
 def _conf_session(app):
     from widukind_web.mongo_session import PyMongoSessionInterface
-    app.session_interface = PyMongoSessionInterface(app.widukind_db)
+    app.session_interface = PyMongoSessionInterface(app.widukind_db,
+                                                    collection=constants.COL_SESSION)
     
 def _conf_cache(app):
     """
