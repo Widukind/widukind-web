@@ -125,6 +125,18 @@
         		allowClear: true,
         		closeOnSelect: true,
         	}).val("ALL").trigger("change");
+        	
+        	 $('#search_form')
+             	.find('[name="providers"]')
+				.select2({
+        			placeholder: "Select an option",
+        			allowClear: true,
+        			closeOnSelect: true,
+        		})             	
+        		.change(function(e) {
+                	$('#search_form').formValidation('revalidateField', 'providers');
+            	})
+            	.end();
             
             function load_table(data){
                 $table.bootstrapTable('load', data.rows); // client side
@@ -133,18 +145,13 @@
             
             var $search_form = $('#search_form').formValidation({
                 framework: 'bootstrap',
-                excluded: [':disabled', ':hidden', ':not(:visible)'],
+                excluded: [':disabled'], //, ':hidden', ':not(:visible)'
                 icon: {
                     valid: 'glyphicon glyphicon-ok',
                     invalid: 'glyphicon glyphicon-remove',
                     validating: 'glyphicon glyphicon-refresh'
                 },
                 live: 'enable',
-                /*
-                err: {
-                    container: 'tooltip'
-                },
-                */
                 fields: {
                     query: {
                         validators: {
@@ -152,10 +159,20 @@
                                 message: 'The query is required'
                             },
                             stringLength: {
-                                min: 3,
-                                //max: 30,
+                                min: 2,
                                 message: 'The name must be more than 3 characters long'
                             },
+                        }
+                    },
+                    providers: {
+                        validators: {
+                            callback: {
+                            	message: 'The provider is required',
+                                callback: function(value, validator, $field) {
+                                    var options = validator.getFieldElements('providers').val();
+                                    return (options != null && options.length >= 1);
+                                }
+                            } 
                         }
                     },
                     limit: {
@@ -189,7 +206,6 @@
                     type: 'POST',
                     data: $form.serialize(),
                     success: function(result) {
-                        
                         $("#result_count").text(result.object_list.length + '/' + result.count);
                         
                         load_table({

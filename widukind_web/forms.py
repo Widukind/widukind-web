@@ -144,8 +144,17 @@ class SearchFormDatasets(Form):
     
     #TODO: DESC
         
-class SearchFormSeries(SearchFormDatasets):
+class SearchFormSeries(Form):
     
+    query = SearchField(validators=[DataRequired()])
+
+    providers = QuerySetSelectField(colname=constants.COL_PROVIDERS, 
+                                    id_attr='name',
+                                    label_attr='name',
+                                    allow_blank=True,
+                                    #blank_text=""
+                                    query={"enable": True})
+
     datasets = QuerySetSelectMultipleField(colname=constants.COL_DATASETS, 
                                             id_attr='dataset_code',
                                             label_attr='dataset_code',
@@ -162,5 +171,39 @@ class SearchFormSeries(SearchFormDatasets):
     end_date = fields.HiddenField()
     
     sort = fields.SelectField(choices=constants.CHOICES_SORT_SERIES, default="start_date")
+
+    limit = fields.IntegerField(default=20)
+    
+        
+class SearchFormSeriesAll(Form):
+
+    query = SearchField()
+    
+    providers = QuerySetSelectField(colname=constants.COL_PROVIDERS, 
+                                    id_attr='name',
+                                    label_attr='name',
+                                    allow_blank=True,
+                                    #blank_text=""
+                                    query={"enable": True})
+    
+    limit = fields.IntegerField(default=20)
+    
+    #datasets = fields.HiddenField()
+    datasets = QuerySetSelectField(colname=constants.COL_DATASETS, 
+                                    id_attr='dataset_code',
+                                    label_attr='dataset_code',
+                                    allow_blank=True,
+                                    query={"enable": True})
+    
+    frequency = fields.SelectField(choices=[("All", "All")] + list(constants.FREQUENCIES), default="All")
+
+    #TODO: start_date = fields.StringField()
+    start_date = fields.HiddenField()
+    
+    #TODO: end_date = fields.StringField()
+    end_date = fields.HiddenField()
+    
+    sort = fields.SelectField(choices=constants.CHOICES_SORT_SERIES, default="start_date")
+    #sort = fields.SelectField(choices=constants.CHOICES_SORT_DATASETS, default="last_update")
         
         
