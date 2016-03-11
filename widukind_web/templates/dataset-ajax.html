@@ -1,90 +1,15 @@
 
 <a name="home"></a>
-<div class="panel panel-default">
-    <div class="panel-heading">
-    	<div class="row">
-	    	<div class="col-md-2">
-	        	<h4>{{ dataset.provider_name }} - {{ dataset.dataset_code }}</h4>
-	        </div>
-	        <div class="col-md-10">
-				<a href="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}" type="button" class="btn btn-success active">
-					Series <span class="badge">{{count}}</span>
-				</a>
-			</div>
-  		</div>        
-     </div>
 
-	<div class="table-responsive">
-    <table class="table table-striped table-condensed">
-        <tbody>
-            <tr>
-                <td class="col-md-2">Provider</td>
-                <td class="col-md-10">{{ provider.long_name }}</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Name</td>
-                <td class="col-md-10">{{ dataset.name }}</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Web Site</td>
-                <td class="col-md-10">
-                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
-                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
-                    {% else %}
-	                    <a href="{{ provider.website }}">{{ provider.website }}</a>
-                    {% endif %}                
-                </td>
-            </tr>
-            <tr>
-                <td class="col-md-2">Last Updated</td>
-                <td class="col-md-10">
-                	{{dataset.last_update}}
-                	{#
-                	<span class="" data-timestamp="{{dataset.last_update}}" data-format="format('LL')" data-refresh="1" style="">{{dataset.last_update}}</span>
-                	#}
-                </td>
-                
-            </tr>
-            {#
-            <tr>
-                <td class="col-md-2">Last Download</td>
-                <td class="col-md-10">{{ moment(dataset.download_last).format('LLL') }}</td>
-            </tr>
-            <tr>
-                <td class="col-md-2">First Download</td>
-                <td class="col-md-10">{{ moment(dataset.download_first).format('LLL') }}</td>
-            </tr>
-            #}
-            {% if dataset.notes %}
-            <tr>
-                <td class="col-md-2">Notes</td>
-                <td class="col-md-10">{{dataset.notes}}</td>
-            </tr>
-            {% endif %}
-            <tr>
-                <td class="col-md-2">Dimensions</td>
-                <td class="col-md-10">
-                    {% for d in dataset.dimension_keys %}
-                        <a href="#dim-{{d}}">{{dataset.concepts[d]}}</a><br/>
-                    {% endfor %}
-                 </td>
-            </tr>            
-            <tr>
-                <td class="col-md-2">Attributes</td>
-                <td class="col-md-10">
-                    {% if dataset.attribute_keys %}
-                    {% for a in dataset.attribute_keys %}
-                        <a href="#attr-{{a}}">{{dataset.concepts[a]}}</a><br/>
-                    {% endfor %}
-                    {% else %}
-                        None
-                    {% endif %}
-                 </td>
-            </tr>
-        </tbody>
-    </table>
-    </div>
-</div>
+{% include "dataset-shared-infos.html" with context %}
+
+{% include "dataset-shared-dimensions.html" with context %}
+
+{% include "dataset-shared-attributes.html" with context %}
+
+{% include "dataset-shared-tags.html" with context %}
+
+{#
 
 {% for key in dataset.dimension_keys %}
 {% set dimension = dataset.codelists[key] %}
@@ -136,3 +61,4 @@
     </table>       
 </div>
 
+#}
