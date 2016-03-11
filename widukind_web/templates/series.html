@@ -34,7 +34,7 @@
 		             <i class="fa fa-table fa-stack-1x fa-inverse"></i>
 		           </span>	       
 			    </a>
-			    <a id="api-infos" title="Link for R Api">
+			    <a id="api-infos" title="Api Links">
 		           <span class="fa-stack fa-lg">
 		             <i class="fa fa-circle fa-stack-2x"></i>
 		             <i class="fa fa-info-circle fa-stack-1x fa-inverse"></i>
@@ -48,14 +48,6 @@
   		<div id="infos" class="row" style="display: none;">
   			<div id="infos-content" class="col-md-12">
   				<table class="table">
-  					<tr>
-  						<td class="col-md-2">
-  							<h5 class="pull-right">R :</h5>
-  						</td>
-  						<td>
-  							<pre>{{ config.BASE_URL_API_R}}/series/{{series.slug}}</pre>
-  						</td>
-  					</tr>
   					<tr>
   						<td class="col-md-2">
   							<h5 class="pull-right">SDMX :</h5>
@@ -113,7 +105,7 @@
             </tr>
             <tr>
                 <td class="col-md-2">Last Updated</td>
-                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }} ({{ moment(dataset.last_update).fromNow()}})</td>
+                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }}</td>
             </tr>
             <tr>
                 <td class="col-md-2">Web Site</td>
@@ -198,7 +190,7 @@
 		                    {% for value in series["values"]|reverse %}
 		                    	{% if loop.first %}
 		                    	<th class="success">Period</th>
-		                    	<th class="success">Current</th>
+		                    	<th class="success">{{ moment(dataset.last_update).format('LL') }}</th>
 
 		                    	{% for rev in revision_dates|sort|reverse %}
 		                    	<th class="success">
