@@ -15,11 +15,16 @@
             <input type="submit" class="btn btn-default btn-sm btn-block" value="Search" />
         </div>
         
-        <div class="form-group">
-            {{ lib.selectpicker_field(form.providers, "Providers:", place_holder="Select an provider", is_multiple=True, no_label=False) }}
-        </div>
+        {% if search_type != "series" %}
+	        <div class="form-group">
+	            {{ lib.selectpicker_field(form.providers, "Providers:", place_holder="Select an provider", is_multiple=True, no_label=False) }}
+	        </div>
 
-        {% if search_type == "series" %}
+        {% else %}
+
+	        <div class="form-group">
+	            {{ lib.selectpicker_field(form.providers, "Provider:", place_holder="Select an provider", is_multiple=False, no_label=False) }}
+	        </div>
         
 	        <div class="form-group">
 	            {{ lib.selectpicker_field(form.datasets, "Datasets:", place_holder="Select an dataset", is_multiple=True, no_label=False) }}

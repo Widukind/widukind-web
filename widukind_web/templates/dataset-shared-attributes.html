@@ -1,0 +1,26 @@
+{% for key in dataset.attribute_keys %}
+	{% if key in dataset.codelists %}
+		{% if dataset.codelists[key] %}
+			{% set attribute = dataset.codelists[key] %}
+			<a name="attr-{{key}}"></a>
+			<div class="panel panel-default">
+			    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(attribute)</small></h4></div>
+			    <div class="table-responsive">
+			    <table class="table table-striped table-condensed">
+			        <tbody>
+			        {% for _key, value in attribute.items() %}
+			            <tr>
+			                <td class="col-md-2">
+			                	<a name="attr-{{key}}-{{_key}}"></a>
+			                	{{_key}}
+			                </td>
+			                <td class="col-md-10">{{value}}</td>
+			            </tr>
+			        {% endfor %}
+			        </tbody>
+			    </table>
+			    </div>       
+			</div>
+		{% endif %}
+	{% endif %}
+{% endfor %}

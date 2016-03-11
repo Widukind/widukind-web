@@ -1,0 +1,63 @@
+		<div class="panel panel-default">
+		
+		    <div class="panel-heading">
+				<h4>{{ dataset.provider_name }} - {{ dataset.dataset_code }} - {{ dataset.name }}</h4>
+				<h5><a target="{{ dataset.slug }}-series" href="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}"><i class="fa fa-hand-o-right"></i> {{count}} Series</a></h5>
+			</div>
+		
+		    <div class="table-responsive">
+		    <table class="table table-striped table-condensed">
+		        <tbody>
+		            <tr>
+		                <td class="col-md-1">Provider</td>
+		                <td class="col-md-5">{{ provider.long_name }}</td>
+		                <td class="col-md-2">Last Updated</td>
+		                <td class="col-md-4">{{ moment(dataset.last_update).format('LLL') }}</td>
+		            </tr>
+		            <tr>
+		                <td class="col-md-1">Web Site</td>
+		                <td class="col-md-5">
+		                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
+		                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
+		                    {% else %}
+			                    <a href="{{ provider.website }}">{{ provider.website }}</a>
+		                    {% endif %}                
+		                </td>
+		                <td class="col-md-2">Last Download</td>
+		                <td class="col-md-4">{{ moment(dataset.download_last).format('LLL') }}</td>
+		            </tr>
+		            {% if dataset.notes %}
+		            <tr>
+		                <td class="col-md-12" colspan="4">{{dataset.notes}}</td>
+		            </tr>
+		            {% endif %}
+		            <tr>
+		                <td class="col-md-1">Dimensions</td>
+		                <td class="col-md-5">
+		                    {% for key in dataset.dimension_keys %}
+			                    {% if key in dataset.codelists %}
+			                    	{% set concept = dataset.concepts[key] %}
+			                        <a href="#dim-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+			                    {% endif %}
+		                    {% endfor %}
+		                 </td>
+		                <td class="col-md-2">Attributes</td>
+		                <td class="col-md-4">
+		                    {% if dataset.attribute_keys %}
+			                    {% for key in dataset.attribute_keys %}
+				                    {% if key in dataset.codelists %}
+				                    	{% if dataset.codelists[key] %}
+					                    	{% set concept = dataset.concepts[key] %}
+					                        <a href="#attr-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+					                        {% endif %}
+				                    {% endif %}
+			                    {% endfor %}
+		                    {% else %}
+		                        None
+		                    {% endif %}
+		                 </td>
+		            </tr>
+		        </tbody>
+		    </table>
+		    </div><!-- //end table responsive -->
+		</div>

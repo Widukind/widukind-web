@@ -4,6 +4,7 @@
 
 {% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
 
+{#
 {% block styles %}
     {{super()}}
     {% include "include/form-css.html" with context %}
@@ -19,6 +20,7 @@
     {{super()}}
     {% include "include/form-js.html" with context %}
 {% endblock %}
+#}
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
@@ -32,8 +34,8 @@
 {% block page %}
 
 <a name="home"></a>
-<h4 class="panel-default panel-heading">{{ provider.name }} - {{ dataset.dataset_code }} - {{ dataset.name }}</h4>
 
+{#
 <div class="row">
 	<div class="col-md-12">
 		<ul class="nav nav-tabs">
@@ -43,81 +45,14 @@
 		</ul>
 	</div>
 </div>
+#}
 
+{% include "dataset-shared-infos.html" with context %}
+
+{#
 <div class="tab-content">
-	<div class="tab-pane active" id="info-tab">
-		<div class="panel panel-default">
-		    <div class="table-responsive">
-		    <table class="table table-striped table-condensed">
-		        <tbody>
-		            <tr>
-		                <td class="col-md-1">Provider</td>
-		                <td class="col-md-5">{{ provider.long_name }}</td>
-		                <td class="col-md-1">Last Updated</td>
-		                <td class="col-md-5">{{ moment(dataset.last_update).format('LLL') }}</td>
-		            </tr>
-		            <tr>
-		                <td class="col-md-1">Web Site</td>
-		                <td class="col-md-5">
-		                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
-		                        <a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
-		                    {% else %}
-			                    <a href="{{ provider.website }}">{{ provider.website }}</a>
-		                    {% endif %}                
-		                </td>
-		                <td class="col-md-1">Last Download</td>
-		                <td class="col-md-5">{{ moment(dataset.download_last).format('LLL') }}</td>
-		            </tr>
-		            {#
-		            <tr>
-		                <td class="col-md-1">First Download</td>
-		                <td class="col-md-5">{{ moment(dataset.download_first).format('LLL') }}</td>
-		            </tr>
-		            <tr>
-		                <td class="col-md-2">Export</td>
-		                <td class="col-md-10">
-		                    <a title="Export CSV" class="icon" href="{{ url_for('download.datasets_csv', slug=dataset.slug) }}">
-		                        <i class="fa fa-download fa-lg"></i>
-		                    </a>                        
-		                </td>                
-		            </tr>
-		            #}
-		            {% if dataset.notes %}
-		            <tr>
-		                {#<td class="col-md-2">Notes</td>#}
-		                <td class="col-md-12" colspan="4">{{dataset.notes}}</td>
-		            </tr>
-		            {% endif %}
-		            <tr>
-		                <td class="col-md-1">Dimensions</td>
-		                <td class="col-md-5">
-		                    {% for key in dataset.dimension_keys %}
-			                    {% if key in dataset.codelists %}
-			                    	{% set concept = dataset.concepts[key] %}
-			                        <a href="#dim-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
-			                    {% endif %}
-		                    {% endfor %}
-		                 </td>
-		                <td class="col-md-1">Attributes</td>
-		                <td class="col-md-5">
-		                    {% if dataset.attribute_keys %}
-			                    {% for key in dataset.attribute_keys %}
-				                    {% if key in dataset.codelists %}
-				                    	{% if dataset.codelists[key] %}
-					                    	{% set concept = dataset.concepts[key] %}
-					                        <a href="#attr-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
-					                        {% endif %}
-				                    {% endif %}
-			                    {% endfor %}
-		                    {% else %}
-		                        None
-		                    {% endif %}
-		                 </td>
-		            </tr>
-		        </tbody>
-		    </table>
-		    </div><!-- //end table responsive -->
-		</div>
+
+	<div class="tab-pane active" id="info-tab">		
 	</div><!-- //end tab panel -->
 	<div class="tab-pane" id="query-tab">
 		<div class="panel panel-default">
@@ -193,65 +128,13 @@
 		</div>
 	</div><!-- //end tab pane -->
 </div><!-- //end tab content -->
+#}
 
-{% for key in dataset.dimension_keys %}
-{% set dimension = dataset.codelists[key] %}
-<a name="dim-{{key}}"></a>
-<div class="panel panel-default">
-    <div class="panel-heading"><h5>{{ dataset.concepts[key] }} <small>(dimension)</small></h5></div>
-    <div class="table-responsive">
-    <table class="table table-striped table-condensed table-responsive">
-        <tbody>
-        {% for _key, value in dimension.items() %}
-            <tr>
-                <td class="col-md-2">                	
-                	<a name="dim-{{key}}-{{_key}}"></a>{{_key}}
-                </td>
-                <td class="col-md-10">{{value}}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    </div>
-</div>
-{% endfor %}
+{% include "dataset-shared-dimensions.html" with context %}
 
-{% for key in dataset.attribute_keys %}
-	{% if key in dataset.codelists %}
-		{% if dataset.codelists[key] %}
-			{% set attribute = dataset.codelists[key] %}
-			<a name="attr-{{key}}"></a>
-			<div class="panel panel-default">
-			    <div class="panel-heading"><h4>{{ dataset.concepts[key] }} <small>(attribute)</small></h4></div>
-			    <table class="table table-striped table-condensed table-responsive">
-			        <tbody>
-			        {% for _key, value in attribute.items() %}
-			            <tr>
-			                <td class="col-md-2">
-			                	<a name="attr-{{key}}-{{_key}}"></a>
-			                	{{_key}}
-			                </td>
-			                <td class="col-md-10">{{value}}</td>
-			            </tr>
-			        {% endfor %}
-			        </tbody>
-			    </table>       
-			</div>
-		{% endif %}
-	{% endif %}
-{% endfor %}
+{% include "dataset-shared-attributes.html" with context %}
 
-<a name="tags"></a>
-<div class="panel panel-default">
-    <table class="table table-striped table-condensed table-responsive">
-        <tbody>
-            <tr>
-                <td class="col-md-2">Tags</td>
-                <td class="col-md-10">{{dataset.tags|join(", ")}}</td>
-            </tr>                        
-        </tbody>
-    </table>       
-</div>
+{% include "dataset-shared-tags.html" with context %}
 
 <a id="debug" class="btn btn-default btn-sm" href="#"><i class="fa fa-cog"></i> Debug</a>
 
@@ -267,7 +150,8 @@
     
     <script type="text/javascript">
     $(document).ready(function(){
-    	
+
+    	{#
     	$('.select2-select').select2({
     		placeholder: "Select an option",
     		allowClear: true,
@@ -326,6 +210,7 @@
                 fv    = $(e.target).data('formValidation');            
         	fv.defaultSubmit();
         });
+        #}
 
         $("#debug").click(function(e){
             e.preventDefault();

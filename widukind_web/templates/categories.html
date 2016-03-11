@@ -109,6 +109,7 @@
 				        cache: false,
 				        success: function(result) {
 				        	$("#dataset-select").html(result.html);
+				        	flask_moment_render_all();
 				        }				        
 				   	});
         		} else {

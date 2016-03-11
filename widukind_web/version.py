@@ -1,4 +1,4 @@
-VERSION = (0, 5, 4)
+VERSION = (0, 5, 5)
 
 def version_str():
     if len(VERSION) == 3: 
