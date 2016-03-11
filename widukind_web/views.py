@@ -19,7 +19,7 @@ from werkzeug.datastructures import MultiDict
 from pymongo import ASCENDING, DESCENDING
 from bson import ObjectId
 
-from widukind_common.tags import search_series_tags, search_datasets_tags
+from widukind_common.tags import search_series_tags, search_datasets_tags, str_to_tags
 
 from widukind_web import constants
 from widukind_web import forms
@@ -365,14 +365,27 @@ def series_with_slug(slug):
         result_series = render_template_string("{{ series|pprint }}", series=series)
         return current_app.jsonify(dict(dataset=result_dataset, series=result_series))
     
+    
+    """
+    Faire un tableau de date:
+        1ère ligne: current, dataset.last_udpate
+        lignes suivantes: chaque révisions
+    """
+    
+    
+    
     max_revisions = 0
     revision_dates = []
     obs_attributes_keys = []
     obs_attributes_values = []
+    
     for v in series["values"]:
         
         if "revisions" in v:
-            revision_dates.extend([r["revision_date"] for r in v["revisions"]])
+            for r in v["revisions"]:
+                if not r["revision_date"] in revision_dates:
+                    revision_dates.append(r["revision_date"])
+
             count = len(v["revisions"])
             if count > max_revisions:
                 max_revisions = count
@@ -383,6 +396,58 @@ def series_with_slug(slug):
                 obs_attributes_values.append(attr)       
     
     revision_dates.reverse()
+    #pprint(revision_dates)
+    """
+    Essai tableau de rev avec series_essai_rev.html
+    > trous dans les period    
+    '2008-10-01 00:00:00': [{'attributes': None,
+                              'period': '1980',
+                              'value': '-83.25'},
+                             {'attributes': None,
+                              'period': '1982',
+                              'value': '-157.75'},]
+                              
+    revision_dates = OrderedDict()
+    revision_dates[str(dataset["last_update"])] = []
+    for v in series["values"]:
+        
+        revision_dates[str(dataset["last_update"])].append({
+            "value": v["value"],
+            "period": v["period"],
+            "attributes": v.get("attributes", {})
+        })
+        
+        if "revisions" in v:
+            for r in v["revisions"]:
+                if not str(r["revision_date"]) in revision_dates:
+                    revision_dates[str(r["revision_date"])] = []
+                #if not r["revision_date"] in revision_dates:
+                #    revision_dates.append(r["revision_date"])
+                revision_dates[str(r["revision_date"])].append({
+                    "value": r["value"],
+                    "period": v["period"],
+                    "attributes": r.get("attributes", {})
+                })
+                
+            count = len(v["revisions"])
+            if count > max_revisions:
+                max_revisions = count
+        else:
+            for rk, vk in revision_dates.items():
+                if rk == str(dataset["last_update"]):
+                    continue
+                vk.append({
+                    "value": v["value"],
+                    "period": v["period"],
+                    "attributes": v.get("attributes", {})
+                })
+        
+        if v.get("attributes"):
+            for key, attr in v["attributes"].items():
+                obs_attributes_keys.append(key)
+                obs_attributes_values.append(attr)       
+    """
+    
     
     dimension_filter = ".".join([series["dimensions"][key] for key in dataset["dimension_keys"]])
     
@@ -593,6 +658,7 @@ def search_in_series():
                                                  projection=projection, 
                                                  **kwargs)
 
+        print("_query : ", _query)
         object_list = convert_series_period(object_list)
 
         record_query(query=kwargs, 
@@ -751,4 +817,147 @@ def tag_prefetch_series():
     tags = [doc['name'] for doc in docs]
     return current_app.jsonify(tags)
     
+
+def _search_series(provider_name=None, dataset_code=None, 
+                   frequency=None, projection=None, 
+                   search_tags=None,
+                   start_date=None, end_date=None,
+                   sort=None, sort_desc=False,                        
+                   skip=None, limit=None):
+    
+    '''Convert search tag to lower case and strip tag'''
+    
+    import pandas
+    import re
+
+    query = {}
+    
+    if search_tags:
+        tags = str_to_tags(search_tags)
+        # Add OR, NOT
+        tags_regexp = [re.compile('.*%s.*' % e, re.IGNORECASE) for e in tags]
+        #  AND implementation
+        query = {"tags": {"$all": tags_regexp}}
+    
+    if provider_name:
+        query['provider_name'] = provider_name
+        
+    if frequency:
+        query['frequency'] = frequency
+                    
+    if dataset_code:
+        query['dataset_code'] = dataset_code
+
+    try:
+        if start_date:
+            ordinal_start_date = pandas.Period(start_date).ordinal
+            query["start_date"] = {"$gte": ordinal_start_date}
+    except Exception as err:
+        current_app.logger.error(err)
+    
+    try:
+        if end_date:
+            query["end_date"] = {"$lte": pandas.Period(end_date).ordinal}
+    except Exception as err:
+        current_app.logger.error(err)
+        
+    cursor = queries.col_series().find(query, projection)
+    
+    skip = skip or request.args.get('offset', default=0, type=int)
+
+    if skip:
+        cursor = cursor.skip(skip)
+    
+    if limit:
+        cursor = cursor.limit(limit)
+    
+    if sort:
+        sort_direction = ASCENDING
+        if sort_desc:
+            sort_direction = DESCENDING
+        cursor = cursor.sort(sort, sort_direction)
+    
+    return cursor, query
+
+
+@bp.route('/ajax/datasets', endpoint="ajax-datasets")
+def ajax_datasets_list():
+    
+    provider =  request.args.get('provider')
+
+    query = {"enable": True}
+    if provider:
+        query["provider_name"] = provider
+        
+    projection = {
+        "_id": False,
+        "provider_name": True,
+        "dataset_code": True, 
+        "name": True,
+    }
+
+    datasets = queries.col_datasets().find(query, projection,
+                                           sort=[('name', ASCENDING)])
+    
+    datas = [(d["dataset_code"], d["name"]) for d in datasets]
+    
+    return current_app.jsonify(datas)
+    
+@bp.route('/series/all', endpoint="series-all", methods=('GET', 'POST'))
+def all_series():
+
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    is_reset = request.args.get('reset')
+    if is_reset and session.get("all-series"):
+        del session["all-series"]
+
+    form = forms.SearchFormSeriesAll()
+
+    if not is_ajax:
+        return render_template("series_list2.html", form=form)
+
+    kwargs = {}
+    projection = {
+        "dimensions": False, 
+        "attributes": False, 
+        "values.revisions": False,
+        "notes": False,
+        "tags": False
+    }
+    
+    if form.validate_on_submit():
+        kwargs = get_search_datas(form, search_type="series")
+        kwargs.pop("sort", None)
+        session["all-series"] = kwargs
+        
+    elif session.get("all-series"):
+        kwargs = session.get("all-series")
+        
+    cursor, query = _search_series(projection=projection, **kwargs)
+    count = cursor.count()
+    
+    pprint(query)
+    
+    series_list = convert_series_period(cursor)
+
+    datas = {
+        "total": count,
+        "rows": []
+    }
+    
+    print("count : ", count)
+    
+    for s in series_list:
+        #del s["values"]
+        s['view'] = url_for('.series-by-slug', slug=s['slug'])
+        s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
+        s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
+        #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
+        if s['frequency'] in constants.FREQUENCIES_DICT:
+            s['frequency'] = constants.FREQUENCIES_DICT[s['frequency']]
+        
+        datas["rows"].append(s)
+
+    return current_app.jsonify(datas)
 
