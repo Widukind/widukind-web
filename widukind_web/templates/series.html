@@ -181,82 +181,78 @@
                     {% endif %}
                     </div>       
                  </td>
-            </tr>            
-            <tr>
-                <td class="col-md-12" colspan="2">
-                
-                    <div class="table-responsive">
-                    <table class="table table-striped table-condensed table-bordered table-hover">
-		                    {% for value in series["values"]|reverse %}
-		                    	{% if loop.first %}
-		                    	<th class="success">Period</th>
-		                    	<th class="success">{{ moment(dataset.last_update).format('LL') }}</th>
-
-		                    	{% for rev in revision_dates|sort|reverse %}
-		                    	<th class="success">
-		                    		{{ moment(rev).format('LL') }}
-		                    	</th>
-								{% endfor %}
-								<tbody>		                    	
-		                    	{% endif %}
-	                           <tr>
-	                               	<td class="col-md-1">{{ value.period }}</td>
-	                               	
-	                               	<td class="col-md-1">
-	                               		<ul class="list-inline">
-	                               			
-	                               			<li>{{ value.value }}</li>
-	                               			
-	                               			{%- if value.attributes -%}
-											<li class="pull-right">											
-			                               		{%- for attr_key, attr_value in value.attributes.items() -%}
-				                               		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
-					                               		{{ attr_value }}
-				                               		</a>
-			                               		{%- endfor -%}											
-											</li>
-											{%- endif -%}
-	                               		</ul>
-	                               	</td>
-	                               	
-									{% for rev in revision_dates|sort|reverse %}
-									<td>
-									<ul class="list-inline">
-										{% set found = False %}
-										{% for v in value.revisions %}
-											{% if v.revision_date == rev %}
-												<li>{{ v.value }}</li>
-												{% set found = True %}
-												{#												
-		                               			{%- if v.attributes -%}
-												<li class="pull-right">											
-				                               		{%- for attr_key, attr_value in v.attributes.items() -%}
-					                               		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
-						                               		{{ attr_value }}
-					                               		</a>
-				                               		{%- endfor -%}											
-												</li>
-												{%- endif -%}
-												#}
-												{#{% break %}#}
-											{% endif %}
-										{% endfor %}
-										{% if not found %}
-											&nbsp;
-										{% endif %}
-	                               	</ul>
-	                               	</td>	   
-	                               	{% endfor %}
-	                           </tr>
-		                    {% endfor %}                 
-                        </tbody>
-                    </table>
-                    </div>
-                </td>
             </tr>
-        </tbody>
-    </table>
-	</div>    
+		</tbody>
+	</table>
+	</div>
+</div>
+
+<div class="panel panel-default table-responsive">
+	<div class="table-responsive col-md-4">
+		<table class="table table-striped table-condensed table-bordered table-hover">
+			{% for value in series["values"]|reverse %}
+              	{% if loop.first %}
+              	<th class="success">Period</th>
+              	<th class="success">{{ moment(dataset.last_update).format('LL') }}</th>
+				{#
+              	{% for rev in revision_dates|sort|reverse %}
+              	<th class="success">
+              		{{ moment(rev).format('LL') }}
+              	</th>
+				{% endfor %}
+				#}
+				<tbody>                	
+              	{% endif %}
+                <tr>
+					<td class="col-md-6">{{ value.period }}</td>
+                        	
+					<td class="col-md-6">
+                    	<ul class="list-inline">
+                     		<li>{{ value.value }}</li>
+                     		{%- if value.attributes -%}
+							<li class="pull-right">											
+                         		{%- for attr_key, attr_value in value.attributes.items() -%}
+                          		<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+                           		{{ attr_value }}
+                          		</a>
+                         		{%- endfor -%}											
+							</li>
+							{%- endif -%}
+                     	</ul>
+					</td>
+					
+					{#	                               	
+					{% for rev in revision_dates|sort|reverse %}
+					<td>
+						<ul class="list-inline">
+							{% set found = False %}
+							{% for v in value.revisions %}
+								{% if v.revision_date == rev %}
+									<li>{{ v.value }}</li>
+									{% set found = True %}
+									{%- if v.attributes -%}
+									<li class="pull-right">											
+					                	{%- for attr_key, attr_value in v.attributes.items() -%}
+					                    	<a href="#obs_attributes_{{attr_key}}_{{attr_value}}">
+					                        	{{ attr_value }}
+											</a>
+										{%- endfor -%}											
+									</li>
+									{%- endif -%}
+								{% endif %}
+							{% endfor %}
+							{% if not found %}
+								&nbsp;
+							{% endif %}
+						</ul>
+					</td>	   
+					{% endfor %}
+				    #}
+				</tr>
+			{% endfor %}                 
+            </tbody>
+		</table>
+	</div>
 </div>
 
 {% if obs_attributes_keys %}
