@@ -139,15 +139,15 @@ class MongoHandler(logging.Handler):
         
         self.collection.create_index([
             ("timestamp", DESCENDING)], 
-            name="timestamp_idx")
+            name="timestamp_idx", background=True)
 
         self.collection.create_index([
             ("message", ASCENDING)], 
-            name="message_idx")
+            name="message_idx", background=True)
 
         self.collection.create_index([
             ("loggerName", ASCENDING)], 
-            name="loggerName_idx")
+            name="loggerName_idx", background=True)
         
         
     def emit(self, record):
