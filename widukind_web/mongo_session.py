@@ -63,7 +63,10 @@ class PyMongoSessionInterface(SessionInterface):
     def create_indexes(self):
         self.col.create_index([
             ("expiration", ASCENDING)], 
-            name="expiration_idx", unique=True, expireAfterSeconds=self.expireAfterSeconds)
+            name="expiration_idx", 
+            unique=True,
+            background=True,
+            expireAfterSeconds=self.expireAfterSeconds)
 
     def get_expiration_time(self, app, session):
         if session.permanent:

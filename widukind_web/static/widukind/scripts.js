@@ -163,7 +163,9 @@ function AdminQueriesResponseHandler(res){
 		var query = [];
 		query.push("search: " + item.query.search_tags);		
 		if (item.query.provider_name){
-			query.push("providers: " + item.query.provider_name.join(',') );
+			//console.log(item.query.provider_name);
+			query.push("providers: " + item.query.provider_name );
+			//query.push("providers: " + item.query.provider_name.join(',') );
 		}
 		query.push("limit: " + item.query.limit);
 		query.push("sort: " + item.query.sort);
@@ -172,3 +174,6 @@ function AdminQueriesResponseHandler(res){
 	return res;
 }
 
+function AdminQueriesLinkFormatter(value, row){
+    return '<a href="' + row.view + '" title="Show detail">Show</a>';
+}

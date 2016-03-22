@@ -59,8 +59,8 @@ class Config(object):
     FULL_URL_SITEMAP = config('WIDUKIND_WEB_FULL_URL_SITEMAP', "http://widukind.cepremap.org")
     #SITEMAP_URL_SCHEME = None
     
-    SEARCH_MIN = config('WIDUKIND_WEB_SEARCH_MIN', 20, cast=int)
-    SEARCH_MAX = config('WIDUKIND_WEB_SEARCH_MAX', 500, cast=int)
+    SEARCH_MIN = config('WIDUKIND_WEB_SEARCH_MIN', 1, cast=int)
+    SEARCH_MAX = config('WIDUKIND_WEB_SEARCH_MAX', 1000, cast=int)
     
     #---Flask-Basic-Auth
     BASIC_AUTH_USERNAME = config('WIDUKIND_WEB_USERNAME', 'admin')

@@ -72,8 +72,11 @@
 					<ul class="dropdown-menu">
 						<li><a href="{{ url_for("admin.providers") }}">Providers</a></li>
 						<li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
+						<li><a href="{{ url_for("admin.profile") }}">Profiles</a></li>						
 						<li><a href="{{ url_for("admin.logs") }}">Logs</a></li>
-						<li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>						
+						<li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>
+						<li><a href="{{ url_for("admin.stats-datasets") }}">Stats Datasets</a></li>												
+						<li><a href="{{ url_for("admin.stats-series") }}">Stats Series</a></li>												
 					</ul>
 		        </li>
 		        {% endif %}

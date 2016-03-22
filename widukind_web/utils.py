@@ -13,7 +13,7 @@ import arrow
 
 logger = logging.getLogger(__name__)
 
-def create_or_update_indexes(db, force_mode=False):
+def create_or_update_indexes(db, force_mode=False, background=True):
     """Create or update MongoDB indexes"""
     
     global UPDATE_INDEXES
@@ -23,7 +23,7 @@ def create_or_update_indexes(db, force_mode=False):
 
     db[constants.COL_COUNTERS].create_index([
         ("name", ASCENDING)], 
-        name="name_idx", unique=True)
+        name="name_idx", unique=True, background=background)
 
     UPDATE_INDEXES = True
 

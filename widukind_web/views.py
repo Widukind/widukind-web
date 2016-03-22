@@ -455,7 +455,7 @@ def series_with_slug(slug):
                            series=series,
                            provider=provider,
                            dataset=dataset,
-                           dimension_filter=dimension_filter,
+                           dimension_filter=dimension_filter.upper(),
                            is_reverse=is_reverse,
                            obs_attributes_keys=list(set(obs_attributes_keys)),
                            obs_attributes_values=list(set(obs_attributes_values)),
@@ -564,8 +564,8 @@ def get_search_datas(form, search_type="datasets"):
     if limit:
         kwargs["limit"] = limit
     
-    if sort:
-        kwargs["sort"] = sort
+    #if sort:
+    #    kwargs["sort"] = sort
     
     if search_type == "series":
 
@@ -659,10 +659,12 @@ def search_in_series():
                                                  **kwargs)
 
         print("_query : ", _query)
+        #result_count = object_list.count() # max limit
+        result_count = object_list.count(True) # max count real
         object_list = convert_series_period(object_list)
 
         record_query(query=kwargs, 
-                     result_count=len(object_list), 
+                     result_count=result_count, 
                      form=form, 
                      tags=["search", "series"])
         

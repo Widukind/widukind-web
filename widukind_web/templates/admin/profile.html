@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Profile{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Profile</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<table class="table table-hover table-condensed">	    
+    <thead>
+        <th>NS</th>
+        <th>OP</th>
+        <th>TS</th>
+    </thead>    
+    <tbody>
+        {% for doc in docs %}
+        <tr>
+            <td>
+				{{doc.op}}            
+            </td>
+            <td>
+            	<a href="{{ url_for('admin.profile-unit', position=loop.index0) }}">
+                	{{doc.ns}}
+                </a>
+            </td>
+            <td>
+				{{doc.ts}}            
+            </td>
+        </tr>        
+        {% endfor %}
+    </tbody>
+</table>    
+
+
+{% endblock %}
+
