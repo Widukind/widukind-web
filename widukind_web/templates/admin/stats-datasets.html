@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Stats - Datasets{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<table class="table table-hover table-condensed">	    
+    <thead>
+        <th>Provider</th>
+        <th>Datasets</th>
+    </thead>    
+    <tbody>
+        {% for r in result %}
+        <tr>
+            <td>
+            	{{ r._id }}
+            </td>
+            <td>
+            	{{ r.count }}
+            </td>
+        </tr>        
+        {% endfor %}
+    </tbody>
+</table>    
+
+
+{% endblock %}
+

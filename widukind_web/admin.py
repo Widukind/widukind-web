@@ -2,6 +2,7 @@
 
 from flask import Blueprint, current_app, request, render_template, abort, url_for, redirect
 from pymongo import DESCENDING
+from bson import ObjectId
 
 from widukind_web import constants
 from widukind_web.extensions import auth
@@ -88,6 +89,12 @@ def change_status_dataset(slug):
     
     return redirect(url_for(".datasets", slug=provider["slug"]))
 
+@bp.route('/db/profiling/<int:status>', endpoint="db-profiling")
+@auth.required
+def change_db_profiling(status=0):
+    db = current_app.widukind_db
+    db.set_profiling_level(status)
+    return redirect(url_for("home"))
 
 @bp.route('/cache/clear', endpoint="cache_clear")
 @auth.required
@@ -95,6 +102,33 @@ def cache_clear():
     cache.clear()
     return redirect(url_for("home"))
 
+@bp.route('/doc/<col>/<objectid:objectid>', endpoint="doc")
+@auth.required
+def doc_view(col, objectid):
+    doc = current_app.widukind_db[col].find_one({"_id": objectid})
+    return render_template("admin/doc.html", doc=doc) 
+
+@bp.route('/db/profile/<int:position>', endpoint="profile-unit")
+@bp.route('/db/profile', endpoint="profile")
+@auth.required
+def profile_view(position=-1):
+    exclude_ns = []
+    exclude_ns.append("%s.%s" % (current_app.widukind_db.name, constants.COL_SESSION))
+    exclude_ns.append("%s.system.profile" % current_app.widukind_db.name)
+    query = {"ns": {"$nin": exclude_ns}}
+    docs = current_app.widukind_db["system.profile"].find(query).sort([("ts", -1)]).limit(20)
+    
+    if position >= 0:
+        doc = docs[position]
+        return render_template("admin/doc.html", doc=doc) 
+    
+    return render_template("admin/profile.html", docs=docs) 
+
+@bp.route('/db/stats/<col>', endpoint="col-stats")
+@auth.required
+def collection_stats_view(col):
+    doc = current_app.widukind_db.command("collstats", col)
+    return render_template("admin/doc.html", doc=doc) 
 
 @bp.route('/queries', endpoint="queries")
 @auth.required
@@ -117,7 +151,12 @@ def queries_view():
     
     object_list = col.find(q).sort("created", DESCENDING)
 
-    return current_app.jsonify(list(object_list))
+    result = []
+    for obj in object_list:
+        obj["view"] = url_for(".doc", col=constants.COL_QUERIES, objectid=obj["_id"])
+        result.append(obj)
+
+    return current_app.jsonify(result)
 
 @bp.route('/logs', endpoint="logs")
 @auth.required
@@ -148,5 +187,27 @@ def view_logs():
 
     return current_app.jsonify(list(object_list))
 
+@bp.route('/stats/series', endpoint="stats-series")
+@auth.required
+def stats_series():
 
-        
+    cursor = queries.col_providers().find({}, {"name": True})
+    provider_names = [doc["name"] for doc in cursor]
+    
+    result = []
+    for provider in provider_names:
+        result.append({"_id": provider, "count": queries.col_series().count({"provider_name": provider})})
+    
+    #result = list(queries.col_series().aggregate([{"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}, {"$sort": {"count": -1} }], allowDiskUse=True))        
+
+    return render_template("admin/stats-series.html", 
+                           result=result)
+    
+@bp.route('/stats/datasets', endpoint="stats-datasets")
+@auth.required
+def stats_datasets():
+    
+    result = list(queries.col_datasets().aggregate([{"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}, {"$sort": {"count": -1} }], allowDiskUse=True))        
+
+    return render_template("admin/stats-datasets.html", 
+                           result=result)

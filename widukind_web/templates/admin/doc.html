@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Doc{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Admin Doc</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+<pre>
+{{doc|pprint}}
+</pre>
+{% endblock %}
