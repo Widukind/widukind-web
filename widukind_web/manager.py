@@ -70,7 +70,7 @@ def main(create_app_func=None):
         create_app_func = create_app
     
     class ServerWithGevent(Server):
-        help = description = 'Runs the Flask development server with WSGI SocketIO Server'
+        help = description = 'Runs the Flask development server with Gevent WSGI Server'
     
         def __call__(self, app, host, port, use_debugger, use_reloader,
                    threaded, processes, passthrough_errors):
