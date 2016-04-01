@@ -145,7 +145,7 @@ def _conf_logging(debug=False,
     return logger
 
 def _conf_logging_mongo(app):
-    from widukind_web.mongo_logging_handler import MongoHandler
+    from widukind_common.mongo_logging_handler import MongoHandler
     handler = MongoHandler(db=app.widukind_db, collection=constants.COL_LOGS)
     handler.setLevel(logging.ERROR)
     app.logger.addHandler(handler)
@@ -194,7 +194,7 @@ def _conf_db(app):
     create_or_update_indexes(app.widukind_db)
 
 def _conf_session(app):
-    from widukind_web.mongo_session import PyMongoSessionInterface
+    from widukind_common.flask_utils.mongo_session import PyMongoSessionInterface
     app.session_interface = PyMongoSessionInterface(app.widukind_db,
                                                     collection=constants.COL_SESSION)
     
@@ -238,35 +238,6 @@ def _conf_record_query(app):
     
     return [gevent.spawn(record)]
 
-def _conf_locker(app):
-    from widukind_web.mongolock import MongoLock, MongoLockLocked
-    app.task_locker = MongoLock(db=app.widukind_db, collection=constants.COL_LOCK)
-
-def _conf_counters(app):
-    """
-    TODO: websocket 
-    """
-    from widukind_web.mongolock import MongoLockLocked
-    from widukind_web import counters
-    
-    counter_sleep = app.config.get("COUNTER_SLEEP", 60)
-
-    def update_counters():
-        while True:
-            try:
-                with app.task_locker('update.counters', 'update.counters', expire=600, timeout=300):
-                    counters.datasets_by_provider(app.widukind_db)
-                    counters.series_by_provider(app.widukind_db)
-                    counters.series_by_datasets(app.widukind_db)
-            except MongoLockLocked as err:
-                app.logger.warning(str(err))
-            except Exception as err:
-                app.logger.error(err)
-            
-            gevent.sleep(counter_sleep)
-
-    return [gevent.spawn(update_counters)]
-        
     
 def _conf_auth(app):
     extensions.auth.init_app(app)
@@ -357,26 +328,6 @@ def _conf_processors(app):
         def _split(s):
             return s.split()
         return dict(split=_split)
-    
-    """
-    @app.context_processor
-    def collection_counters():
-        col = current_app.widukind_db[constants.COL_COUNTERS]
-        d = {}
-        #{"category": "collection"}
-        cursor = col.find({}, 
-                          projection={'_id': False}) #, "name": True, "count": True})
-        for r in cursor:
-            d[r['name']] = r
-            
-        def counter(key):
-            if key in d:
-                return d[key]['count']
-            else:
-                return 0
-        
-        return dict(collection_counters=d, counter=counter)
-    """
     
     @app.context_processor
     def provider_list():
@@ -569,11 +520,6 @@ def create_app(config='widukind_web.settings.Prod'):
     
     _conf_mail(app)
     
-    #_conf_locker(app)
-    
-    #if app.config.get('COUNTERS_ENABLE', True):        
-    #    _conf_counters(app)
-    
     app.wsgi_app = ProxyFix(app.wsgi_app)
-
+    
     return app
