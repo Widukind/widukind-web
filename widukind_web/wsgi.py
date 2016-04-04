@@ -12,31 +12,11 @@ import gevent
 
 from widukind_web import extensions
 from widukind_web import constants
-from widukind_web import utils
 from widukind_web.extensions import cache
-
-THEMES = [
-    'widukind',
-    'cerulean',
-    'cyborg',
-    'darkly',
-    'flatly',
-    'journal',
-    'lumen',
-    'paper',
-    'readable',
-    'sandstone',
-    'simplex',
-    'slate',
-    'spacelab',
-    'superhero',
-    'united',              
-]
 
 def _conf_converters(app):
     
     from werkzeug.routing import BaseConverter, ValidationError
-    from itsdangerous import base64_encode, base64_decode
     from bson.objectid import ObjectId
     from bson.errors import InvalidId
     
@@ -61,7 +41,6 @@ def _conf_logging(debug=False,
                   LEVEL_DEFAULT="INFO"):
 
     import sys
-    import logging
     import logging.config
     
     if config_file:
@@ -211,11 +190,9 @@ def _conf_default_views(app):
     @app.route("/", endpoint="home")
     def index():
         return render_template("index.html")
-        #return redirect(url_for("views.last_series"))
 
 def _conf_record_query(app):
     
-    from flask import request_finished
     from gevent.queue import Queue
     
     from widukind_web import queues    
@@ -226,15 +203,6 @@ def _conf_record_query(app):
         while True:
             q = queues.RECORD_QUERY.get()
             col.insert(q)
-    
-    """
-    @request_finished.connect_via(app)
-    def put_queue(sender, response, **extra):
-        print(sender, response, extra)
-        #print(response.response)
-        print(response.headers)
-        print(request.path)
-    """
     
     return [gevent.spawn(record)]
 
@@ -455,9 +423,7 @@ def _conf_errors(app):
 def _conf_jsonify(app):
 
     from widukind_web import json
-    #from bson import json_util as json
-    from pprint import pprint
-    
+
     def jsonify(obj):
         content = json.dumps(obj)
         return current_app.response_class(content, mimetype='application/json')
@@ -489,10 +455,6 @@ def create_app(config='widukind_web.settings.Prod'):
     _conf_bootstrap(app)
     
     _conf_sentry(app)
-    
-    #if app.config.get('SESSION_ENGINE_ENABLE', False):
-    #    from flask_mongoengine import MongoEngineSessionInterface
-    #    app.session_interface = MongoEngineSessionInterface(extensions.db)
     
     _conf_errors(app)
     
