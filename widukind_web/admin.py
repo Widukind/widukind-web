@@ -195,19 +195,25 @@ def stats_series():
     provider_names = [doc["name"] for doc in cursor]
     
     result = []
+    total = 0
     for provider in provider_names:
-        result.append({"_id": provider, "count": queries.col_series().count({"provider_name": provider})})
+        r = {"_id": provider, "count": queries.col_series().count({"provider_name": provider})}
+        result.append(r)
+        total += r["count"]
     
     #result = list(queries.col_series().aggregate([{"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}, {"$sort": {"count": -1} }], allowDiskUse=True))        
 
     return render_template("admin/stats-series.html", 
-                           result=result)
+                           result=result, total=total)
     
 @bp.route('/stats/datasets', endpoint="stats-datasets")
 @auth.required
 def stats_datasets():
     
-    result = list(queries.col_datasets().aggregate([{"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}, {"$sort": {"count": -1} }], allowDiskUse=True))        
+    result = list(queries.col_datasets().aggregate([{"$group": {"_id": "$provider_name", "count": {"$sum": 1}}}, {"$sort": {"count": -1} }], allowDiskUse=True))
+    total = 0
+    for r in result:
+        total += r["count"]        
 
     return render_template("admin/stats-datasets.html", 
-                           result=result)
+                           result=result, total=total)

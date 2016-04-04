@@ -26,9 +26,24 @@
             </td>
         </tr>        
         {% endfor %}
+        <tr>
+            <td>
+            	<strong>TOTAL</strong>
+            </td>
+            <td>
+            	<strong>{{ total }}</strong>
+            </td>
+        </tr>        
     </tbody>
 </table>    
 
+<h4>CSV:</h4>
+<pre>
+{% for r in result -%}
+{{ r._id }},{{ r.count }}
+{% endfor -%}
+TOTAL,{{ total }}
+</pre>
 
 {% endblock %}
 
