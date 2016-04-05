@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from pprint import pprint
 
 from flask import (Blueprint, 
                    current_app, 
@@ -27,6 +26,7 @@ from widukind_web import utils
 from widukind_web.extensions import cache
 from widukind_web import queues
 from widukind_web import queries
+from widukind_common.flask_utils import json_tools
 
 bp = Blueprint('views', __name__)
 
@@ -50,12 +50,8 @@ def datas_from_series(series):
     
     import pandas
     
-    sd = pandas.Period(ordinal=series['start_date'],
-                       freq=series['frequency'])
-
     for value in series["values"]:
-        sd +=1
-        yield sd.to_timestamp().strftime("%Y-%m-%d"), value["value"]
+        yield pandas.Period(value["period"], freq=series['frequency']).to_timestamp().strftime("%Y-%m-%d"), value["value"]        
 
 def filter_query(cursor, 
                  skip=None, limit=None, sort=None, sort_desc=None,
@@ -117,6 +113,80 @@ def filter_query(cursor,
         cursor = list(cursor)
     
     return count, cursor
+
+
+#---/providers
+
+@bp.route('/ajax/providers', endpoint="ajax-providers-list")
+def ajax_providers_list():
+    query = {"enable": True}
+    projection = {"_id": False, "slug": True, "name": True}
+    docs = [doc for doc in queries.col_providers().find(query, projection)]
+    return json_tools.json_response(docs)
+
+@bp.route('/ajax/providers/<provider>/datasets', endpoint="ajax-datasets-list")
+def ajax_datasets_list(provider):
+    provider_doc = queries.get_provider(provider)
+    query = {'provider_name': provider_doc["name"]}
+    projection = {"_id": False, "tags": False,
+                  "enable": False, "lock": False,
+                  "concepts": False, "codelists": False}
+    docs = [doc for doc in queries.col_datasets().find(query, projection)]
+    return json_tools.json_response(docs)
+
+@bp.route('/ajax/datasets/<dataset>/dimensions/keys', endpoint="ajax-datasets-dimensions-keys")
+def ajax_datasets_dimensions_keys(dataset):
+    query = {'enable': True, 'slug': dataset}
+    projection = {"_id": False, "dimension_keys": True, "concepts": True}
+    doc = queries.col_datasets().find_one(query, projection)
+    if not doc:
+        abort(404)
+    dimensions = [] 
+    for key in doc["dimension_keys"]:
+        if key in doc["concepts"]:            
+            dimensions.append({"value": key, "text": doc["concepts"][key] })
+        else:
+            dimensions.append({"value": key, "text": key })
+    return json_tools.json_response(dimensions)
+
+@bp.route('/ajax/datasets/<dataset>/dimensions/all', endpoint="ajax-datasets-dimensions-all")
+def ajax_datasets_dimensions_all(dataset):
+    query = {'enable': True, 'slug': dataset}
+    projection = {"_id": False, "dimension_keys": True, "concepts": True, "codelists": True}
+    doc = queries.col_datasets().find_one(query, projection)
+    if not doc:
+        abort(404)
+    dimensions = OrderedDict()
+    for key in doc["dimension_keys"]:
+        if key in doc["codelists"] and doc["codelists"][key]:
+            dimensions[key] = {
+                "name": doc["concepts"].get(key) or key,
+                "codes": doc["codelists"][key],
+            }
+            
+    return json_tools.json_response(dimensions)
+
+@bp.route('/ajax/dataset/<dataset>/frequencies', endpoint="ajax-datasets-frequencies")
+def ajax_dataset_frequencies(dataset):
+    query = {'enable': True, 'slug': dataset}
+    projection = {"_id": False, 
+                  "enable": False, "lock": False, "tags": False}
+    doc = queries.get_dataset(dataset, projection)
+    query = {"provider_name": doc["provider_name"],
+             "dataset_code": doc["dataset_code"]}
+    
+    if "metadata" in doc and doc["metadata"].get("frequencies"):
+        frequencies = doc["metadata"].get("frequencies")
+    else:
+        frequencies = queries.col_series().distinct("frequency", filter=query)
+
+    freqs = []
+    for freq in frequencies:
+        if freq in constants.FREQUENCIES_DICT:
+            freqs.append({"value": freq, "text": constants.FREQUENCIES_DICT[freq]})
+        else:
+            freqs.append({"value": freq, "text": freq})
+    return json_tools.json_response(freqs)
 
 @bp.route('/providers', endpoint="providers")
 @cache.cached(timeout=360)
@@ -475,8 +545,8 @@ def send_file_csv(fileobj, mimetype=None, content_length=0):
     response.make_conditional(request)
     return response
 
+#@cache.memoize(360)
 @bp.route('/plot/series/<slug>', endpoint="series_plot")
-@cache.memoize(360)
 def plot_series(slug):
     
     is_ajax = request.args.get('json') or request.is_xhr
@@ -883,7 +953,7 @@ def _search_series(provider_name=None, dataset_code=None,
 
 
 @bp.route('/ajax/datasets', endpoint="ajax-datasets")
-def ajax_datasets_list():
+def ajax_datasets_list2():
     
     provider =  request.args.get('provider')
 
@@ -905,53 +975,76 @@ def ajax_datasets_list():
     
     return current_app.jsonify(datas)
     
-@bp.route('/series/all', endpoint="series-all", methods=('GET', 'POST'))
+@bp.route('/series/all', endpoint="series-all", methods=('GET',))
 def all_series():
 
-    is_ajax = request.args.get('json') or request.is_xhr
+    """
+    http://widukind-api.cepremap.org/api/v1/json/datasets/imf-ifs/values?ref-area=199+182&indicator=fpolm-pa
+
+    http://127.0.0.1:8081/views/series/all?dataset=imf-ifs&ref-area=199+182&indicator=fpolm-pa&limit=10
+    {'$and': [{'$or': [{'dimensions.indicator': {'$in': ['fpolm-pa']}},
+                       {'attributes.indicator': {'$in': ['fpolm-pa']}}]},
+              {'$or': [{'dimensions.ref-area': {'$in': ['199', '182']}},
+                       {'attributes.ref-area': {'$in': ['199', '182']}}]}],
+     'dataset_code': 'IFS',
+     'provider_name': 'IMF'}
+     
+    http://127.0.0.1:8081/views/series/all?dataset=insee-ipch-2015-fr-coicop&produit=00+09112&limit=10
+    {'$and': [{'$or': [{'dimensions.produit': {'$in': ['00', '09112']}},
+                       {'attributes.produit': {'$in': ['00', '09112']}}]}],
+     'dataset_code': 'IPCH-2015-FR-COICOP',
+     'frequency': 'A',
+     'provider_name': 'INSEE'}
+     
+    http://127.0.0.1:8081/views/series/all?dataset=insee-ipch-2015-fr-coicop&limit=10&tags=national+equipment     
+    {'$and': [{'$and': [{'tags': {'$regex': '.*national.*'}},
+                        {'tags': {'$regex': '.*equipment.*'}}]}],
+     'dataset_code': 'IPCH-2015-FR-COICOP',
+     'provider_name': 'INSEE'}
+     
+    http://127.0.0.1:8081/views/series/all?dataset=insee-ipch-2015-fr-coicop&limit=10&tags=national+equipment&produit=00+09112
+    {'$and': [{'$and': [{'tags': {'$regex': '.*national.*'}},
+                        {'tags': {'$regex': '.*equipment.*'}}]},
+              {'$or': [{'dimensions.produit': {'$in': ['00', '09112']}},
+                       {'attributes.produit': {'$in': ['00', '09112']}}]}],
+     'dataset_code': 'IPCH-2015-FR-COICOP',
+     'provider_name': 'INSEE'}         
+    """
+
+    limit = request.args.get('limit', default=100, type=int)
     
-    is_reset = request.args.get('reset')
-    if is_reset and session.get("all-series"):
-        del session["all-series"]
-
-    form = forms.SearchFormSeriesAll()
-
-    if not is_ajax:
-        return render_template("series_list2.html", form=form)
-
-    kwargs = {}
     projection = {
         "dimensions": False, 
         "attributes": False, 
+        #"values": False,
         "values.revisions": False,
         "notes": False,
         "tags": False
     }
     
-    if form.validate_on_submit():
-        kwargs = get_search_datas(form, search_type="series")
-        kwargs.pop("sort", None)
-        session["all-series"] = kwargs
-        
-    elif session.get("all-series"):
-        kwargs = session.get("all-series")
-        
-    cursor, query = _search_series(projection=projection, **kwargs)
-    count = cursor.count()
+    query = {}
+    provider_slug = request.args.get('provider')
+    dataset_slug = request.args.get('dataset')
     
-    pprint(query)
+    if dataset_slug:
+        dataset = queries.get_dataset(dataset_slug)
+        query["provider_name"] = dataset["provider_name"]
+        query["dataset_code"] = dataset["dataset_code"]
+    elif provider_slug:
+        provider = queries.get_provider(provider_slug)
+        query["provider_name"] = provider["name"]
+    
+    query = queries.complex_queries_series(query)
+    cursor = queries.col_series().find(query, projection)
+    cursor.limit(limit)
+    count = cursor.count()
     
     series_list = convert_series_period(cursor)
 
-    datas = {
-        "total": count,
-        "rows": []
-    }
-    
-    print("count : ", count)
+    rows = []
     
     for s in series_list:
-        #del s["values"]
+        del s["values"]
         s['view'] = url_for('.series-by-slug', slug=s['slug'])
         s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
         s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
@@ -959,7 +1052,11 @@ def all_series():
         if s['frequency'] in constants.FREQUENCIES_DICT:
             s['frequency'] = constants.FREQUENCIES_DICT[s['frequency']]
         
-        datas["rows"].append(s)
+        rows.append(s)
 
-    return current_app.jsonify(datas)
+    return json_tools.json_response(rows, {"total": count})
+    #return current_app.jsonify(datas)
 
+@bp.route('/', endpoint="home")
+def home():
+    return render_template("series-home.html")
