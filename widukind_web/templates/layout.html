@@ -1,4 +1,4 @@
-{% extends "bootstrap/base.html" %}v
+{% extends "bootstrap/base.html" %}
 {% import "bootstrap/google.html" as google %}
 {% block title %}Widukind{% endblock %}
 
@@ -41,8 +41,8 @@
                 {% block menu_left %}&nbsp;{% endblock %}
             </div>
             <div id="site_content" {% block site_content_attrs %}class="col-md-12"{% endblock %}>
-            <span id="spinner" class="spinner-container"></span>
-                {#% include "include/series-cart.html" with context %#}
+	            <span id="spinner" class="spinner-container"></span>
+	            {#% include "include/series-cart.html" with context %#}
 	            {% block breadcrumb %}{% endblock %}
 	            {% block page %}{% endblock %}
             </div>
@@ -56,11 +56,11 @@
 {% block scripts %}
     {{super()}}
 
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.6.1/lodash.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/humanize-plus/1.5.0/humanize.min.js"></script>
     {{ moment.include_moment(version="2.10.6") }}
 
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined-dev.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
     
     <script type="text/javascript" src="{{ url_for('static', filename='vendors/bootstrap-treeview/bootstrap-treeview.min.js') }}"></script>
     
@@ -117,6 +117,7 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block last_scripts %}
+
 	{% if config.GOOGLE_ANALYTICS_ID %}
 	{{google.uanalytics(config['GOOGLE_ANALYTICS_ID'])}}
 	{% endif %}

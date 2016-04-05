@@ -26,6 +26,14 @@
             </td>
         </tr>        
         {% endfor %}
+        <tr>
+            <td>
+            	<strong>TOTAL</strong>
+            </td>
+            <td>
+            	<strong>{{ total }}</strong>
+            </td>
+        </tr>        
     </tbody>
 </table>
 
@@ -34,6 +42,7 @@
 {% for r in result|sort(attribute='_id') -%}
 {{ r._id }},{{ r.count }}
 {% endfor -%}
+TOTAL,{{ total }}
 </pre>
 
 
