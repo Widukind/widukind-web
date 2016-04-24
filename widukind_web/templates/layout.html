@@ -57,7 +57,7 @@
     {{super()}}
 
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.6.1/lodash.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/humanize-plus/1.5.0/humanize.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/humanize-plus/1.6.0/humanize.min.js"></script>
     {{ moment.include_moment(version="2.10.6") }}
 
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
@@ -117,6 +117,24 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block last_scripts %}
+
+	{% if config.PIWIK_ENABLE %}
+    <!-- Piwik -->
+    <script type="text/javascript">
+      var _paq = _paq || [];
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="{{config['PIWIK_URL']}}";
+        _paq.push(['setTrackerUrl', u+'piwik.php']);
+        _paq.push(['setSiteId', {{config['PIWIK_SITE_ID']}}]);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <noscript><p><img src="{{config['PIWIK_URL']}}piwik.php?idsite={{config['PIWIK_SITE_ID']}}" style="border:0;" alt="" /></p></noscript>
+    <!-- End Piwik Code -->
+	{% endif %}
 
 	{% if config.GOOGLE_ANALYTICS_ID %}
 	{{google.uanalytics(config['GOOGLE_ANALYTICS_ID'])}}
