@@ -4,15 +4,13 @@
 
 {% block styles %}
     {{super()}}
-    {#% include "include/form-css.html" with context %#}
-    
-    {#<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet"/>#}
-    {#<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet"/>#}
-    {#<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css" rel="stylesheet"/>#}
-	<link href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.2/select2.min.css" rel="stylesheet"/>
-	<link href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.2/select2-bootstrap.min.css" rel="stylesheet"/>
-    
+    {% include "include/form-css.html" with context %}
+    {#
+    #}
+    <link href="//cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.min.css" rel="stylesheet"/>
+
 	<style type="text/css">
+	/*
 	input[type="radio"].styled:checked+label:after {
 	    font-family: 'FontAwesome';
 	    content: '';
@@ -20,580 +18,362 @@
 	#search_form .col-xs-3, .col-xs-2 {
 	   padding-left: 0;
 	}
+	*/
 	</style>    
 {% endblock %}
 
-
 {% block page %}
 
-<div class="container-fluid" id="koapp">
+<div class="container-fluid">
+
 	<div class="row">
 		<div class="col-md-2">
-			<div class="panel panel-default">
-		    	<div class="panel-body">
-		    	
-		    		<p><span id="total_series" data-bind="text: total"></span> Series</p>
-
-					<form id="search_form">
-						{#
-				        <div class="form-group">
-				            <button data-bind="click: loadData" class="btn btn-default btn-sm btn-block">Apply</button>
-				        </div>
-				        #}
-        					
-						<div class="form-group">
-												
-							<label class="col-xs-3 control-label" for="provider">Provider:</label>
-							
-							{#
-							<select data-bind="event:{ change: $root.changeProvider() }" id="provider" name="provider" class="form-control input-sm select2-select">
-							<!-- ko foreach: providers -->
-								<option data-bind="attr: {value: $data.name}, text: $data.text"></option>
-							<!-- /ko -->
-							</select>
-							#}
-							
-							<select id="provider" name="provider" class="form-control input-sm select2-select" 
-									data-bind="
-										options: providers, 
-										optionsValue: function(item){ return item.value; }, 
-										optionsText: function(item){ return item.text; }, 
-										value: selectedProvider, 
-										optionsCaption: 'Choose provider...',
-										event:{ change: $root.changeProvider() }">
-							</select>
-							
+			{#
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+				    	<div class="panel-body">
+							<h4><span id="count_series" class="human-number badge">0</span> / <span id="total_series" class="human-number badge">0</span></h4>
 						</div>
-					
-						<div class="form-group" data-bind="visible: selectedProvider">
-							<label class="col-xs-3 control-label" for="dataset">Dataset:</label>
-							<select id="dataset" name="dataset" class="form-control input-sm select2-select" 
-									data-bind="
-										   	options: datasets, 
-											optionsValue: function(item){ return item.value; },
-											optionsText: function(item){ return item.text; },
-											value: selectedDataset,
-											valueAllowUnset: true,
-											optionsCaption: 'Choose dataset...',
-											event:{ change: $root.changeDataset() }
-									"></select>
-						</div>
-
-						<div class="form-group" data-bind="visible: selectedDataset">
-							<label class="col-xs-3 control-label" for="frequency">Frequencies:</label>
-							<select id="frequency" name="frequency" class="form-control input-sm select2-select" 
-									data-bind="
-										   	options: frequencies, 
-											optionsValue: function(item){ return item.value; },
-											optionsText: function(item){ return item.text; },
-											value: selectedFrequency,
-											valueAllowUnset: true,
-											optionsCaption: 'Choose frequency...',
-											event:{ change: $root.changeFrequency() }
-									"></select>
-						</div>
-
-						<div data-bind="data-bind="template: { name: 'dimension_tmpl', foreach: dimensionFields }"></div>
-				        
-					</form>
-					
-		    	</div>
-		    </div>
-		</div>
-		<div class="col-md-10">
-			<div class="panel panel-default">
-			
-				<table class="table" id="series-list" 
-					data-classes="table table-hover table-condensed"   
-        			data-striped="true" 
-        			data-mobile-responsive="true"
-			        data-buttons-align="left"
-			        data-toolbar-align="right"
-			        data-pagination-h-align="left"
-			        data-pagination-detail-h-align="right"
-			        data-pagination-v-align="top"
-			        data-pagination="true" 
-			        data-page-size="{{ page_size|default('10') }}"
-			        data-page-list="[10, 25, 50, 100]"  
-					>
-				<thead>
-				    <tr>
-				    
-		                <th class="col-md-1" data-field="key" data-formatter="seriesButtonFormatter">&nbsp;</th>
-		                {#
-		                <th class="col-md-1" data-field="view" data-formatter="seriesLinkFormatter">&nbsp;</th>
-		                <th class="col-md-1" data-field="slug" data-formatter="addCartFormatter">&nbsp;</th>
-		                #}
-			            <th class="col-md-1" data-field="provider_name" data-sortable="true">Provider</th>
-			            <th class="col-md-1" data-field="dataset_code" data-sortable="true">Dataset</th>
-		                <th class="col-md-2" data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true">key</th>
-		                <th class="col-md-4" data-field="name" data-sortable="true">Name</th>
-		                <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
-			            <th class="col-md-1" data-field="start_date" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
-			            <th class="col-md-1" data-field="end_date" data-align="center" data-sortable="true">End Date</th>
-				    	
-					</tr>
-				</thead>
-				</table>
-				
+					</div>	
+				</div>
 			</div>
+			#}
 		
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+				    	<div class="panel-body">
+				    			    	
+							<form id="search_form">
+							
+								<div class="form-group">
+									<label class="control-label" for="limit">Limit on <span id="total_series">0</span> Series</label>
+									<select id="limit" name="limit" class="form-control input-sm">
+										<option value="50">50</option>
+										<option value="100" selected="true">100</option>
+										<option value="200">200</option>
+										<option value="500">500</option>
+										<option value="1000">1000</option>
+									</select>
+								</div>
+								
+								<div class="form-group">
+									<label class="control-label" for="provider">Provider:</label>
+									<select id="provider" name="provider" class="form-control input-sm"></select>
+								</div>
+							
+								<div class="form-group">
+									<label class="control-label" for="dataset">Dataset:</label>
+									<select id="dataset" name="dataset" class="form-control input-sm chosen"></select>
+								</div>
+								
+							</form>
+							
+				    	</div>
+				    </div>
+				</div>
+			</div>		
+		</div>
+		
+		<div class="col-md-10">
+			{#
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+				    	<div class="panel-body">
+				    		<h4>
+				    		Series : <span id="count_series" class="human-number badge">0</span> / <span id="total_series" class="human-number badge">0</span> 
+				    		Selected :  
+				    		<span class="label label-default" id="selectedProvider">All</span>
+				    		<span class="label label-default" id="selectedDataset"></span>
+				    		</h4>
+				    	</div>
+				    </div>
+			    </div>
+			</div>
+			#}
+			
+			<div class="row">
+			    <div class="col-md-12">
+
+				<div class="panel panel-default">
+				
+					<table class="table" id="series-list" 
+						data-classes="table table-hover table-condensed"   
+	        			data-striped="true" 
+	        			data-mobile-responsive="true"
+				        data-buttons-align="left"
+				        data-toolbar-align="right"
+				        data-pagination-h-align="left"
+				        data-pagination-detail-h-align="right"
+				        data-pagination-v-align="top"
+				        data-pagination="true" 
+				        data-page-size="{{ page_size|default('10') }}"
+				        data-page-list="[10, 25, 50, 100]"  
+						>
+					<thead>
+					    <tr>
+					    
+			                <th class="col-md-1" data-field="key" data-formatter="seriesButtonFormatter">&nbsp;</th>
+			                {#
+			                <th class="col-md-1" data-field="view" data-formatter="seriesLinkFormatter">&nbsp;</th>
+			                <th class="col-md-1" data-field="slug" data-formatter="addCartFormatter">&nbsp;</th>
+			                #}
+				            <th class="col-md-1" data-field="provider_name" data-sortable="true">Provider</th>
+				            <th class="col-md-1" data-field="dataset_code" data-sortable="true">Dataset</th>
+			                <th class="col-md-2" data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true">key</th>
+			                <th class="col-md-4" data-field="name" data-sortable="true">Name</th>
+			                <th class="col-md-1" data-field="frequency" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
+				            <th class="col-md-1" data-field="start_date" data-align="center" data-sortable="true" data-filter-control="input">Start Date</th>                         
+				            <th class="col-md-1" data-field="end_date" data-align="center" data-sortable="true">End Date</th>
+					    	
+						</tr>
+					</thead>
+					</table>
+				</div>
+			</div>		
 		</div>
 	</div>
 </div>
-
-{#
-<p data-bind="visible: selectedProvider">Provider : 
-	<span data-bind="text: selectedProvider() ? selectedProvider() : 'unknown'"></span>
-</p>
-
-<p data-bind="visible: selectedDataset">Dataset : 
-	<span data-bind="text: selectedDataset() ? selectedDataset() : 'unknown'"></span>
-</p>
-
-#}
-
-
+    
 
 {% endblock page %}
 
 
 {% block scripts %}
     {{super()}}
-    {#% include "include/form-js.html" with context %#}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.2/select2.min.js" type="text/javascript"></script>
+    {% include "include/form-js.html" with context %}
     {#
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js" type="text/javascript"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/i18n/defaults-en_US.min.js" type="text/javascript"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/json2/20150503/json2.min.js" type="text/javascript"></script>
     #}
-    {#
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js" type="text/javascript"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/i18n/en.js" type="text/javascript"></script>
-    #}
-	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js" type="text/javascript"></script>    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.jquery.min.js" type="text/javascript"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js" type="text/javascript"></script>    
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js" type="text/javascript"></script>
-    {#
-    <script src="//cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-debug.js" type="text/javascript"></script>
-    #}
-    {#
-    <script src="//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js" type="text/javascript"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js" type="text/javascript"></script>
-    #}
-        
-	<script type="text/html" id="dimension_tmpl">
-		<div class="form-group" data-bind="visible: selectedDataset">
-			<label class="col-xs-3 control-label" for="frequency" data-bind="attr: {for: key}, text: caption + ':'">:</label>
-			<select class="form-control input-sm select2-select" 
-									data-bind="attr: {name: key, id: key},
-										   	options: options, 
-											optionsValue: function(item){ return item.value; },
-											optionsText: function(item){ return item.text; },
-											value: selectedOption,
-											optionsCaption: caption,
-			"></select>
+	<script id="template-select" type="x-tmpl-mustache">
+		{% raw %}
+		<div class="form-group" id="form_group_{{key}}">
+			<label class="control-label" for="{{key}}">{{caption}}:</label>
+			<select id="{{key}}" name="{{key}}" class="form-control input-sm" multiple="true">
+				<option value="">Choose a {{caption}}</option>
+				{{#options}}
+				<option value="{{id}}">{{text}}</option>
+				{{/options}}
+			</select>
 		</div>
+		{% endraw %}
 	</script>
-    
-    
+
     <script type="text/javascript">
 
-    /*
-	function seriesLinkFormatter(value, row){
-		return '<a href="' + row.view + '" title="Show detail">Link</a>';
-	}
-	
-	function addCartFormatter(value, row){
-		return '<button data-bind="click: addCart", data-key="'+ row.slug +'">Add</button>';
-	}
-	
-	function buttonsFormatter(value, row){
-		_html.push('<a class="btn btn-xs cart" data-bind="click: addCart", data-key="'+ row.slug +'"');
-		_html.push('<i class="fa fa-shopping-cart fa-lg"></i>');
-		_html.push('</a>');
-	}
-	*/
-    
     $(document).ready(function(){
     	
-      $(function() {
-    	  
-    	var $table = $('#series-list').bootstrapTable();
+		var $table = $('#series-list').bootstrapTable();
+		
+		//$.fn.chosen.defaults.allow_single_deselect = true;
 
-    	/*
-    	ko.bindingHandlers.selectPicker = {
-   		    after: ['options', 'value', 'selectedOptions'],
-   		    init: function (element, valueAccessor, allBindingsAccessor) {
-   		        $(element).addClass('selectpicker').selectpicker();
-   		    },
-   		    update: function (element, valueAccessor, allBindingsAccessor) {
-   		        allBindingsAccessor.get('options');
-   		        allBindingsAccessor.get('value');
-   		        allBindingsAccessor.get('selectedOptions');
-
-   		        $(element).selectpicker('refresh');
-   		    }
-    	};
-    	*/
-
-    	/*
-    	ko.bindingHandlers.select2 = {
-    		    init: function(el, valueAccessor, allBindingsAccessor, viewModel) {
-    		    	console.log(el);
-    		    	console.log(valueAccessor());
-    		    	console.log(allBindingsAccessor());
-    		      
-    		    	ko.utils.domNodeDisposal.addDisposeCallback(el, function() {
-    		        	$(el).select2('destroy');
-    		      	});
-
-    		      	var allBindings = allBindingsAccessor();
-    		        var select2 = ko.utils.unwrapObservable(allBindings.select2);
-
-    		      	$(el).select2(select2);
-    		    },
-    		    update: function (el, valueAccessor, allBindingsAccessor, viewModel) {
-    		    	console.log(el);
-    		    	console.log(valueAccessor());
-    		    	console.log(allBindingsAccessor());
-    		        
-    		    	var allBindings = allBindingsAccessor();
-
-    		        if ("value" in allBindings) {
-    		            if ((allBindings.select2.multiple || el.multiple) && allBindings.value().constructor != Array) {                
-    		                $(el).select2("val", allBindings.value().split(","));
-    		            }
-    		            else {
-    		                $(el).select2("val", allBindings.value());
-    		            }
-    		        } else if ("selectedOptions" in allBindings) {
-    		            var converted = [];
-    		            var textAccessor = function(value) { return value; };
-    		            if ("optionsText" in allBindings) {
-    		                textAccessor = function(value) {
-    		                    var valueAccessor = function (item) { return item; }
-    		                    if ("optionsValue" in allBindings) {
-    		                        valueAccessor = function (item) { return item[allBindings.optionsValue]; }
-    		                    }
-    		                    var items = $.grep(allBindings.options(), function (e) { return valueAccessor(e) == value});
-    		                    if (items.length == 0 || items.length > 1) {
-    		                        return "UNKNOWN";
-    		                    }
-    		                    return items[0][allBindings.optionsText];
-    		                }
-    		            }
-    		            $.each(allBindings.selectedOptions(), function (key, value) {
-    		                converted.push({id: value, text: textAccessor(value)});
-    		            });
-    		            $(el).select2("data", converted);
-    		        }
-    		    }
-    		};
-		*/
+		var limit = $('#limit').val();
+		//var providers = [];
+		var selectedProvider;
+		var selectedDataset;
+		var dimensionFields = [];
     	
-  		function Select2Refresh() {
-  			//$('.select2-select').multiselect();
-  			/*
-  			$('.select2-select').selectpicker({
-  				liveSearch: true,
-  			});
-  			*/
-  			/*
-  			$('.select2-select').select2({
-	    		allowClear: true,
-	    		closeOnSelect: true,
-	    	});
-  			*/
-  		};
-  		
-  		function FormRefresh() {
-  			/*
-            var $search_form = $('#search_form').formValidation({
-                framework: 'bootstrap',
-                excluded: [':disabled'], //, ':hidden', ':not(:visible)'
-                icon: {
-                    valid: 'glyphicon glyphicon-ok',
-                    invalid: 'glyphicon glyphicon-remove',
-                    validating: 'glyphicon glyphicon-refresh'
-                },
-                live: 'enable',
-            });
-  			*/
-  		}
-    	  
-		function Series(data) {
- 		    this.name = data.name;
- 		    this.key = data.key;
- 		    this.url = data.view;
- 		   	this.provider_name = data.provider_name; 
- 		  	this.dataset_code = data.dataset_code; 
- 		    this.frequency = data.frequency;
- 		    this.start_date = data.start_date;
- 		    this.end_date = data.end_date;
- 		}
+		var template = $('#template-select').html();
+    	Mustache.parse(template);
+    	
+    	$('#limit').chosen();
 
+	    function loadData(){
+	  		var url = "{{url_for('.series-all')}}";
+	  		var options = {};
+	  		
+	  		options.limit = limit;
+	  		
+	  		if (selectedDataset) {
+	  			options.dataset = selectedDataset;
+	  		}
+	  		else if (! _.isEmpty(selectedProvider)) {
+	  			options.provider = selectedProvider;
+	  		}
+	  		
+	  		_.forEach(dimensionFields, function(dim) {
+	  			console.log("verify : ", dim.key, dim.selectedOption);
+	  			if (dim.selectedOption){
+	  				options[dim.key] = dim.selectedOption.join(' ');
+	  			}
+	  		});
+	  		
+	  		ajax(url, 'GET', options).done(function(data) {
+	        	$table.bootstrapTable('load', data.data);
+	        	$("#count_series").text(Humanize.formatNumber(data.data.length));
+	            $("#total_series").text(Humanize.formatNumber(data.meta.total));
+	  		});
+	  		
+	  	};
+		
+	    function ajax(uri, method, data) {
+	        var request = {
+	            url: uri,
+	            type: method,
+	            async: false,
+	            timeout: 60 * 1000,
+	            contentType: "application/json",
+	            accepts: "application/json",
+	            //cache: false,
+	            dataType: 'json',
+	            data: data, //JSON.stringify(data),
+	            traditional: true,
+	            error: function(jqXHR) {
+	            	//TODO: ecrire erreur dans champs status
+	                console.log("ajax error " + jqXHR.status);
+	            }
+	        };
+	        return $.ajax(request);
+	    }
+	    
 		function Provider(data) {
- 		    //this.value = ko.observable(data.slug);
- 		    //this.text = ko.observable(data.name);
- 		    this.value = data.slug;
- 		    this.text = data.name;
- 		}
+		    this.id = data.slug;
+		    this.text = data.name;
+		}
 
 		function Dataset(data) {
- 		    //this.value = ko.observable(data.slug);
- 		    //this.text = ko.observable(data.dataset_code);
- 		    this.value = data.slug;
- 		    this.text = data.dataset_code;
- 		}
+		    this.id = data.slug;
+		    this.text = data.dataset_code;
+		}
 
-		function SelectItem(data) {
- 		    //this.value = ko.observable(data.value);
- 		    //this.text = ko.observable(data.text);
- 		    this.value = data.value;
- 		    this.text = data.text;
- 		}
+	  	function loadProviders(){
+			var url = '{{ url_for(".ajax-providers-list") }}';
+			ajax(url, 'GET').done(function(data) {
+	            var providers = $.map(data.data, function(item) { return new Provider(item) });
+	            
+	            $('#provider').empty().append('<option value="">Select a Provider</option>');
+	            _.each(providers, function(item) {
+	            	$('#provider').append($("<option></option>").attr("value", item.id).text(item.text));
+	            });
+	            
+	            $('#provider').chosen({allow_single_deselect: true});
+			});
+	  	};
+	  	
+	  	function loadDatasets(){
+	  		if ( _.isEmpty(selectedProvider) ){
+	  			$('#dataset').empty().chosen();
+	  			selectedDataset = null;
+	  			return;
+	  		}
+	  		
+	  		$("#dataset").chosen("destroy");
+	  		
+			var url = '/views/ajax/providers/'+ selectedProvider +'/datasets';
+			ajax(url, 'GET').done(function(data) {
+	            var datasets = $.map(data.data, function(item) { return new Dataset(item) });
+	            
+	            $('#dataset').empty().append('<option value="">Select a Dataset</option>');
+	            
+	            _.each(datasets, function(item) {
+	            	$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
+	            });
+	            
+	            $('#dataset').chosen();
+	        });
+	  	};
+
+	  	function cleanDimensions(){
+	  		_.forEach(dimensionFields, function(dim) {
+	  			$("#" + dim.key).chosen("destroy");
+	  			$("#form_group_" + dim.key).remove();
+	  		});
+	  		dimensionFields = new Array();
+	  	}
+	  	
+	  	function loadDimensions(){
+	  		
+	  		if ( _.isEmpty(selectedDataset) ){
+	  			cleanDimensions();
+	  			return;
+	  		}
+
+	  		cleanDimensions();
+	  		dimensionFields = new Array()
+	  		
+			var url = '/views/ajax/datasets/'+ selectedDataset +'/dimensions/all';
+			
+			ajax(url, 'GET').done(function(data) {
+
+            	$.each(data.data, function(key, item) {
+            		var options = [];
+            		
+            		$.each(item.codes, function(key2, item2){
+            			options.push({"id": key2, "text": item2});
+            		});
+            		
+            		var newobj = {
+            			"key": key,
+            			"selectedOption": [],
+            			"selectedDataset": selectedDataset,
+            			"options": options,
+            			"caption": item.name
+            		};
+            		dimensionFields.push(newobj);
+            	});
+            	
+    			_.forEach(dimensionFields, function(dim) {
+    		    	var rendered = Mustache.render(template, dim);
+    		        var result = $("#search_form").append(rendered);
+    		    });
+    			
+    			_.forEach(dimensionFields, function(dim) {
+    				$("#" + dim.key).chosen("destroy");
+    				
+    				$("#" + dim.key).chosen({max_selected_options: 10})
+    				.on('change', function() {
+    					dim.selectedOption = $(this).val();
+    					loadData();
+    				});
+    			});
+    			
+			});
+			
+	  	};
+	  	
+	  	function changeDataset(value){
+	  		selectedDataset = value;
+	  		$("#selectedDataset").text(selectedDataset);
+	  		loadData();
+	  		cleanDimensions();
+	  		loadDimensions();
+	  	}
+
+	  	function cleanDataset(value){
+	  		selectedDataset = null;
+	  		$("#selectedDataset").empty();
+	  	}
+
+	  	$('#limit').on('change', function() {
+	  		limit = this.value;
+	  		loadData();
+	  	});	
+	  	
+	  	$('#provider').on('change', function() {
+	  		selectedProvider = $(this).val();
+	  		cleanDataset();
+	  		cleanDimensions();
+	  		$("#selectedProvider").text(selectedProvider);
+	  		loadData();
+	  		loadDatasets();
+	  	});	
+	  	
+	  	$('#dataset').on('change', function() {	  		
+	  		changeDataset(this.value);
+	  	});	
+
+		loadData();
+		loadProviders();
+		loadDatasets();
 		
-		//ajax-providers-datasets-list
-		
-        function FilterSeriesViewModel() {
-          	var self = this;
-          	
-        	self.cart = ko.observableArray([]);
-         	 	
-        	//self.dataset_code = ko.observable("insee-ipch-2015-fr-coicop");
-        	self.series_list = ko.observableArray([]);
-        	
-        	self.providers = ko.observableArray([]);
-        	self.selectedProvider = ko.observable();
-
-        	self.datasets = ko.observableArray([]);
-        	self.selectedDataset = ko.observable();
-
-        	self.frequencies = ko.observableArray([]);
-        	self.selectedFrequency = ko.observable();
-
-        	self.dimensions = ko.observableArray([]);
-        	self.selectedDimensions = ko.observable([]);
-        	
-        	self.dimensionFields = ko.observableArray([]);
-        	
-        	self.query = {};
-        	
-        	self.total = ko.observable(0);
-
-            self.ajax = function(uri, method, data) {
-                var request = {
-                    url: uri,
-                    type: method,
-                    contentType: "application/json",
-                    accepts: "application/json",
-                    //cache: false,
-                    dataType: 'json',
-                    data: JSON.stringify(data),
-                    /*
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader("Authorization", 
-                            "Basic " + btoa(self.username + ":" + self.password));
-                    },
-                    */
-                    error: function(jqXHR) {
-                        console.log("ajax error " + jqXHR.status);
-                    }
-                };
-                return $.ajax(request);
-            }
-            
-          	self.loadProviders = function(){
-				var url = '{{ url_for(".ajax-providers-list") }}';
-				self.ajax(url, 'GET').done(function(data) {
-                    var providers = $.map(data.data, function(item) { return new Provider(item) });
-                    self.providers(providers);
-                    $("#provider").select2("destroy");
-          			$('#provider').select2({
-        	    		allowClear: true,
-        	    		closeOnSelect: true,
-        	    	});
-				});
-          	};
-
-          	self.loadDatasets = function(){
-          		if (! self.selectedProvider() ){
-          			return
-          		}
-          		
-				var url = '/views/ajax/providers/'+ self.selectedProvider() +'/datasets';
-				self.ajax(url, 'GET').done(function(data) {
-                    var datasets = $.map(data.data, function(item) { return new Dataset(item) });
-                    self.datasets(datasets);
-                    $("#dataset").select2("destroy");
-          			$('#dataset').select2({
-        	    		allowClear: true,
-        	    		closeOnSelect: true,
-        	    	});
-                });
-          	};
-
-          	self.loadFrequencies = function(){
-          		if (! self.selectedDataset() ){
-          			return
-          		}
-          		
-				var url = '/views/ajax/dataset/' + self.selectedDataset() + '/frequencies';
-                $.ajax({
-                	url: url,
-                	dataType: "json",
-                	timeout: 5,
-                	async: false,
-                	success: function(allData) {
-                    	var frequencies = $.map(allData.data, function(item) { return new SelectItem(item) });
-                    	self.frequencies(frequencies);
-              			$('#frequency').select2({
-            	    		allowClear: true,
-            	    		closeOnSelect: true,
-            	    	});
-                	}
-                });
-          	};
-          	
-          	self.loadDimensions = function(){
-          		self.dimensionFields.removeAll();
-
-          		if (! self.selectedProvider() ){
-          			return
-          		}
-          		if (! self.selectedDataset() ){
-          			return
-          		}
-          		
-				var url = '/views/ajax/datasets/'+ self.selectedDataset() +'/dimensions/all';
-				self.ajax(url, 'GET').done(function(data) {
-
-					var dimensionFields = [];
-                	
-                	$.each(data.data, function(key, item) {
-                		var options = [];
-                		
-                		$.each(item.codes, function(key2, item2){
-                			options.push({"value": key2, "text": item2});
-                		});
-                		
-                		var newobj = {
-                			"key": key,
-                			"selectedOption": ko.observable(),
-                			"selectedDataset": self.selectedDataset(),
-                			"options": options,
-                			"caption": item.name
-                		};
-                		newobj.selectedOption.subscribe(self.changeDimension);
-                		dimensionFields.push(newobj);
-                	});
-
-                	self.dimensionFields(dimensionFields);
-
-                	/*
-                	$.each(data.data, function(key, item) {
-	          			$('#' + key).select2({
-	        	    		allowClear: true,
-	        	    		closeOnSelect: true,
-	        	    	});
-                	});
-                	*/
-                	
-                });
-          	};
-
-          	self.changeProvider = function(){
-          		if (! self.selectedProvider()){
-          			return;
-          		}
-          		self.selectedDataset(null);
-          		self.selectedFrequency(null);
-          		$.each(self.dimensionFields(), function(i, field){
-          			field.selectedOption(null);
-          		});
-          		self.loadDatasets();
-          		self.query = {};
-          		self.loadData();
-          	};
-          	          	
-          	self.changeDataset = function(){
-          		if (! self.selectedDataset()){
-          			return;
-          		}
-          		self.selectedFrequency(null);
-          		$.each(self.dimensionFields(), function(i, field){
-          			field.selectedOption(null);
-          		});
-          		self.loadFrequencies();
-          		self.loadDimensions();
-          		self.query = {};
-          		self.loadData();
-          	};
-          	
-          	/*
-          	self.changeAfterDataset = function(){
-          		self.changeFrequency	
-          	};
-          	*/
-
-          	self.changeFrequency = function(){
-          		if (! self.selectedFrequency() ){
-          			return;
-          		}
-          		self.query = {};
-          		self.loadData();
-          	};
-
-          	/*
-          	Capture les changements !
-          	self.selectedDataset.subscribe(function(updatedValue){
-          		console.log("subscribe selectedDataset : ", updatedValue, self.selectedDataset());
-          	});
-          	*/
-          	          	
-          	self.changeDimension = function(value){
-          		self.query = {};
-          		
-          		$.each(self.dimensionFields(), function(i, field){
-          			if (field.selectedOption()){
-          				self.query[field.key] = field.selectedOption();          				
-          			}
-          		});
-          		self.loadData();
-          	};
-          	
-          	self.loadData = function(){
-          		var url = "{{url_for('.series-all')}}";
-          		var options = self.query;
-          		
-          		if (self.selectedDataset()) {
-          			options.dataset = self.selectedDataset();
-          		}
-          		else if (self.selectedProvider()) {
-          			options.provider = self.selectedProvider();
-          		}
-          		
-          		if (self.selectedFrequency()){
-          			options.frequency = self.selectedFrequency()
-          		}
-          		
-                $.getJSON(url, options, function(allData) {
-                	$table.bootstrapTable('load', allData.data);
-                    self.total(allData.meta.total);
-                    //$("total_series").text(Humanize.formatNumber(value));
-                });
-          	};
-          	self.loadProviders();
-          	self.loadData();
-        }
-
-		var filterSeries = new FilterSeriesViewModel();
-        ko.options.deferUpdates = true;
-        ko.applyBindings(filterSeries, document.getElementById("koapp"));//$('#koapp')[0]);
-        
-      });
     });
-    </script>    
+    
+    </script>
     
 {% endblock %}
-
+    

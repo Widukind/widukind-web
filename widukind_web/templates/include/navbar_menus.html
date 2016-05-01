@@ -63,6 +63,10 @@
 				    <a class="btn btn-default navbar-btn" href=""><i class="fa fa-book fa-fw"></i> BookMark <span id="badge_bookmark" class="badge">{{ bookmark_count }}</span></a>            
 				{% endif %}
 				#}            
+
+	            <li>
+	                <a href="{{ url_for("views.home") }}"><i class="fa fa-database fa-fw"></i> Explorer</a>
+	            </li>	            
 		
 		        {% if is_logged() %}
 		        <li class="dropdown">
@@ -80,3 +84,5 @@
 					</ul>
 		        </li>
 		        {% endif %}
+
+		        

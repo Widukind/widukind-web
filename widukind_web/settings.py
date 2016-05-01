@@ -15,6 +15,10 @@ class Config(object):
 
     GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
     
+    PIWIK_ENABLE = config('WIDUKIND_PIWIK_ENABLE', False, cast=bool)
+    PIWIK_URL = config('WIDUKIND_PIWIK_URL', None)
+    PIWIK_SITE_ID = config('WIDUKIND_PIWIK_SITE_ID', 0, cast=int)
+    
     CACHE_TYPE = config('WIDUKIND_CACHE_TYPE', "simple")
     CACHE_KEY_PREFIX = "widukind_web"
     ENABLE_CACHE = config('WIDUKIND_ENABLE_CACHE', True, cast=bool)
