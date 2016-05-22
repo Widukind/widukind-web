@@ -2,17 +2,18 @@
 
 from flask import Blueprint, current_app, request, render_template, abort, url_for, redirect
 from pymongo import DESCENDING
-from bson import ObjectId
+
+import arrow
 
 from widukind_web import constants
 from widukind_web.extensions import auth
 from widukind_web.extensions import cache
 from widukind_web import queries
+from widukind_common.flask_utils import json_tools
 
 bp = Blueprint('admin', __name__)
 
 #TODO: redis cache view
-
 
 @bp.route('/providers', endpoint="providers")
 @auth.required
@@ -217,3 +218,38 @@ def stats_datasets():
 
     return render_template("admin/stats-datasets.html", 
                            result=result, total=total)
+    
+
+@bp.route('/stats/run', endpoint="stats-run")
+@auth.required
+def stats_run_html():
+    return render_template("admin/stats-run.html")
+    
+@bp.route('/stats/run/json', endpoint="stats-run-json")
+@auth.required
+def stats_run_json():
+
+    query = {}
+    provider_slug = request.args.get('provider')
+    dataset_slug = request.args.get('dataset')
+    
+    if dataset_slug:
+        dataset = queries.get_dataset(dataset_slug)
+        query["provider_name"] = dataset["provider_name"]
+        query["dataset_code"] = dataset["dataset_code"]
+    elif provider_slug:
+        provider = queries.get_provider(provider_slug)
+        query["provider_name"] = provider["name"]
+        
+    startDate = arrow.get(request.args.get('startDate')).floor('day').datetime
+    endDate = arrow.get(request.args.get('endDate')).ceil('day').datetime
+    
+    query["created"] = {"$gte": startDate, "$lte": endDate}
+    
+    cursor = queries.col_stats_run().find(query)    
+    count = cursor.count()
+    cursor = cursor.sort("created", -1)
+    rows = [doc for doc in cursor]
+    
+    return json_tools.json_response(rows, {"total": count})
+
