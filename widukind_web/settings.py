@@ -10,6 +10,7 @@ class Config(object):
     DEFAULT_URL_API = "http://widukind-api.cepremap.org/api/v1"
     BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)
     BASE_URL_API_SDMX = config('WIDUKIND_BASE_URL_API_SDMX', "%s/sdmx" % DEFAULT_URL_API)
+    BASE_URL_API_HTML = config('WIDUKIND_BASE_URL_API_HTML', "%s/html" % DEFAULT_URL_API)
 
     GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
     
