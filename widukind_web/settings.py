@@ -8,9 +8,7 @@ class Config(object):
     BOOTSTRAP_SERVE_LOCAL = True
     
     DEFAULT_URL_API = "http://widukind-api.cepremap.org/api/v1"
-    BASE_URL_API_EVIEWS = config('WIDUKIND_BASE_URL_API_EVIEWS', "%s/eviews" % DEFAULT_URL_API)
     BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)
-    BASE_URL_API_R = config('WIDUKIND_BASE_URL_API_R', "%s/r" % DEFAULT_URL_API)
     BASE_URL_API_SDMX = config('WIDUKIND_BASE_URL_API_SDMX', "%s/sdmx" % DEFAULT_URL_API)
 
     GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
@@ -83,14 +81,13 @@ class Config(object):
     MAIL_USE_TLS = config('WIDUKIND_WEB_MAIL_USE_TLS', False, cast=bool)
     MAIL_USE_SSL = config('WIDUKIND_WEB_MAIL_USE_SSL', False, cast=bool)
     #MAIL_DEBUG : default app.debug
-    MAIL_USERNAME = None
-    MAIL_PASSWORD = None
-    MAIL_DEFAULT_SENDER = config('WIDUKIND_WEB_MAIL_DEFAULT_SENDER', "root@localhost.com")
+    MAIL_USERNAME = config('WIDUKIND_MAIL_USERNAME', None)
+    MAIL_PASSWORD = config('WIDUKIND_MAIL_PASSWORD', None)
+    MAIL_DEFAULT_SENDER = config('WIDUKIND_MAIL_DEFAULT_SENDER', "root@localhost.com")
     MAIL_MAX_EMAILS = None
     #MAIL_SUPPRESS_SEND : default app.testing
     MAIL_ASCII_ATTACHMENTS = False
     
-        
 class Prod(Config):
     pass
 
