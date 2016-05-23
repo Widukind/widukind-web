@@ -177,3 +177,24 @@ function AdminQueriesResponseHandler(res){
 function AdminQueriesLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">Show</a>';
 }
+
+function ajax(uri, method, data) {
+    var request = {
+        url: uri,
+        type: method,
+        async: false,
+        timeout: 60 * 1000,
+        contentType: "application/json",
+        accepts: "application/json",
+        //cache: false,
+        dataType: 'json',
+        data: data,
+        traditional: true,
+        error: function(jqXHR) {
+        	//TODO: ecrire erreur dans champs status
+            console.log("ajax error " + jqXHR.status);
+        }
+    };
+    return $.ajax(request);
+}
+

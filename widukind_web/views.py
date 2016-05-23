@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from pprint import pprint
 from collections import OrderedDict
 
 from flask import (Blueprint, 
@@ -29,6 +30,73 @@ from widukind_web import queries
 from widukind_common.flask_utils import json_tools
 
 bp = Blueprint('views', __name__)
+
+def complex_queries_series(query={}):
+
+    tags = request.args.get('tags', None)
+    
+    search_fields = []
+    query_and = []
+    
+    for r in request.args.lists():
+        if r[0] in ['limit', 'tags', 'provider', 'dataset']:
+            continue
+        elif r[0] == 'frequency':
+            query['frequency'] = r[1][0]
+        elif r[0].startswith('dimensions_'):
+            field_name = r[0].split('dimensions_')[1]
+            search_fields.append((field_name, r[1][0]))
+        else:
+            msg = "unknow field[%s]" % r[0]
+            current_app.logger.warn(msg)
+
+    if tags and len(tags.split()) > 0:
+        tags = tags.split()
+        conditions = [{"tags": {"$regex": ".*%s.*" % value.lower()}} for value in tags]
+        query_and.append({"$and": conditions})
+        
+    if search_fields:
+        
+        query_or_by_field = {}
+        query_nor_by_field = {}
+
+        for field, value in search_fields:
+            values = value.split()
+            value = [v.lower().strip() for v in values]
+            
+            dim_field = field.lower()
+            
+            for v in value:
+                if v.startswith("!"):
+                    if not dim_field in query_nor_by_field:
+                        query_nor_by_field[dim_field] = []
+                    query_nor_by_field[dim_field].append(v[1:])
+                else:
+                    if not dim_field in query_or_by_field:
+                        query_or_by_field[dim_field] = []
+                    query_or_by_field[dim_field].append(v)
+        
+        for key, values in query_or_by_field.items():
+            q_or = {"$or": [
+                {"dimensions.%s" % key: {"$in": values}},
+            ]}
+            query_and.append(q_or)
+
+        for key, values in query_nor_by_field.items():
+            q_or = {"$nor": [
+                {"dimensions.%s" % key: {"$in": values}},
+            ]}
+            query_and.append(q_or)
+
+    if query_and:
+        query["$and"] = query_and
+            
+    print("-----complex query-----")
+    pprint(query)    
+    print("-----------------------")
+        
+    return query
+    
 
 def get_ordinal_from_period(date_str, freq=None):
     return current_app.get_ordinal_from_period(date_str, freq)
@@ -114,14 +182,11 @@ def filter_query(cursor,
     
     return count, cursor
 
-
-#---/providers
-
 @bp.route('/ajax/providers', endpoint="ajax-providers-list")
 def ajax_providers_list():
     query = {"enable": True}
     projection = {"_id": False, "slug": True, "name": True}
-    docs = [doc for doc in queries.col_providers().find(query, projection)]
+    docs = [doc for doc in queries.col_providers().find(query, projection).sort("name", ASCENDING)]
     return json_tools.json_response(docs)
 
 @bp.route('/ajax/providers/<provider>/datasets', endpoint="ajax-datasets-list")
@@ -131,6 +196,11 @@ def ajax_datasets_list(provider):
     projection = {"_id": False, "tags": False,
                   "enable": False, "lock": False,
                   "concepts": False, "codelists": False}
+    
+    is_meta = request.args.get('is_meta', type=int, default=0) == 1
+    if not is_meta:
+        projection["metadata"] = False
+        
     docs = [doc for doc in queries.col_datasets().find(query, projection)]
     return json_tools.json_response(docs)
 
@@ -156,14 +226,15 @@ def ajax_datasets_dimensions_all(dataset):
     doc = queries.col_datasets().find_one(query, projection)
     if not doc:
         abort(404)
-    dimensions = OrderedDict()
+    dimensions = []
+    print("dimension_keys : ", doc["dimension_keys"])
     for key in doc["dimension_keys"]:
         if key in doc["codelists"] and doc["codelists"][key]:
-            dimensions[key] = {
+            dimensions.append({
+                "key": key,
                 "name": doc["concepts"].get(key) or key,
                 "codes": doc["codelists"][key],
-            }
-            
+            })
     return json_tools.json_response(dimensions)
 
 @bp.route('/ajax/dataset/<dataset>/frequencies', endpoint="ajax-datasets-frequencies")
@@ -728,7 +799,6 @@ def search_in_series():
                                                  projection=projection, 
                                                  **kwargs)
 
-        print("_query : ", _query)
         #result_count = object_list.count() # max limit
         result_count = object_list.count(True) # max count real
         object_list = convert_series_period(object_list)
@@ -978,39 +1048,6 @@ def ajax_datasets_list2():
 @bp.route('/series/all', endpoint="series-all", methods=('GET',))
 def all_series():
 
-    """
-    http://widukind-api.cepremap.org/api/v1/json/datasets/imf-ifs/values?ref-area=199+182&indicator=fpolm-pa
-
-    http://127.0.0.1:8081/views/series/all?dataset=imf-ifs&ref-area=199+182&indicator=fpolm-pa&limit=10
-    {'$and': [{'$or': [{'dimensions.indicator': {'$in': ['fpolm-pa']}},
-                       {'attributes.indicator': {'$in': ['fpolm-pa']}}]},
-              {'$or': [{'dimensions.ref-area': {'$in': ['199', '182']}},
-                       {'attributes.ref-area': {'$in': ['199', '182']}}]}],
-     'dataset_code': 'IFS',
-     'provider_name': 'IMF'}
-     
-    http://127.0.0.1:8081/views/series/all?dataset=insee-ipch-2015-fr-coicop&produit=00+09112&limit=10
-    {'$and': [{'$or': [{'dimensions.produit': {'$in': ['00', '09112']}},
-                       {'attributes.produit': {'$in': ['00', '09112']}}]}],
-     'dataset_code': 'IPCH-2015-FR-COICOP',
-     'frequency': 'A',
-     'provider_name': 'INSEE'}
-     
-    http://127.0.0.1:8081/views/series/all?dataset=insee-ipch-2015-fr-coicop&limit=10&tags=national+equipment     
-    {'$and': [{'$and': [{'tags': {'$regex': '.*national.*'}},
-                        {'tags': {'$regex': '.*equipment.*'}}]}],
-     'dataset_code': 'IPCH-2015-FR-COICOP',
-     'provider_name': 'INSEE'}
-     
-    http://127.0.0.1:8081/views/series/all?dataset=insee-ipch-2015-fr-coicop&limit=10&tags=national+equipment&produit=00+09112
-    {'$and': [{'$and': [{'tags': {'$regex': '.*national.*'}},
-                        {'tags': {'$regex': '.*equipment.*'}}]},
-              {'$or': [{'dimensions.produit': {'$in': ['00', '09112']}},
-                       {'attributes.produit': {'$in': ['00', '09112']}}]}],
-     'dataset_code': 'IPCH-2015-FR-COICOP',
-     'provider_name': 'INSEE'}         
-    """
-
     limit = request.args.get('limit', default=100, type=int)
     
     projection = {
@@ -1034,9 +1071,9 @@ def all_series():
         provider = queries.get_provider(provider_slug)
         query["provider_name"] = provider["name"]
     
-    query = queries.complex_queries_series(query)
-    cursor = queries.col_series().find(query, projection)
-    cursor.limit(limit)
+    query = complex_queries_series(query)
+    cursor = queries.col_series().find(query, projection).limit(limit)
+    #cursor.limit(limit)
     count = cursor.count()
     
     series_list = convert_series_period(cursor)

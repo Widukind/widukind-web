@@ -1,0 +1,234 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Queries{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Admin Queries</li>
+    </ol>
+{% endblock %}                                    
+
+{% block styles %}
+    {{super()}}
+    {% include "include/form-css.html" with context %}
+{% endblock %}                                    
+
+{% block page %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-2">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+				    	<div class="panel-body">
+
+							<form id="search_form">
+								<div class="form-group">
+									<label class="control-label" for="created">Date:</label>
+									<input type="text" id="created" name="created" class="form-control input-sm"/>
+								</div>
+								<div class="form-group">
+									<label class="control-label" for="provider">Provider:</label>
+									<select id="provider" name="provider" class="form-control input-sm"></select>
+								</div>
+								<div class="form-group">
+									<label class="control-label" for="dataset">Dataset:</label>
+									<select id="dataset" name="dataset" class="form-control input-sm chosen"></select>
+								</div>
+							</form>
+							
+				    	</div>
+				    </div>
+				</div>
+			</div>		
+		</div>
+		
+		<div class="col-md-10">
+			<div class="row">
+			    <div class="col-md-12">
+
+				<div class="panel panel-default">
+				
+					<table class="table" id="stats" 
+						data-classes="table table-hover table-condensed"   
+	        			data-striped="true" 
+	        			data-mobile-responsive="true"
+				        data-buttons-align="left"
+				        data-toolbar-align="right"
+				        data-pagination-h-align="left"
+				        data-pagination-detail-h-align="right"
+				        data-pagination-v-align="top"
+				        data-pagination="true" 
+				        data-page-size="{{ page_size|default('10') }}"
+				        data-page-list="[10, 25, 50, 100]"  
+						>
+					<thead>
+					    <tr>
+				            <th class="col-md-2" data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
+				            <th class="col-md-2" data-field="provider_name" data-sortable="true">Provider</th>
+				            <th class="col-md-3" data-field="dataset_code" data-sortable="true">Dataset</th>
+			                <th class="col-md-1" data-field="count_accepts" data-formatter="numberFormatter" data-sortable="true">Accepts</th>
+			                <th class="col-md-1" data-field="count_rejects" data-formatter="numberFormatter" data-sortable="true">Rejects</th>
+			                <th class="col-md-1" data-field="count_inserts" data-formatter="numberFormatter" data-sortable="true">Inserts</th>
+			                <th class="col-md-1" data-field="count_updates" data-formatter="numberFormatter" data-sortable="true">Updates</th>
+			                <th class="col-md-1" data-field="count_errors" data-formatter="numberFormatter" data-sortable="true">Errors</th>
+						</tr>
+					</thead>
+					</table>
+				</div>
+			</div>		
+		</div>
+	</div>
+</div>
+
+{% endblock %}                                    
+
+{% block scripts %}
+    {{super()}}
+    {% include "include/form-js.html" with context %}
+    
+    <script type="text/javascript">
+
+	function createdFormatter(value, row) {
+	    return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
+	}
+	
+	function numberFormatter(value, row) {
+		return Humanize.formatNumber(value);
+	}
+    
+    $(document).ready(function(){
+    	
+		var $table = $('#stats').bootstrapTable();
+		
+		var today = moment();
+		var last_week = moment().subtract(6, 'days');
+		
+		var $created = $('#created').daterangepicker({
+			alwaysShowCalendars: false,
+			maxDate: today,
+	        ranges: {
+	            'Today': [moment(), moment()],
+	            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+	            'Last week': [moment().subtract(6, 'days'), moment()],
+	            'This Month': [moment().startOf('month'), moment().endOf('month')],
+	            'Last Month': [moment().subtract(1, 'month'), moment()]
+	         }				
+		});
+		$('#created').data('daterangepicker').setStartDate(last_week);
+		$('#created').data('daterangepicker').setEndDate(today);
+		
+		var selectedProvider;
+		var selectedDataset;
+
+  		var drp = $('#created').data('daterangepicker');
+  		//console.log("created : ", drp.startDate.format('YYYY-MM-DD'), drp.endDate.format('YYYY-MM-DD'));
+		
+	    function loadData(){
+	  		var url = "{{url_for('.stats-run-json')}}";
+	  		var options = {};
+	  		
+	  		//options.limit = limit;
+	  		options.startDate = drp.startDate.format('YYYY-MM-DD');
+	  		options.endDate = drp.endDate.format('YYYY-MM-DD');
+	  		
+	  		if (selectedDataset) {
+	  			options.dataset = selectedDataset;
+	  		}
+	  		else if (! _.isEmpty(selectedProvider)) {
+	  			options.provider = selectedProvider;
+	  		}
+	  		
+	  		ajax(url, 'GET', options).done(function(data) {
+	        	$table.bootstrapTable('load', data.data);
+	        	//$("#count_series").text(Humanize.formatNumber(data.data.length));
+	            //$("#total_series").text(Humanize.formatNumber(data.meta.total));
+	  		});
+	  	}
+
+		function Provider(data) {
+		    this.id = data.slug;
+		    this.text = data.name;
+		}
+
+		function Dataset(data) {
+		    this.id = data.slug;
+		    this.text = data.dataset_code;
+		}
+
+	  	function loadProviders(){
+			var url = '{{ url_for("views.ajax-providers-list") }}';
+			ajax(url, 'GET').done(function(data) {
+	            var providers = $.map(data.data, function(item) { return new Provider(item) });
+	            
+	            $('#provider').empty().append('<option value="">Select a Provider</option>');
+	            _.each(providers, function(item) {
+	            	$('#provider').append($("<option></option>").attr("value", item.id).text(item.text));
+	            });
+	            
+	            $('#provider').chosen({allow_single_deselect: true});
+			});
+	  	}
+	  	
+	  	function loadDatasets(){
+	  		if ( _.isEmpty(selectedProvider) ){
+	  			$('#dataset').empty().chosen();
+	  			selectedDataset = null;
+	  			return;
+	  		}
+	  		
+	  		$("#dataset").chosen("destroy");
+	  		
+			var url = '/views/ajax/providers/'+ selectedProvider +'/datasets';
+			ajax(url, 'GET').done(function(data) {
+	            var datasets = $.map(data.data, function(item) { return new Dataset(item) });
+	            
+	            $('#dataset').empty().append('<option value="">Select a Dataset</option>');
+	            
+	            _.each(datasets, function(item) {
+	            	$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
+	            });
+	            
+	            $('#dataset').chosen();
+	        });
+	  	}
+
+	  	function changeDataset(value){
+	  		selectedDataset = value;
+	  		$("#selectedDataset").text(selectedDataset);
+	  		loadData();
+	  	}
+
+	  	function cleanDataset(value){
+	  		selectedDataset = null;
+	  		$("#selectedDataset").empty();
+	  	}
+
+	  	$('#provider').on('change', function() {
+	  		selectedProvider = $(this).val();
+	  		cleanDataset();
+	  		$("#selectedProvider").text(selectedProvider);
+	  		loadData();
+	  		loadDatasets();
+	  	});	
+	  	
+	  	$('#dataset').on('change', function() {	  		
+	  		changeDataset(this.value);
+	  	});	
+
+		loadData();
+		loadProviders();
+		loadDatasets();
+		
+		$('#created').on('apply.daterangepicker', function(ev, picker) {
+			loadData();
+			//console.log("change start : ", picker.startDate.format('YYYY-MM-DD'));
+			//console.log("change end   : ", picker.endDate.format('YYYY-MM-DD'));
+		});		
+    
+    });
+    </script>
+		
+{% endblock %}                                    
+    
