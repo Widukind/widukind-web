@@ -449,7 +449,6 @@ def ajax_dataset_with_slug(slug):
     
     return current_app.jsonify(dict(html=result))
 
-
 @bp.route('/slug/dataset/<slug>', endpoint="dataset-by-slug")
 def dataset_with_slug(slug):
 
@@ -467,6 +466,26 @@ def dataset_with_slug(slug):
                                         dataset=dataset)
         return current_app.jsonify(result)
     
+    provider = queries.col_providers().find_one({"name": dataset['provider_name']})
+
+    count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
+                                       "dataset_code": dataset['dataset_code']})
+    return render_template("dataset.html", 
+                           provider=provider,
+                           dataset=dataset,
+                           count=count_series)
+
+@bp.route('/dataset/<provider_name>/<dataset_code>', endpoint="dataset-by-code")
+def dataset_with_code(provider_name, dataset_code):
+
+    query = {"enable": True, 
+             "provider_name": provider_name,
+             "dataset_code": dataset_code}
+    dataset = queries.col_datasets().find_one(query)
+        
+    if not dataset:
+        abort(404)
+
     provider = queries.col_providers().find_one({"name": dataset['provider_name']})
 
     count_series = queries.col_series().count({"provider_name": dataset['provider_name'],

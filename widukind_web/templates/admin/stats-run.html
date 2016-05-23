@@ -36,6 +36,18 @@
 									<label class="control-label" for="dataset">Dataset:</label>
 									<select id="dataset" name="dataset" class="form-control input-sm chosen"></select>
 								</div>
+								<div class="form-group">
+									<label class="control-label" for="limit">Limit:</label>
+									<select id="limit" name="limit" class="form-control input-sm">
+										<option value="0">No limit</option>
+										<option value="50">50</option>
+										<option value="100" selected="true">100</option>
+										<option value="200">200</option>
+										<option value="500">500</option>
+										<option value="1000">1000</option>
+									</select>
+								</div>
+								
 							</form>
 							
 				    	</div>
@@ -50,31 +62,47 @@
 
 				<div class="panel panel-default">
 				
-					<table class="table" id="stats" 
-						data-classes="table table-hover table-condensed"   
+					<table id="stats" 
+						data-classes="table table-hover table-condensed"    
 	        			data-striped="true" 
-	        			data-mobile-responsive="true"
-				        data-buttons-align="left"
-				        data-toolbar-align="right"
-				        data-pagination-h-align="left"
-				        data-pagination-detail-h-align="right"
-				        data-pagination-v-align="top"
-				        data-pagination="true" 
-				        data-page-size="{{ page_size|default('10') }}"
-				        data-page-list="[10, 25, 50, 100]"  
+	        			data-mobile-responsive="true" 
+				        data-buttons-align="left" 
+				        data-toolbar-align="right" 
+				        data-pagination-h-align="left" 
+				        data-pagination-detail-h-align="right" 
+				        data-pagination-v-align="top" 
+				        data-pagination="true"  
+				        data-page-size="{{ page_size|default('10') }}" 
+				        data-page-list="[10, 25, 50, 100]" 
+				        data-show-columns="true" 
+				        data-show-toggle="true" 
+				        {#data-group-by="true" data-group-by-field="created"#}
 						>
-					<thead>
-					    <tr>
-				            <th class="col-md-2" data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
-				            <th class="col-md-2" data-field="provider_name" data-sortable="true">Provider</th>
-				            <th class="col-md-3" data-field="dataset_code" data-sortable="true">Dataset</th>
-			                <th class="col-md-1" data-field="count_accepts" data-formatter="numberFormatter" data-sortable="true">Accepts</th>
-			                <th class="col-md-1" data-field="count_rejects" data-formatter="numberFormatter" data-sortable="true">Rejects</th>
-			                <th class="col-md-1" data-field="count_inserts" data-formatter="numberFormatter" data-sortable="true">Inserts</th>
-			                <th class="col-md-1" data-field="count_updates" data-formatter="numberFormatter" data-sortable="true">Updates</th>
-			                <th class="col-md-1" data-field="count_errors" data-formatter="numberFormatter" data-sortable="true">Errors</th>
-						</tr>
-					</thead>
+						<thead>
+						    <tr>
+					            <th data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
+					            <th data-field="provider_name" data-sortable="true">Provider</th>
+					            <th data-field="dataset_code" data-formatter="datasetLinkFormatter" data-sortable="true">Dataset</th>
+				                <th data-field="count_accepts" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Accepted">Acc.</th>
+				                <th data-field="count_rejects" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Rejected">Rej.</th>
+				                <th data-field="count_inserts" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Inserted">Ins.</th>
+				                <th data-field="count_updates" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Updated (revised)">Upd.</th>
+				                <th data-field="count_errors" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Error. Dataset level">Err.</th>
+				                <th data-field="duration" data-formatter="secondFormatter" data-align="right" data-sortable="true" data-title-tooltip="Duration (minuts)">Dur. (mn)</th>
+				                <th data-field="avg_all" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Average run">Avg</th>
+				                <th data-field="avg_write" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Average run for write operations only">Avg.W</th>
+				                <th data-field="bulk_size" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Bulk size">Bulk</th>
+	
+				                <th data-field="logger_level" data-title-tooltip="Logging level">log</th>
+				                <th data-field="fetcher_errors" data-title-tooltip="Error. Fetcher level">Err.G</th>
+				                <th data-field="async_mode" data-visible="false" data-title-tooltip="Async mode">async</th>
+				                <th data-field="pool_size" data-visible="false" data-title-tooltip="Pool size (async_mode only)">Pool</th>
+				                <th data-field="fetcher_version" data-visible="false" data-title-tooltip="">Ver.</th>
+				                <th data-field="is_trace" data-visible="false" data-title-tooltip="Enable trace debug">Trace</th>
+				                <th data-field="schema_validation_disable" data-visible="false" data-title-tooltip="Schema validation disable">valid.</th>
+				                {#<th data-field="dataset_only" data-visible="false" data-title-tooltip="">DS Only</th>#}
+							</tr>
+						</thead>
 					</table>
 				</div>
 			</div>		
@@ -91,16 +119,28 @@
     <script type="text/javascript">
 
 	function createdFormatter(value, row) {
-	    return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
+	    return new String(moment(value).format('YYYY-MM-DD - HH:mm'));
 	}
 	
 	function numberFormatter(value, row) {
 		return Humanize.formatNumber(value);
 	}
+	
+	function secondFormatter(value, row) {
+		return Math.round(value / 60, 2);
+	}
+
+	function datasetLinkFormatter(value, row) {
+	    return '<a href="' + row.view + '" target="_blank" title="Show detail">' + row.dataset_code +'</a>';
+	}
+	
     
     $(document).ready(function(){
     	
 		var $table = $('#stats').bootstrapTable();
+		
+		var limit = $('#limit').val();
+		$('#limit').chosen();
 		
 		var today = moment();
 		var last_week = moment().subtract(6, 'days');
@@ -129,7 +169,7 @@
 	  		var url = "{{url_for('.stats-run-json')}}";
 	  		var options = {};
 	  		
-	  		//options.limit = limit;
+	  		options.limit = limit;
 	  		options.startDate = drp.startDate.format('YYYY-MM-DD');
 	  		options.endDate = drp.endDate.format('YYYY-MM-DD');
 	  		
@@ -217,14 +257,17 @@
 	  		changeDataset(this.value);
 	  	});	
 
+	  	$('#limit').on('change', function() {
+	  		limit = this.value;
+	  		loadData();
+	  	});	
+	  	
 		loadData();
 		loadProviders();
 		loadDatasets();
 		
 		$('#created').on('apply.daterangepicker', function(ev, picker) {
 			loadData();
-			//console.log("change start : ", picker.startDate.format('YYYY-MM-DD'));
-			//console.log("change end   : ", picker.endDate.format('YYYY-MM-DD'));
 		});		
     
     });

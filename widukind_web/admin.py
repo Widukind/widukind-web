@@ -246,10 +246,18 @@ def stats_run_json():
     
     query["created"] = {"$gte": startDate, "$lte": endDate}
     
-    cursor = queries.col_stats_run().find(query)    
+    limit = request.args.get('limit', default=100, type=int)
+    
+    cursor = queries.col_stats_run().find(query)
+    if limit:
+        cursor = cursor.limit(limit)    
     count = cursor.count()
     cursor = cursor.sort("created", -1)
     rows = [doc for doc in cursor]
+    for row in rows:
+        row["view"] = url_for("views.dataset-by-code", 
+                              provider_name=row["provider_name"],
+                              dataset_code=row["dataset_code"])
     
     return json_tools.json_response(rows, {"total": count})
 
