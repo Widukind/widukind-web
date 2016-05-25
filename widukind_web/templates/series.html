@@ -64,6 +64,16 @@
   							<pre>{{ config.BASE_URL_API_JSON}}/series/{{series.slug}}</pre>
   						</td>
   					</tr>
+  					{#
+  					<tr>
+  						<td class="col-md-2">
+  							<h5 class="pull-right">HTML :</h5>
+  						</td>
+  						<td>
+  							<pre>{{ config.BASE_URL_API_HTML}}/series/{{series.slug}}</pre>
+  						</td>
+  					</tr>
+  					#}
   				</table>
   			</div>
   		</div>
@@ -319,24 +329,16 @@
             e.preventDefault();
             $(".attributes").toggle();
         });
+
+    	var debug_options = {
+       		url: "{{ url_for('.series-by-slug', slug=series.slug) }}",
+       		button_id: "#debug",
+       		parent_id: ".debug",
+       		target_series_id: "#debug_object_series",
+       		target_dataset_id: "#debug_object_datasets", 
+        };
+        debug_series(debug_options);
     	
-        $("#debug").click(function(e){
-            e.preventDefault();
-            if ( $(".debug").is(":visible") ) {
-            	$(".debug").toggle();	
-            } else {
-	 		   	$.ajax({
-			        url: "{{ url_for('.series-by-slug', slug=series.slug) }}",
-			        cache: false,
-			        success: function(result) {
-			        	$("#debug_object_series").text(result.series);
-			        	$("#debug_object_datasets").text(result.dataset);
-			        }
-			   	});
-	 		   $(".debug").toggle();
-            }
-        });
-    	        
     });
     </script>
     

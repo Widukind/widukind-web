@@ -1,6 +1,6 @@
-{% extends "layout.html" %}
+{% extends "base_form.html" %}
 
-{% block title %}{{super()}} - Providers{% endblock %}
+{% block title %}{{super()}} - Series Search{% endblock %}
 
 {% block breadcrumb %}
 {% endblock %}
@@ -12,9 +12,6 @@
 
 {% block styles %}
     {{super()}}
-    
-    {% include "include/form-css.html" with context %}
-
 	<style type="text/css">
 	#search_form .col-xs-3, .col-xs-2 {
 	   padding-left: 0;
@@ -96,8 +93,6 @@
 
 {% block add_scripts %}
     {{super()}}
-    
-    {% include "include/form-js.html" with context %}
     
     <script type="text/javascript">
         $(document).ready(function(){

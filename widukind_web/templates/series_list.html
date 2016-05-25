@@ -1,5 +1,20 @@
 {% extends "layout.html" %}
 
+{% block styles %}
+    {{super()}}
+    {% assets "table_css" %}
+	    <link href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% assets "table_js" %}
+	    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
 {% block title %}{{super()}} - {{provider.name}} Series{% endblock %}
 
 {% block breadcrumb %}
@@ -76,26 +91,4 @@
 
 {% endblock %}
 
-{% block add_scripts %}
-    {{super()}}
-    
-    <script type="text/javascript">
-
-    $(document).ready(function(){
-    	/*
-    	var $table = $('#series');
-    	$table.on('load-success.bs.table', function (datas) {
-    		//addCart("{{ url_for('views.card_add') }}");
-    		
-    	}).on('search.bs.table', function(ev, text){
-    		console.log("search : ", ev, text); //text=A
-    	}).on('column-search.bs.table', function(ev, field, text){
-    		console.log("search column : ", ev, field, text); //text=A, field=frequency
-    	});
-    	*/
-        
-    });    
-	
-	</script>
-{% endblock %}
 

@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block styles %}
+    {{super()}}
+    {% assets "form_css" %}
+	    <link href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% assets "form_js" %}
+	    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}

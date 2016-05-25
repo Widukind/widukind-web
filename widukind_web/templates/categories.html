@@ -3,17 +3,21 @@
 {% block breadcrumb %}
 {% endblock %}
 
-{% block page %}
+{% block styles %}
+    {{super()}}
+    <link href="{{ url_for('static', filename="local/bootstrap-treeview.min.css") }}" rel="stylesheet">
+	<style>
+	.node-tree:hover:not(.node-disabled)
+	{
+	  background-color: #0a1b21;
+	}
+	.treeview {
+		padding: 0;
+	}
+	</style>
+{% endblock %}
 
-<style>
-.node-tree:hover:not(.node-disabled)
-{
-  background-color: #0a1b21;
-}
-.treeview {
-	padding: 0;
-}
-</style>
+{% block page %}
 
 <div class="form-inline">
 <div class="form-group">
@@ -48,6 +52,7 @@
 
 {% block add_scripts %}
     {{super()}}
+    <script type="text/javascript" src="{{ url_for('static', filename='local/bootstrap-treeview.min.js') }}"></script>
     
     <script type="text/javascript">
 

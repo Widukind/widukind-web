@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "base_form.html" %}
 
 {% block title %}{{super()}} - Admin - Queries{% endblock %}
 
@@ -7,11 +7,6 @@
       <li><a href="{{ url_for("home") }}">Home</a></li>
       <li class="active">Admin Queries</li>
     </ol>
-{% endblock %}                                    
-
-{% block styles %}
-    {{super()}}
-    {% include "include/form-css.html" with context %}
 {% endblock %}                                    
 
 {% block page %}
@@ -92,6 +87,8 @@
 				                <th data-field="avg_all" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Average run">Avg</th>
 				                <th data-field="avg_write" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Average run for write operations only">Avg.W</th>
 				                <th data-field="bulk_size" data-formatter="numberFormatter" data-align="right" data-sortable="true" data-title-tooltip="Bulk size">Bulk</th>
+				                
+				                <th data-field="enable" data-visible="false" data-title-tooltip="Dataset enable">Enable</th>
 	
 				                <th data-field="logger_level" data-title-tooltip="Logging level">log</th>
 				                <th data-field="fetcher_errors" data-title-tooltip="Error. Fetcher level">Err.G</th>
@@ -114,7 +111,6 @@
 
 {% block scripts %}
     {{super()}}
-    {% include "include/form-js.html" with context %}
     
     <script type="text/javascript">
 
@@ -131,6 +127,9 @@
 	}
 
 	function datasetLinkFormatter(value, row) {
+		if (row.enable == false){
+			return '<span class="danger">' + value + '</span>';
+		}
 	    return '<a href="' + row.view + '" target="_blank" title="Show detail">' + row.dataset_code +'</a>';
 	}
 	
@@ -145,7 +144,7 @@
 		var today = moment();
 		var last_week = moment().subtract(6, 'days');
 		
-		var $created = $('#created').daterangepicker({
+		$('#created').daterangepicker({
 			alwaysShowCalendars: false,
 			maxDate: today,
 	        ranges: {
@@ -182,8 +181,6 @@
 	  		
 	  		ajax(url, 'GET', options).done(function(data) {
 	        	$table.bootstrapTable('load', data.data);
-	        	//$("#count_series").text(Humanize.formatNumber(data.data.length));
-	            //$("#total_series").text(Humanize.formatNumber(data.meta.total));
 	  		});
 	  	}
 
@@ -213,8 +210,7 @@
 	  	
 	  	function loadDatasets(){
 	  		if ( _.isEmpty(selectedProvider) ){
-	  			$('#dataset').empty().chosen();
-	  			selectedDataset = null;
+	  			cleanDataset();
 	  			return;
 	  		}
 	  		
@@ -234,27 +230,21 @@
 	        });
 	  	}
 
-	  	function changeDataset(value){
-	  		selectedDataset = value;
-	  		$("#selectedDataset").text(selectedDataset);
-	  		loadData();
-	  	}
-
-	  	function cleanDataset(value){
+	  	function cleanDataset(){
 	  		selectedDataset = null;
-	  		$("#selectedDataset").empty();
+	  		$('#dataset').empty().chosen();	  		
 	  	}
 
 	  	$('#provider').on('change', function() {
 	  		selectedProvider = $(this).val();
 	  		cleanDataset();
-	  		$("#selectedProvider").text(selectedProvider);
-	  		loadData();
 	  		loadDatasets();
+	  		loadData();
 	  	});	
 	  	
 	  	$('#dataset').on('change', function() {	  		
-	  		changeDataset(this.value);
+	  		selectedDataset = this.value;
+	  		loadData();
 	  	});	
 
 	  	$('#limit').on('change', function() {
@@ -262,9 +252,9 @@
 	  		loadData();
 	  	});	
 	  	
-		loadData();
 		loadProviders();
 		loadDatasets();
+		loadData();
 		
 		$('#created').on('apply.daterangepicker', function(ev, picker) {
 			loadData();

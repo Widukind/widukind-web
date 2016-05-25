@@ -1,10 +1,9 @@
-{% extends "layout.html" %}
+{% extends "base_form.html" %}
 
 {% block title %}{{super()}} - Series Explorer{% endblock %}
 
 {% block styles %}
     {{super()}}
-    {% include "include/form-css.html" with context %}
     <style>
     #infos td {
     	font-size: 90%;
@@ -150,7 +149,6 @@
 
 {% block scripts %}
     {{super()}}
-    {% include "include/form-js.html" with context %}
 
 	<script id="template-select" type="x-tmpl-mustache">
 		{% raw %}
@@ -295,9 +293,8 @@
 	  	};
 	  	
 	  	function loadDatasets(){
-	  		if ( _.isEmpty(selectedProvider) ){
-	  			$('#dataset').empty().chosen();
-	  			selectedDataset = null;
+	  		if (_.isEmpty(selectedProvider)){
+	  			cleanDataset();
 	  			return;
 	  		}
 	  		
@@ -370,6 +367,7 @@
 
 	  	function cleanDataset(){
 	  		selectedDataset = null;
+	  		$('#dataset').empty().chosen();
 	  		$("#selectedDataset").text("All");
 	  		dimension_filter = [];
 			is_filter = false;

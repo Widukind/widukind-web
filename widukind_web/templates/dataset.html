@@ -4,24 +4,6 @@
 
 {% block meta_keywords %}{{super()}}, {{provider.name}}, {{provider.long_name}}, {{ dataset.name }}, {{ dataset.dataset_code }}{% endblock %}
 
-{#
-{% block styles %}
-    {{super()}}
-    {% include "include/form-css.html" with context %}
-	<style type="text/css">
-	input[type="radio"].styled:checked+label:after {
-	    font-family: 'FontAwesome';
-	    content: '';
-	}
-	</style>    
-{% endblock %}
-
-{% block scripts %}
-    {{super()}}
-    {% include "include/form-js.html" with context %}
-{% endblock %}
-#}
-
 {% block breadcrumb %}
     <ol class="breadcrumb">
       <li><a href="{{ url_for("home") }}">Home</a></li>
@@ -34,18 +16,6 @@
 {% block page %}
 
 <a name="home"></a>
-
-{#
-<div class="row">
-	<div class="col-md-12">
-		<ul class="nav nav-tabs">
-		    <li class="active"><a href="#info-tab" data-toggle="tab"><i class="fa fa-info fa-fw"></i> Informations</i></a></li>
-		    <li><a href="#query-tab" data-toggle="tab"><i class="fa fa-search fa-fw"></i> Query</a></li>
-		    <li><a target="{{ dataset.slug }}-series" href="{{ url_for('.series_by_dataset_slug', slug=dataset.slug) }}"><i class="fa fa-file-excel-o fa-fw"></i> All Series <span class="badge">({{count}})</span></a></li>
-		</ul>
-	</div>
-</div>
-#}
 
 {% include "dataset-shared-infos.html" with context %}
 
@@ -211,24 +181,14 @@
         	fv.defaultSubmit();
         });
         #}
-
-        $("#debug").click(function(e){
-            e.preventDefault();
-            if ( $(".debug").is(":visible") ) {
-            	$(".debug").toggle();	
-            } else {
-	 		   	$.ajax({
-			        url: "{{ url_for('.dataset-by-slug', slug=dataset.slug) }}",
-			        cache: false,
-			        complete: function(jqXHR, textStatus){
-			            if (textStatus == "success"){
-			            	$("#debug_object").text(jqXHR.responseJSON);
-			            }
-			        }
-			   	});
-	 		   $(".debug").toggle();
-            }
-        });
+    	
+    	var debug_options = {
+    		url: "{{ url_for('.dataset-by-slug', slug=dataset.slug) }}",
+    		button_id: "#debug",
+    		parent_id: ".debug",
+    		target_id: "#debug_object"
+    	};
+    	debug_dataset(debug_options);
         
     });
     </script>
