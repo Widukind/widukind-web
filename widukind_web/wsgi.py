@@ -146,7 +146,7 @@ def _conf_logging_mail(app):
                                ADMINS, 
                                'Application Failed')
     mail_handler.setLevel(logging.ERROR)
-    app.logger.addHandler(mail_handler) 
+    app.logger.addHandler(mail_handler)
     
 def _conf_logging_errors(app):
     
@@ -318,9 +318,6 @@ def _conf_bootstrap(app):
     from flask_bootstrap import WebCDN
     from flask_bootstrap import Bootstrap
     Bootstrap(app)
-    app.extensions['bootstrap']['cdns']['jquery'] = WebCDN(
-        '//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/'
-    )    
 
 def _conf_sitemap(app):
     
@@ -396,7 +393,6 @@ def _conf_errors(app):
     def disable_error(error):
         is_json = request.args.get('json') or request.is_xhr
         values = dict(error="307 Error", original_error=error, referrer=request.referrer)
-        print(dir(error), type(error))
         if is_json:
             values['original_error'] = str(values['original_error'])
             return app.jsonify(values), 307
@@ -429,7 +425,118 @@ def _conf_jsonify(app):
         return current_app.response_class(content, mimetype='application/json')
 
     app.jsonify = jsonify
+    
+def _conf_assets(app):
+    from flask_assets import Bundle
+    assets = extensions.assets
+    #app.debug = True
+    assets.init_app(app)
+    
+    common_css = [
+        #"local/bootstrap-3.3.6/css/bootstrap.min.css",
+        #"local/bootstrap-3.3.6/css/bootstrap-theme.min.css",
+        "themes/bootswatch/widukind/bootstrap.min.css", #3.3.6
+        "local/font-awesome.min.css",
+        #"widukind/style-light.css",
+    ]
+    
+    common_js = [
+        "local/jquery.min.js",
+        "local/bootstrap-3.3.6/js/bootstrap.min.js",
+        "local/humanize.min.js",
+        "local/lodash.min.js",
+        "local/spin.min.js",
+        "local/jquery.spin.js",
+        "widukind/scripts.js",
+    ]
 
+    table_css = [
+        "local/bootstrap-table.min.css",
+    ]    
+    table_js = [
+        "local/bootstrap-table.min.js",
+        "local/bootstrap-table-cookie.min.js",
+        "local/bootstrap-table-export.min.js",
+        "local/bootstrap-table-filter-control.min.js",
+        "local/bootstrap-table-filter.min.js",
+        "local/bootstrap-table-flat-json.min.js",
+        "local/bootstrap-table-mobile.min.js",
+        "local/bootstrap-table-natural-sorting.min.js",
+        "local/bootstrap-table-toolbar.min.js",
+        "local/bootstrap-table-en-US.min.js",
+    ]
+    
+    form_css = [
+        "local/awesome-bootstrap-checkbox.min.css",
+        "local/select2.min.css",
+        "local/select2-bootstrap.min.css",
+        "local/daterangepicker.min.css",
+        "local/formValidation.min.css",
+        "local/chosen.min.css",
+    ] + table_css
+
+    form_js = [
+        "local/select2.min.js",
+        "local/daterangepicker.min.js",
+        "local/formValidation.min.js",
+        "local/formvalidation-bootstrap.min.js",
+        "local/chosen.jquery.min.js",
+        "local/mustache.min.js",
+        #"local/jquery.sparkline.min.js",
+        #"local/dygraph-combined.js",
+    ] + table_js
+
+    #TODO: export    
+    table_export_js = [
+        'bootstrap-table/extensions/export/bootstrap-table-export.min.js',    
+        'bootstrap-table/extensions/flat-json/bootstrap-table-flat-json.min.js',
+        'bootstrap-table/extensions/toolbar/bootstrap-table-toolbar.js',
+        'table-export/tableExport.js',
+        'table-export/jquery.base64.js',
+        'table-export/html2canvas.js',
+        'table-export/jspdf/libs/sprintf.js',
+        'table-export/jspdf/jspdf.js',
+        'table-export/jspdf/libs/base64.js'
+    ]
+    
+    #274Ko
+    common_css_bundler = Bundle(*common_css, 
+                                filters='cssmin',
+                                #output='gen/common-%(version)s.css'
+                                output='local/common.css'
+                                )
+    assets.register('common_css', common_css_bundler)
+    
+    #207Ko
+    common_js_bundler = Bundle(*common_js,
+                               filters='jsmin', 
+                               output='local/common.js')
+    assets.register('common_js', common_js_bundler)
+    
+    #49Ko
+    assets.register('form_css', Bundle(*form_css,
+                                       filters='cssmin', 
+                                       output='local/form.css'))
+    
+    #505Ko
+    assets.register('form_js', Bundle(*form_js, 
+                                      filters='jsmin',
+                                      output='local/form.js'))
+
+    assets.register('table_css', Bundle(*table_css,
+                                       filters='cssmin', 
+                                       output='local/table.css'))
+
+    assets.register('table_js', Bundle(*table_js,
+                                       filters='jsmin', 
+                                       output='local/table.js'))
+    
+    with app.app_context():
+        assets.cache = True #not app.debug
+        assets.manifest = 'cache' if not app.debug else False
+        assets.debug = False #app.debug
+        #print(assets['common_css'].urls())
+    
 def create_app(config='widukind_web.settings.Prod'):
     
     env_config = config_from_env('WIDUKIND_SETTINGS', config)
@@ -481,6 +588,8 @@ def create_app(config='widukind_web.settings.Prod'):
     _conf_session(app)
     
     _conf_mail(app)
+    
+    _conf_assets(app)
     
     app.wsgi_app = ProxyFix(app.wsgi_app)
     

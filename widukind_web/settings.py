@@ -40,8 +40,6 @@ class Config(object):
 
     COUNTERS_ENABLE = config('WIDUKIND_COUNTERS_ENABLE', True, cast=bool)
     
-    DEFAULT_THEME = config('WIDUKIND_THEME', 'darkly')
-    
     #---Flask-Babel
     TIMEZONE = "UTC"#"Europe/Paris" 
     DEFAULT_LANG = "en"
@@ -89,6 +87,11 @@ class Config(object):
     #MAIL_SUPPRESS_SEND : default app.testing
     MAIL_ASCII_ATTACHMENTS = False
     
+    #---Flask-Assets
+    FLASK_ASSETS_USE_CDN = False
+    ASSETS_DEBUG = False
+    
+        
 class Prod(Config):
     pass
 

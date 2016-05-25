@@ -5,6 +5,9 @@ from flask_cache import Cache
 from flask_sitemap import Sitemap
 from flask_basicauth import BasicAuth
 from flask_mail import Mail
+from flask_assets import Environment
+
+assets = Environment()
 
 moment = Moment()
 
