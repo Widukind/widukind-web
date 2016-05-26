@@ -46,6 +46,19 @@ def all_datasets_for_provider_slug(slug):
                            series_counters=series_counters, 
                            datasets=datasets)
 
+@bp.route('/datasets/disable', endpoint="datasets-disable")
+@auth.required
+def all_disable_datasets():
+
+    projection = {"dimension_list": False, "attribute_list": False,
+                  "concepts": False, "codelists": False}
+    cursor = queries.col_datasets().find({"enable": False},
+                                           projection)
+    datasets = cursor.sort("provider_name", 1)
+    
+    return render_template("admin/disable_datasets.html", 
+                           datasets=datasets)
+
 @bp.route('/enable/provider/<slug>', endpoint="provider_enable")
 @auth.required
 def change_status_provider(slug):

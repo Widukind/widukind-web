@@ -74,6 +74,7 @@
                         <i class="fa fa-settings fa-fw"></i> Admin <span class="caret"></span>
                     </a>
 					<ul class="dropdown-menu">
+						<li><a href="{{ url_for("admin.datasets-disable") }}">All Disable Datasets</a></li>
 						<li><a href="{{ url_for("admin.providers") }}">Providers</a></li>
 						<li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
 						<li><a href="{{ url_for("admin.profile") }}">Profiles</a></li>						
