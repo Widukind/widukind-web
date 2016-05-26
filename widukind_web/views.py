@@ -1112,8 +1112,24 @@ def all_series():
         rows.append(s)
 
     return json_tools.json_response(rows, {"total": count})
-    #return current_app.jsonify(datas)
 
+@bp.route('/explorer', endpoint="explorer")
+@bp.route('/explorer/<provider>')
+@bp.route('/explorer/<provider>/<dataset>')
 @bp.route('/', endpoint="home")
-def home():
-    return render_template("series-home.html")
+def home(provider=None, dataset=None):
+    """
+    http://127.0.0.1:8081/views    
+    http://127.0.0.1:8081/views/explorer    
+    http://127.0.0.1:8081/views/explorer/insee    
+    http://127.0.0.1:8081/views/explorer/insee/insee-cna-2005-ere-a88    
+    """
+    ctx = {
+        "selectedProvider": provider,
+        "selectedDataset": dataset
+    }
+    if provider:
+        doc = queries.get_provider(provider)
+    if dataset:
+        doc = queries.get_dataset(dataset)
+    return render_template("series-home.html", **ctx)

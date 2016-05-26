@@ -174,13 +174,15 @@
 		var $table = $('#series-list').bootstrapTable();
 		
 		var api_no_select_text = "Select an provider and an dataset for completed URL !";
+		var api_no_select_dim_text = "Select one or more dimensions !";
+		var count_series = 0;
 
 		var limit = $('#limit').val();
 		
-		var selectedProvider;
-		var selectedDataset;
+		var selectedProvider = {% if selectedProvider %}"{{selectedProvider}}"{% else %}null{% endif %};
+		var selectedDataset = {% if selectedDataset %}"{{selectedDataset}}"{% else %}null{% endif %};
 		var dimensionFields = [];
-    	
+		
 		var template = $('#template-select').html();
     	Mustache.parse(template);
     	
@@ -217,8 +219,15 @@
 	  			}
 	  			dimension_filter.push(add_filter);
 	  		});
+
+	  		ajax(url, 'GET', options).done(function(data) {
+	        	$table.bootstrapTable('load', data.data);
+	        	$("#count_series").text(Humanize.formatNumber(data.data.length));
+	            $("#total_series").text(Humanize.formatNumber(data.meta.total));
+	            count_series = data.meta.total;
+	  		});
 	  		
-	  		if (! _.isEmpty(selectedDataset)) {
+	  		if (! _.isEmpty(selectedDataset) && count_series < 1000) {
 		  		var api_sdmx = ["{{ config.BASE_URL_API_SDMX}}"];
 	  			api_sdmx.push(providers_by_slug[selectedProvider]);
 	  			api_sdmx.push("data");
@@ -228,7 +237,7 @@
 	  			}
 	  			$("#sdmxURL").attr('href', api_sdmx.join('/'));
 	  			$("#sdmxURL").text(api_sdmx.join('/'));
-
+	  			
 		  		var api_json = ["{{ config.BASE_URL_API_JSON}}"];
 		  		api_json.push("datasets");
 		  		api_json.push(selectedDataset);
@@ -256,14 +265,11 @@
 	  			$("#htmlURL").attr('href', api_html);
 	  			$("#htmlURL").text(api_html);
 	  			#}
-	  			
+	  		} else if (! _.isEmpty(selectedDataset)){
+	  			$("#sdmxURL").text(api_no_select_dim_text);
+	  			$("#jsonURL").text(api_no_select_dim_text);
 	  		}
 	  		
-	  		ajax(url, 'GET', options).done(function(data) {
-	        	$table.bootstrapTable('load', data.data);
-	        	$("#count_series").text(Humanize.formatNumber(data.data.length));
-	            $("#total_series").text(Humanize.formatNumber(data.meta.total));
-	  		});
 	  		
 	  	};
 		
@@ -285,7 +291,11 @@
 	            $('#provider').empty().append('<option value="">Select a Provider</option>');
 	            _.each(providers, function(item) {
 	            	providers_by_slug[item.id] = item.text;
-	            	$('#provider').append($("<option></option>").attr("value", item.id).text(item.text));
+	            	if (selectedProvider && selectedProvider === item.id){
+	            		$('#provider').append($("<option></option>").attr("value", item.id).attr("selected", "true").text(item.text));
+	            	} else {
+		            	$('#provider').append($("<option></option>").attr("value", item.id).text(item.text));
+	            	}
 	            });
 	            
 	            $('#provider').chosen({allow_single_deselect: true});
@@ -308,7 +318,12 @@
 	            
 	            _.each(datasets, function(item) {
 	            	datasets_by_slug[item.id] = item.text;
-	            	$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
+	            	if (selectedDataset && selectedDataset === item.id){
+	            		$('#dataset').append($("<option></option>").attr("value", item.id).attr("selected", "true").text(item.text));
+	            	} else {
+		            	$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
+	            	}
+	            	//$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
 	            });
 	            
 	            $('#dataset').chosen();
