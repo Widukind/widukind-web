@@ -192,7 +192,8 @@ def ajax_providers_list():
 @bp.route('/ajax/providers/<provider>/datasets', endpoint="ajax-datasets-list")
 def ajax_datasets_list(provider):
     provider_doc = queries.get_provider(provider)
-    query = {'provider_name': provider_doc["name"]}
+    query = {'provider_name': provider_doc["name"],
+             "enable": True}
     projection = {"_id": False, "tags": False,
                   "enable": False, "lock": False,
                   "concepts": False, "codelists": False}
