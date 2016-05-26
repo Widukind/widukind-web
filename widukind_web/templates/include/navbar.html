@@ -19,7 +19,11 @@
 	                <a href="{{ url_for("home") }}"><i class="fa fa-home fa-fw"></i> Home</a>
 	            </li>	            
 	            {% include "include/navbar_menus.html" with context %}
-	        
+            </ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					<p class="navbar-text"><small>Server Time : {{ moment(local=True).format('LLLL') }}</small></p>
+				</li>
             </ul>
 	    </div><!-- end of navbar-collapse -->
     </div>
