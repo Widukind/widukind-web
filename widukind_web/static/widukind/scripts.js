@@ -198,3 +198,44 @@ function ajax(uri, method, data) {
     return $.ajax(request);
 }
 
+function debug_dataset(options) {
+	
+    $(options.button_id).click(function(e){
+        e.preventDefault();
+        if ($(options.parent_id).is(":visible")) {
+        	$(options.parent_id).toggle();	
+        } else {
+ 		   	$.ajax({
+		        url: options.url,
+		        cache: false,
+		        complete: function(jqXHR, textStatus){
+		            if (textStatus == "success"){
+		            	$(options.target_id).text(jqXHR.responseJSON);
+		            }
+		        }
+		   	});
+ 		   $(options.parent_id).toggle();
+        }
+    });
+}
+
+function debug_series(options) {
+
+	$(options.button_id).click(function(e){
+	    e.preventDefault();
+	    if ( $(options.parent_id).is(":visible") ) {
+	    	$(options.parent_id).toggle();	
+	    } else {
+		   	$.ajax({
+		        url: options.url,
+		        cache: false,
+		        success: function(result) {
+		        	$(options.target_series_id).text(result.series);
+		        	$(options.target_dataset_id).text(result.dataset);
+		        }
+		   	});
+		   $(options.parent_id).toggle();
+	    }
+	});
+}
+        

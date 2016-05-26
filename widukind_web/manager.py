@@ -11,6 +11,7 @@ from flask_script import prompt_bool
 from werkzeug.debug import DebuggedApplication
 from flask_script.commands import Shell, Server
 from decouple import config as config_from_env
+from flask_assets import ManageAssets
 
 try:
     from gevent.wsgi import WSGIServer
@@ -111,6 +112,8 @@ def main(create_app_func=None):
 
     manager.add_command("config", ShowConfigCommand())
     manager.add_command("urls", ShowUrlsCommand())
+    
+    manager.add_command("assets", ManageAssets())
     
     manager.run()
     

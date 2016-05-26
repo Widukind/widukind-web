@@ -7,7 +7,7 @@ class Config(object):
     
     BOOTSTRAP_SERVE_LOCAL = True
     
-    DEFAULT_URL_API = "http://widukind-api.cepremap.org/api/v1"
+    DEFAULT_URL_API = config('WIDUKIND_BASE_URL_API', "http://widukind-api.cepremap.org/api/v1")
     BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)
     BASE_URL_API_SDMX = config('WIDUKIND_BASE_URL_API_SDMX', "%s/sdmx" % DEFAULT_URL_API)
     BASE_URL_API_HTML = config('WIDUKIND_BASE_URL_API_HTML', "%s/html" % DEFAULT_URL_API)
@@ -39,8 +39,6 @@ class Config(object):
     SESSION_ENGINE_ENABLE = config('WIDUKIND_SESSION_ENGINE_ENABLE', False, cast=bool)
 
     COUNTERS_ENABLE = config('WIDUKIND_COUNTERS_ENABLE', True, cast=bool)
-    
-    DEFAULT_THEME = config('WIDUKIND_THEME', 'darkly')
     
     #---Flask-Babel
     TIMEZONE = "UTC"#"Europe/Paris" 
@@ -89,6 +87,11 @@ class Config(object):
     #MAIL_SUPPRESS_SEND : default app.testing
     MAIL_ASCII_ATTACHMENTS = False
     
+    #---Flask-Assets
+    FLASK_ASSETS_USE_CDN = False
+    ASSETS_DEBUG = False
+    
+        
 class Prod(Config):
     pass
 

@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /views/search/datasets
+Disallow: /views/search/series
+Disallow: /views/search
+Disallow: /download
+

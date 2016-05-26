@@ -1,5 +1,20 @@
 {% extends "layout.html" %}
 
+{% block styles %}
+    {{super()}}
+    {% assets "table_css" %}
+	    <link href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% assets "table_js" %}
+	    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
 {% block title %}{{super()}} - Admin - Queries{% endblock %}
 
 {% block breadcrumb %}
@@ -11,24 +26,6 @@
 
 {% block page %}
 
-{#
-<div id="toolbar">
-    <div class="form-inline" role="form">
-        <div class="form-group">
-            <span>Offset: </span>
-            <input name="offset" class="form-control w70" type="number" value="0">
-        </div>
-        <div class="form-group">
-            <span>Limit: </span>
-            <input name="limit" class="form-control w70" type="number" value="5">
-        </div>
-        <div class="form-group">
-            <input name="search" class="form-control" type="text" placeholder="Search">
-        </div>
-        <button id="ok" type="submit" class="btn btn-default">OK</button>
-    </div>
-</div>
-#}
 <div class="panel panel-default">
     <table id="queries_table" 
         data-toggle="table"
@@ -55,7 +52,7 @@
         data-show-refresh="true"
         data-show-columns="true"
         data-show-pagination-switch="false" 
-        data-show-export="true"
+        {#data-show-export="true"#}
         data-flat="true"
         data-search="true"
 
@@ -86,22 +83,6 @@
 
 {% block add_scripts %}
     {{super()}}
-
-    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/export/bootstrap-table-export.min.js") }}"></script>    
-    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/flat-json/bootstrap-table-flat-json.min.js") }}"></script>
-
-    <script type="text/javascript" src="{{ url_for('static', filename="vendors/bootstrap-table/extensions/toolbar/bootstrap-table-toolbar.js") }}"></script>
-
-    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/tableExport.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jquery.base64.js') }}"></script>
-    <!-- PNG -->
-    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/html2canvas.js') }}"></script>
-    
-    <!-- PDF -->
-    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jspdf/libs/sprintf.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jspdf/jspdf.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='vendors/table-export/jspdf/libs/base64.js') }}"></script>
-    
     
     <script type="text/javascript">
     $(document).ready(function(){
@@ -125,12 +106,6 @@
             return params;
         }
         #}
-        /*
-        $table.on('load-success.bs.table', function (datas) {
-            var options = $table.bootstrapTable('getOptions');
-            console.log("options : ", options);
-        });
-        */
         
         
     });    

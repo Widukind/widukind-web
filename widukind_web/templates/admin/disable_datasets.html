@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}{{super()}} - Admin - Disable Datasets{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<table class="table table-hover table-condensed">	    
+    <thead>
+        <th>Provider</th>
+        <th>Dataset code</th>
+        <th>Name</th>
+        <th>Disable reason</th>
+    </thead>    
+    <tbody>
+        {% for obj in datasets %}
+        <tr>
+        	<td class="col-md-1">
+        		{{obj.provider_name}}
+        	</td>
+        	<td class="col-md-3">
+               	{{obj.dataset_code}}
+            </td>
+        	<td class="col-md-4">
+				{{obj.name}}            
+            </td>
+        	<td class="col-md-4">
+				{% if obj.metadata and obj.metadata.disable_reason %}
+				{{ obj.metadata.disable_reason }}
+				{% else %}            
+				{% endif %}            
+            </td>
+        </tr>        
+        {% endfor %}
+    </tbody>
+</table>    
+
+
+{% endblock %}
+
