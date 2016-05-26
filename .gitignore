@@ -12,3 +12,4 @@ docs/_build
 dist
 build
 TODO.rst
+.webassets-cache
