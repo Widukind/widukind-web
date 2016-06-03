@@ -186,10 +186,9 @@ def _conf_cache(app):
     cache.init_app(app)
     
 def _conf_default_views(app):
-
-    @app.route("/", endpoint="home")
-    def index():
-        return render_template("index.html")
+    
+    from widukind_web.views import index
+    app.add_url_rule('/', 'home', index)    
 
 def _conf_record_query(app):
     

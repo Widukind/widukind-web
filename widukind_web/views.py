@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import time
 from pprint import pprint
 from collections import OrderedDict
 
@@ -259,6 +260,28 @@ def ajax_dataset_frequencies(dataset):
         else:
             freqs.append({"value": freq, "text": freq})
     return json_tools.json_response(freqs)
+
+#@bp.route('/home', endpoint="home")
+@cache.cached(timeout=360)
+def index():
+
+    cursor = queries.col_providers().find({}, {"metadata": False})
+    providers = [doc for doc in cursor]
+    
+    total_datasets = 0
+    total_series = 0
+    datas = {}
+    for provider in providers:
+        provider["count_datasets"] = queries.col_datasets().count({"provider_name": provider["name"]})
+        provider["count_series"] = queries.col_series().count({"provider_name": provider["name"]})
+        datas[provider["slug"]] = provider
+        total_datasets += provider["count_datasets"]
+        total_series += provider["count_series"]
+
+    return render_template("index.html", 
+                           providers=datas, 
+                           total_datasets=total_datasets,
+                           total_series=total_series)
 
 @bp.route('/providers', endpoint="providers")
 @cache.cached(timeout=360)
@@ -749,12 +772,13 @@ def get_search_datas(form, search_type="datasets"):
     return kwargs
 
 
-def record_query(query=None, result_count=0, form=None, tags=[]):
+def record_query(query=None, result_count=0, duration=0, form=None, tags=[]):
     if not queues.RECORD_QUERY:
         return
 
     queues.RECORD_QUERY.put({
          "created": utils.utcnow(),
+         "duration": duration,
          "tags": tags,
          "remote_addr": request.remote_addr,
          "remote_user": request.remote_user,
@@ -779,15 +803,18 @@ def search_in_datasets():
         
         kwargs = get_search_datas(form, search_type="datasets")
     
+        start = time.time()
         object_list, _query = search_datasets_tags(current_app.widukind_db,
                                                    projection=projection, 
                                                    **kwargs)
 
         object_list = list(object_list)
-        
+
+        #TODO: score max/min        
         record_query(query=kwargs, 
                      result_count=len(object_list), 
                      form=form, 
+                     duration=time.time() - start,
                      tags=["search", "datasets"])
 
         for s in object_list:
@@ -814,7 +841,8 @@ def search_in_series():
         }
         
         kwargs = get_search_datas(form, search_type="series")
-        
+
+        start = time.time()        
         object_list, _query = search_series_tags(current_app.widukind_db,
                                                  projection=projection, 
                                                  **kwargs)
@@ -825,6 +853,7 @@ def search_in_series():
 
         record_query(query=kwargs, 
                      result_count=result_count, 
+                     duration=time.time() - start,
                      form=form, 
                      tags=["search", "series"])
         

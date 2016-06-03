@@ -1,48 +1,170 @@
 {% extends "layout.html" %}
 
-{#
-{% block custom_navbar %}
-{% endblock %}
-#}
-
 {% macro static(filename) %}
 {{ url_for('static', filename="widukind/" + filename)}}
 {%- endmacro %}
 
 {% block styles %}
     {{super()}}
-    <link href="{{ url_for('static', filename="widukind/style-index.css") }}" rel="stylesheet">
+    <style>
+    .profile-img{box-shadow: 0 5px 15px rgba(0,0,0,.5)}
+    
+    .provider-name {
+    	font-weight: bold;
+    	box-sizing: border-box;
+    	font-size: 26px;
+    	font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    	color: #fff;
+    }
+    
+    .provider .panel-body {
+	   padding-top: 0;
+	   /*
+	   padding-left: 10px;
+	   padding-right: 10px;
+	   */
+	   padding-bottom: 5px;
+    }
+    
+	.logos {
+	   margin: 0;
+	   padding: 0;
+	   background-color: #FFF;
+	   list-style: none;
+	   border-top: none;
+	   border-bottom-right-radius: 6px;
+	   border-bottom-left-radius: 6px;
+	   overflow: hidden;
+	}
+	
+	.logos img {
+	   width: 100%;
+	}
+	
+	.logos .logo-fs {
+	   margin: 0;
+	   padding-right: 20px;
+	   height: 80px;
+	}
+	.logos .logo-cepremap img {
+	   margin: 0;
+	   height: 80px;
+	   margin-top: 20px;
+	   padding-left: 5px;
+	   padding-right: 5px;
+	}
+	
+    
+    </style>
 {% endblock %}
 
+{% macro card4(provider) %}
+<div class="container-fluid">
+  <div class="row">
+      <div class="panel panel-default provider">
+			<div class="panel-body">
+             		<div class="row">
+                       <div class="col-md-12">
+                       		<div class="row">
+                       			<div class="col-md-10">
+	                       			<a class="text-primary" href="{{ url_for("views.explorer") }}/{{ provider.slug}}">
+	                       				<h3 class="provider-name">
+	                       				{{ provider.name }}
+	                       				<span class="pull-right"><small><i class="fa fa-link" aria-hidden="true"></small></i>
+	                       				</span>
+	                       				</h3>
+	                       			</a>
+	                       			
+                       				<h5>{{ provider.long_name }}</h5>
+                       				<h5><a class="text-primary" href="{{ provider.website }}">{{ provider.website }}</a></h5>
+                       			</div>
+                       			<div class="col-md-2">
+                       				<h3>
+                       				<img src="{{ url_for('static', filename='widukind/logos/provider-'+ provider.slug + '.png') }}" alt="" class="center-block img-thumbnail img-responsive profile-img" />
+                       				</h3>	
+                       			</div>
+                       		</div>
+                       </div><!--/col-->          
+                   </div>
+             		<div class="row">
+                       <div class="col-md-6">
+                           <h3 class="text-left"><strong class="human-number">{{provider.count_datasets}}</strong><small> Datasets</small></h3>
+                       </div>
+                       <div class="col-md-6">
+                           <h3 class="text-right"><strong class="human-number">{{provider.count_series}}</strong><small> Series</small></h3>
+                       </div><!--/col-->
+             		</div><!--/row-->
+              </div><!--/panel-body-->
+          </div><!--/panel-->
+  </div>
+</div>
+{%- endmacro %}
 
 {% block page %}
-<div class="homepage">
-    <div id="banner">
-        <h1>International Economics Database</h1>
-        <p class="lead">A database of international macroeconomic data</p>
-    </div>
-      <div class="main-inner">
-         <div class="home-logos">
-            <h2>Partners</h2>
-            <ul class="logos">
-               <li class="logo logo-fs">
-               		<a href="http://www.strategie.gouv.fr" target="_blank">
-               			<img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie">
-               		</a>
-               </li>
-               <li class="logo logo-cepremap">
-               		<a href="http://www.cepremap.org" target="_blank">               
-               			<img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP">
-               		</a>
-               </li>
-            </ul>
-         </div>
-         <div class="home-intro">
-            <p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;). These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
-            <p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
-         </div>
-      </div><!-- //end of main-inner -->
 
-</div><!-- //end of homepage -->
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-4">
+			{{ card4(providers["eurostat"])}}
+			
+			{{ card4(providers["insee"])}}
+			
+			{{ card4(providers["bis"])}}
+
+			{{ card4(providers["imf"])}}
+
+			{{ card4(providers["esri"])}}
+			
+		</div>
+		<div class="col-md-4">
+        	
+        	<h3 class="text-center" style="margin-top: 0;">
+        		International Economics Database
+        	</h3>
+        	
+        	<p class="text-center">A database of international macroeconomic data</p>
+        	
+			<div class="panel panel-default">
+				
+				<div class="panel-heading">
+					<h4 class="text-center"><strong>Partners</strong></h4>	
+				</div>
+				
+			  	<div class="panel-body logos">
+					<p class="logo-fs">
+	               		<a href="http://www.strategie.gouv.fr" target="_blank">
+	               			<img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie">
+	               		</a>
+	               	</p>
+	               	<p>&nbsp;</p>
+					<p class="logo-cepremap">
+	               		<a href="http://www.cepremap.org" target="_blank">               
+	               			<img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP">
+	               		</a>
+	               	</p>
+			  	</div>
+			</div>
+
+         	<div class="home-intro text-justify">
+            	<p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;). These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
+            	<p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
+         	</div>
+			    	
+        	
+		</div>
+		<div class="col-md-4">
+			{{ card4(providers["oecd"])}}
+			
+			{{ card4(providers["ecb"])}}
+			
+			{{ card4(providers["bea"])}}
+
+			{{ card4(providers["worldbank"])}}
+			
+			{{ card4(providers["fed"])}}			
+		</div>
+	</div>
+	
+</div>
 {% endblock %}
 
