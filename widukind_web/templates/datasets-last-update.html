@@ -1,0 +1,76 @@
+{% extends "base_form.html" %}
+
+{% block title %}{{super()}} - Last Updated Datasets{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Last Updated Datasets</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-8">
+			<div class="panel panel-default">
+				<table id="stats" 
+						data-url="{{ url_for("views.datasets-last-update")}}" 
+						data-classes="table table-hover table-condensed"    
+	        			data-striped="true" 
+	        			data-mobile-responsive="true" 
+				        data-buttons-align="left" 
+				        data-toolbar-align="right" 
+				        data-pagination-h-align="left" 
+				        data-pagination-detail-h-align="right" 
+				        data-pagination-v-align="top" 
+				        data-pagination="true"  
+				        data-page-size="{{ page_size|default('10') }}" 
+				        data-page-list="[10, 25, 50, 100]">
+						<thead>
+						    <tr>
+					            <th class="col-md-3" data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
+					            <th class="col-md-2" data-field="provider_name" data-sortable="true">Provider</th>
+					            <th class="col-md-5" data-field="dataset_code" data-formatter="datasetLinkFormatter" data-sortable="true">Dataset</th>
+				                <th class="col-md-1" data-field="count_inserts" data-formatter="numberFormatter" data-align="right" data-sortable="true">New Series</th>
+				                <th class="col-md-1" data-field="count_updates" data-formatter="numberFormatter" data-align="right" data-sortable="true">Updated Series</th>
+							</tr>
+						</thead>
+				</table>
+			</div>		
+		</div>
+	</div>
+</div>
+
+{% endblock %}                                    
+
+{% block scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+
+	function createdFormatter(value, row) {
+	    return new String(moment(value).format('YYYY-MM-DD - HH:mm'));
+	}
+	
+	function numberFormatter(value, row) {
+		return Humanize.formatNumber(value);
+	}
+	
+	function datasetLinkFormatter(value, row) {
+		if (row.enable == false){
+			return '<span class="danger">' + value + '</span>';
+		}
+	    return '<a href="' + row.view + '" target="_blank" title="Show detail">' + row.dataset_code +'</a>';
+	}
+	
+	$(document).ready(function(){
+		var $table = $('#stats').bootstrapTable();
+
+ 	});
+	
+	</script>
+	
+		
+{% endblock %}                                    
+    

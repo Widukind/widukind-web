@@ -9,21 +9,29 @@
     <style>
     .profile-img{box-shadow: 0 5px 15px rgba(0,0,0,.5)}
     
+  	div.provider {
+		background-color: #fff;
+	   	border-top-right-radius: 10px;
+	   	border-top-left-radius: 10px;
+	   	border-bottom-right-radius: 10px;
+	   	border-bottom-left-radius: 10px;
+	   	overflow: hidden;
+  	}
+
+  	div.provider * h5, div.provider .human-number, div.provider * small {
+  		color: #000;
+  	}
+      
     .provider-name {
     	font-weight: bold;
     	box-sizing: border-box;
     	font-size: 26px;
     	font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
-    	color: #fff;
     }
-    
+
     .provider .panel-body {
-	   padding-top: 0;
-	   /*
-	   padding-left: 10px;
-	   padding-right: 10px;
-	   */
-	   padding-bottom: 5px;
+	   	padding-top: 0;
+	   	padding-bottom: 5px;
     }
     
 	.logos {
@@ -40,25 +48,22 @@
 	.logos img {
 	   width: 100%;
 	}
-	
-	.logos .logo-fs {
+	/*	
+	.partner-logos .logo-fs img {
 	   margin: 0;
-	   padding-right: 20px;
-	   height: 80px;
-	}
-	.logos .logo-cepremap img {
-	   margin: 0;
-	   height: 80px;
-	   margin-top: 20px;
-	   padding-left: 5px;
-	   padding-right: 5px;
+	   padding: 10px;
 	}
 	
+	.partner-logos .logo-cepremap img {
+	   margin: 0;
+	   padding: 10px;
+	}
+	*/
     
     </style>
 {% endblock %}
 
-{% macro card4(provider) %}
+{% macro card(provider) %}
 <div class="container-fluid">
   <div class="row">
       <div class="panel panel-default provider">
@@ -76,7 +81,7 @@
 	                       			</a>
 	                       			
                        				<h5>{{ provider.long_name }}</h5>
-                       				<h5><a class="text-primary" href="{{ provider.website }}">{{ provider.website }}</a></h5>
+                       				<h5>{{ provider.website }}</h5>
                        			</div>
                        			<div class="col-md-2">
                        				<h3>
@@ -105,63 +110,62 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-4">
-			{{ card4(providers["eurostat"])}}
+			{{ card(providers["insee"])}}
 			
-			{{ card4(providers["insee"])}}
+			{{ card(providers["eurostat"])}}
 			
-			{{ card4(providers["bis"])}}
+			{{ card(providers["bis"])}}
 
-			{{ card4(providers["imf"])}}
+			{{ card(providers["imf"])}}
 
-			{{ card4(providers["esri"])}}
+			{{ card(providers["esri"])}}
 			
 		</div>
 		<div class="col-md-4">
+        	
+        	<div class="panel panel-default">
+        	<div class="panel-body">
         	
         	<h3 class="text-center" style="margin-top: 0;">
         		International Economics Database
         	</h3>
         	
         	<p class="text-center">A database of international macroeconomic data</p>
-        	
-			<div class="panel panel-default">
-				
-				<div class="panel-heading">
-					<h4 class="text-center"><strong>Partners</strong></h4>	
-				</div>
-				
-			  	<div class="panel-body logos">
-					<p class="logo-fs">
-	               		<a href="http://www.strategie.gouv.fr" target="_blank">
-	               			<img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie">
-	               		</a>
-	               	</p>
-	               	<p>&nbsp;</p>
-					<p class="logo-cepremap">
-	               		<a href="http://www.cepremap.org" target="_blank">               
-	               			<img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP">
-	               		</a>
-	               	</p>
-			  	</div>
-			</div>
 
+		  	<div class="partner-logos text-center">
+		  		<h3 style="margin-top: 0;"><small>Partners</small></h3>
+				<p class="logo-fs">
+               		<a href="http://www.strategie.gouv.fr" target="_blank">
+               			<img class="img-rounded" src="{{ static("logos/logo-fs-new-40.png") }}" alt="France Stratégie">
+               		</a>
+               	</p>
+               	<hr style="border-color: #fff; line-height: 35px; width: 10%;"/>
+               	
+				<p class="logo-cepremap">
+               		<a href="http://www.cepremap.org" target="_blank">               
+               			<img class="img-rounded" src="{{ static("logos/logo-cepremap-40-new.png") }}" alt="CEPREMAP">
+               		</a>
+               	</p>
+		  	</div>
+		  	
          	<div class="home-intro text-justify">
             	<p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;). These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
             	<p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
          	</div>
-			    	
+			</div>
+			</div>
         	
 		</div>
 		<div class="col-md-4">
-			{{ card4(providers["oecd"])}}
+			{{ card(providers["oecd"])}}
 			
-			{{ card4(providers["ecb"])}}
+			{{ card(providers["ecb"])}}
 			
-			{{ card4(providers["bea"])}}
+			{{ card(providers["bea"])}}
 
-			{{ card4(providers["worldbank"])}}
+			{{ card(providers["worldbank"])}}
 			
-			{{ card4(providers["fed"])}}			
+			{{ card(providers["fed"])}}			
 		</div>
 	</div>
 	

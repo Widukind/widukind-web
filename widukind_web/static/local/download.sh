@@ -58,3 +58,17 @@ curl -O http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js
 curl -OL http://dygraphs.com/1.1.1/dygraph-combined.js
 curl -O http://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js 
 
+curl -L -o bootstrap3-typeaheadjs.css http://raw.githubusercontent.com/bassjobsen/typeahead.js-bootstrap-css/master/typeaheadjs.css
+curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js
+curl -O http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min.js
+#bloodhound.js + typeahead.jquery.js
+#curl -O http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js
+
+curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css
+curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css
+curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js
+
+curl -O http://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js
+curl -O http://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.12/clipboard.min.js
+
+

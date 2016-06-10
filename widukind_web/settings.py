@@ -6,6 +6,8 @@ gettext = lambda s: s
 class Config(object):
     
     BOOTSTRAP_SERVE_LOCAL = True
+    TEMPLATES_AUTO_RELOAD = False
+    DEBUG = False
     
     DEFAULT_URL_API = config('WIDUKIND_BASE_URL_API', "http://widukind-api.cepremap.org/api/v1")
     BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)

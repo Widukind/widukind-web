@@ -1,8 +1,15 @@
 {% for key in dataset.dimension_keys %}
+{% if key in dataset.codelists %}
 {% set dimension = dataset.codelists[key] %}
 <a name="dim-{{key}}"></a>
 <div class="panel panel-default">
-    <div class="panel-heading"><h5>{{ dataset.concepts[key] }} <small>(dimension)</small></h5></div>
+    <div class="panel-heading">
+    	<h5>{{ dataset.concepts[key] }} <small>(dimension)</small>
+    	<span class="pull-right"><a href="#top">
+    		<i class="fa fa-arrow-up fa-fw"></i> Top</a>
+    	</span>
+    	</h5>
+    </div>
     <div class="table-responsive">
     <table class="table table-striped table-condensed">
         <tbody>
@@ -18,4 +25,5 @@
     </table>
     </div>
 </div>
+{% endif %}
 {% endfor %}

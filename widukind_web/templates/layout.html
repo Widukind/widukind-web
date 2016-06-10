@@ -15,7 +15,7 @@
     {% assets "common_css" %}
 	    <link href="{{ ASSET_URL }}" rel="stylesheet">
     {% endassets %}
-    
+ 	<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
 {% endblock %}
 
 {%- block head %}
@@ -72,14 +72,6 @@ $(document).ajaxStart(function() {
 });
 
 $(document).ready(function() {
-    
-    {#
-    $('#card_btn').on('click', function (e) {
-    	e.preventDefault();
-    	$("#series_cart").bootstrapTable('refresh');
-    	$("#cart_table").toggle();
-    });
-    #}
     
     $('.human-number').each(function(i, item){
         var value = $(item).text();

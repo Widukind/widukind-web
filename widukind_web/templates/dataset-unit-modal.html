@@ -1,0 +1,155 @@
+<a name="top"></a>
+<div class="container-fluid modal-detail">
+	<div class="row">
+		<div class="col-md-12 nopadding">				
+			<div class="panel panel-default">
+		    	<div class="panel-heading nopadding">
+		    	
+					<ul class="nav nav-pills" role="tablist">
+					
+						<li role="series" class="active">
+							<a href="#tab-modal-identity" aria-controls="tab-modal-identity" data-toggle="tab">
+								<i class="fa fa-user fa-fw"></i> Identity
+							</a>
+					  	</li>
+					  	
+						<li role="series">
+							<a href="#tab-modal-dim" aria-controls="tab-modal-dim" data-toggle="tab">
+								<i class="fa fa-wpforms fa-fw"></i> Dimensions
+							</a>
+					  	</li>
+
+						<li role="series">
+							<a href="#tab-modal-tags" aria-controls="tab-modal-tags" data-toggle="tab">
+								<i class="fa fa-tag fa-fw"></i> Tags
+							</a>
+					  	</li>
+					  	
+					</ul><!-- nav-pills -->
+				</div><!-- panel-heading -->
+				
+				<div class="tab-content">
+
+					<div role="tabpanel" class="tab-pane fade in active" id="tab-modal-identity">
+						
+					    <table id="series-identity" class="table table-striped table-condensed">
+					    	<tbody>
+					            <tr>
+					                <td class="col-md-2">Provider</td>
+					                <td class="col-md-10">
+					                	{{ provider.long_name }}
+					                </td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Code</td>
+					                <td class="col-md-10">
+					                	{{ dataset.dataset_code }}
+					                </td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Name</td>
+					                <td class="col-md-10">
+					                	{{ dataset.name }}
+					                </td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Series available</td>
+					                <td class="col-md-10">
+					                	{{ count }}
+					                </td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Last Update</td>
+					                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }}</td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Last Download</td>
+					                <td class="col-md-10">{{ moment(dataset.download_last).format('LLL') }}</td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Web Site</td>
+					                <td class="col-md-10">
+					                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
+					                    	{{ dataset.doc_href }}
+					                    {% else %}
+					                    	{{ provider.website }}
+					                    {% endif %}                
+					                </td>
+					            </tr>
+					            {% if dataset.notes %}
+					            <tr>
+					                <td class="col-md-12" colspan="2">{{dataset.notes}}</td>
+					            </tr>
+					            {% endif %}
+							</tbody>
+						</table>
+					
+					</div><!-- tabpanel tab-modal-identity -->
+					
+					<div role="tabpanel" class="tab-pane fade" id="tab-modal-dim">
+					    <table id="seriesDim" class="table table-striped table-condensed">
+					    	<tbody>
+					            <tr>
+					                <td class="col-md-2">Dimensions</td>
+					                <td class="col-md-10">
+					                    {% for key in dataset.dimension_keys %}
+						                    {% if key in dataset.codelists %}
+						                    	{% set concept = dataset.concepts[key] %}
+						                        <a href="#dim-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+						                    {% endif %}
+					                    {% endfor %}
+					                 </td>
+					            </tr>
+					            <tr>
+					                <td class="col-md-2">Attributes</td>
+					                <td class="col-md-10">
+					                    {% if dataset.attribute_keys %}
+						                    {% for key in dataset.attribute_keys %}
+							                    {% if key in dataset.codelists %}
+							                    	{% if dataset.codelists[key] %}
+								                    	{% set concept = dataset.concepts[key] %}
+								                        <a href="#attr-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+								                        {% endif %}
+							                    {% endif %}
+						                    {% endfor %}
+					                    {% else %}
+					                        None
+					                    {% endif %}
+					                 </td>
+					            </tr>
+							</tbody>
+						</table>
+						
+						{% include "dataset-shared-dimensions.html" with context %}
+						
+						{% include "dataset-shared-attributes.html" with context %}
+						
+					</div><!-- tabpanel tab-modal-dim -->
+
+					<div role="tabpanel" class="tab-pane fade" id="tab-modal-tags">
+						{% if dataset.tags %}
+					    <table id="seriesTags" class="table table-striped table-condensed">
+					        <tbody>
+					            <tr>
+					                <td class="col-md-2">Tags</td>
+					                <td class="col-md-10">
+					                	{% for tag in dataset.tags %}
+					                		<span class="label label-default">{{tag}}</span>
+					                	{% endfor %}
+					                </td>
+					            </tr>                        
+					        </tbody>
+						</table>
+						{% else %}
+						<div class="text-warning">No tags</div>
+						{% endif %}
+						
+					</div><!-- tabpanel tab-modal-tags -->
+					
+				</div><!-- tab-content -->
+			</div><!-- panel -->
+		</div><!-- col-md-12 -->
+	</div><!-- row -->
+</div><!-- container-fluid -->
+
+				

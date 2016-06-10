@@ -5,6 +5,8 @@ import os
 
 from pymongo import ASCENDING, DESCENDING
 
+from widukind_common.utils import retry_on_reconnect_error
+
 from widukind_web import constants
 
 UPDATE_INDEXES = False
@@ -13,6 +15,7 @@ import arrow
 
 logger = logging.getLogger(__name__)
 
+@retry_on_reconnect_error()
 def create_or_update_indexes(db, force_mode=False, background=True):
     """Create or update MongoDB indexes"""
     

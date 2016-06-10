@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import time
 from pprint import pprint
 from collections import OrderedDict
 
@@ -8,25 +7,20 @@ from flask import (Blueprint,
                    current_app, 
                    request, 
                    render_template,
-                   render_template_string, 
                    url_for, 
                    session, 
                    flash, 
                    abort)
 
 from werkzeug.wsgi import wrap_file
-from werkzeug.datastructures import MultiDict
+
+import arrow
+from slugify import slugify
 
 from pymongo import ASCENDING, DESCENDING
-from bson import ObjectId
-
-from widukind_common.tags import search_series_tags, search_datasets_tags, str_to_tags
 
 from widukind_web import constants
-from widukind_web import forms
-from widukind_web import utils
 from widukind_web.extensions import cache
-from widukind_web import queues
 from widukind_web import queries
 from widukind_common.flask_utils import json_tools
 
@@ -34,13 +28,16 @@ bp = Blueprint('views', __name__)
 
 def complex_queries_series(query={}):
 
-    tags = request.args.get('tags', None)
+    """
+    startDate = arrow.get(request.args.get('startDate')).floor('day').datetime
+    endDate = arrow.get(request.args.get('endDate')).ceil('day').datetime
+    """
     
     search_fields = []
     query_and = []
     
     for r in request.args.lists():
-        if r[0] in ['limit', 'tags', 'provider', 'dataset']:
+        if r[0] in ['limit', 'tags', 'provider', 'dataset', 'search', 'period']:
             continue
         elif r[0] == 'frequency':
             query['frequency'] = r[1][0]
@@ -51,11 +48,8 @@ def complex_queries_series(query={}):
             msg = "unknow field[%s]" % r[0]
             current_app.logger.warn(msg)
 
-    if tags and len(tags.split()) > 0:
-        tags = tags.split()
-        conditions = [{"tags": {"$regex": ".*%s.*" % value.lower()}} for value in tags]
-        query_and.append({"$and": conditions})
-        
+    tags = request.args.get('tags')
+
     if search_fields:
         
         query_or_by_field = {}
@@ -91,97 +85,27 @@ def complex_queries_series(query={}):
 
     if query_and:
         query["$and"] = query_and
-            
+
+    if tags and len(tags.split()) > 0:
+        tags = list(set(tags.split()))
+        query["tags"] = {"$all": tags}
+        #conditions = [{"tags": {"$regex": ".*%s.*" % value.lower()}} for value in tags]
+        #query_and.append({"": conditions})
+        #query_and.append({"$and": conditions})
+
+
     print("-----complex query-----")
     pprint(query)    
     print("-----------------------")
         
     return query
     
-
-def get_ordinal_from_period(date_str, freq=None):
-    return current_app.get_ordinal_from_period(date_str, freq)
-
-def get_period_from_ordinal(date_ordinal, freq=None):
-    return current_app.get_period_from_ordinal(date_ordinal, freq)   
-
-def convert_series_period(series_list):
-    
-    new_series = []
-    for s in series_list:
-        s['start_date'] = s["values"][0]["period"]
-        s['end_date'] = s["values"][-1]["period"]
-        new_series.append(s)
-        
-    return new_series
-
 def datas_from_series(series):
     
     import pandas
     
     for value in series["values"]:
-        yield pandas.Period(value["period"], freq=series['frequency']).to_timestamp().strftime("%Y-%m-%d"), value["value"]        
-
-def filter_query(cursor, 
-                 skip=None, limit=None, sort=None, sort_desc=None,
-                 search=None, 
-                 execute=False):
-    '''
-    Filtrer d'après des arguments request.args
-    '''
-    """
-    Par default:
-    http://127.0.0.1:8080/group/?sort=name&order=asc&limit=5&offset=0&_=1426760277239
-    
-    /group/?sort=name&order=asc&limit=5&offset=0
-    > 1er
-    http://issues.wenzhixin.net.cn/examples/bootstrap_table/data?offset=0&limit=10
-    > page 2
-    http://issues.wenzhixin.net.cn/examples/bootstrap_table/data?offset=10&limit=10
-    
-    > search
-    http://127.0.0.1:8080/group/?search=2-group&sort=name&order=asc&limit=10&offset=0&_=1426761507065
-    
-    Pour pagination coté server, renvoyer:
-        {
-          "total": 800,
-          "rows": [
-              les datas
-          ]        
-    """
-    #skip
-    skip = skip or request.args.get('offset', default=0, type=int)
-    
-    #limit
-    limit = limit or request.args.get('limit', default=20, type=int)
-    
-    #Transformer en query pymongo ?
-    search = search or request.args.get('search')
-    
-    count = cursor.count()
-    #count = cursor.count(with_limit_and_skip=True)
-    #print("count : ", count)
-    
-    #order_by
-    sort = sort or request.args.get('sort') #nom du champs
-    sort_desc = sort_desc or request.args.get('order', 'asc') == 'desc'
-
-    if skip:
-        cursor = cursor.skip(skip)
-        
-    if limit:
-        cursor = cursor.limit(limit)
-
-    if sort:
-        if sort_desc:
-            cursor.sort(sort, DESCENDING)
-        else:
-            cursor.sort(sort, ASCENDING)
-        
-    if execute:
-        cursor = list(cursor)
-    
-    return count, cursor
+        yield value["period"], pandas.Period(value["period"], freq=series['frequency']).to_timestamp().strftime("%Y-%m-%d"), value["value"]        
 
 @bp.route('/ajax/providers', endpoint="ajax-providers-list")
 def ajax_providers_list():
@@ -195,24 +119,21 @@ def ajax_datasets_list(provider):
     provider_doc = queries.get_provider(provider)
     query = {'provider_name': provider_doc["name"],
              "enable": True}
-    projection = {"_id": False, "tags": False,
-                  "enable": False, "lock": False,
-                  "concepts": False, "codelists": False}
+    projection = {"_id": False, 
+                  "dataset_code": True, "name": True, "slug": True}
     
     is_meta = request.args.get('is_meta', type=int, default=0) == 1
-    if not is_meta:
-        projection["metadata"] = False
+    if is_meta:
+        projection["metadata"] = True
         
     docs = [doc for doc in queries.col_datasets().find(query, projection)]
     return json_tools.json_response(docs)
 
 @bp.route('/ajax/datasets/<dataset>/dimensions/keys', endpoint="ajax-datasets-dimensions-keys")
 def ajax_datasets_dimensions_keys(dataset):
-    query = {'enable': True, 'slug': dataset}
-    projection = {"_id": False, "dimension_keys": True, "concepts": True}
-    doc = queries.col_datasets().find_one(query, projection)
-    if not doc:
-        abort(404)
+    projection = {"_id": False, 'enable': True, "dimension_keys": True, "concepts": True}
+    doc = queries.get_dataset(dataset, projection)
+    
     dimensions = [] 
     for key in doc["dimension_keys"]:
         if key in doc["concepts"]:            
@@ -223,11 +144,9 @@ def ajax_datasets_dimensions_keys(dataset):
 
 @bp.route('/ajax/datasets/<dataset>/dimensions/all', endpoint="ajax-datasets-dimensions-all")
 def ajax_datasets_dimensions_all(dataset):
-    query = {'enable': True, 'slug': dataset}
-    projection = {"_id": False, "dimension_keys": True, "concepts": True, "codelists": True}
-    doc = queries.col_datasets().find_one(query, projection)
-    if not doc:
-        abort(404)
+    projection = {"_id": False, "enable": True, "dimension_keys": True, "concepts": True, "codelists": True}
+    doc = queries.get_dataset(dataset, projection)
+
     dimensions = []
     print("dimension_keys : ", doc["dimension_keys"])
     for key in doc["dimension_keys"]:
@@ -241,9 +160,7 @@ def ajax_datasets_dimensions_all(dataset):
 
 @bp.route('/ajax/dataset/<dataset>/frequencies', endpoint="ajax-datasets-frequencies")
 def ajax_dataset_frequencies(dataset):
-    query = {'enable': True, 'slug': dataset}
-    projection = {"_id": False, 
-                  "enable": False, "lock": False, "tags": False}
+    projection = {"_id": False, "lock": False, "tags": False}
     doc = queries.get_dataset(dataset, projection)
     query = {"provider_name": doc["provider_name"],
              "dataset_code": doc["dataset_code"]}
@@ -261,266 +178,23 @@ def ajax_dataset_frequencies(dataset):
             freqs.append({"value": freq, "text": freq})
     return json_tools.json_response(freqs)
 
-#@bp.route('/home', endpoint="home")
-@cache.cached(timeout=360)
-def index():
-
-    cursor = queries.col_providers().find({}, {"metadata": False})
-    providers = [doc for doc in cursor]
-    
-    total_datasets = 0
-    total_series = 0
-    datas = {}
-    for provider in providers:
-        provider["count_datasets"] = queries.col_datasets().count({"provider_name": provider["name"]})
-        provider["count_series"] = queries.col_series().count({"provider_name": provider["name"]})
-        datas[provider["slug"]] = provider
-        total_datasets += provider["count_datasets"]
-        total_series += provider["count_series"]
-
-    return render_template("index.html", 
-                           providers=datas, 
-                           total_datasets=total_datasets,
-                           total_series=total_series)
-
-@bp.route('/providers', endpoint="providers")
-@cache.cached(timeout=360)
-def all_providers():
-            
-    cursor = queries.col_providers().find({"enable": True}, {'_id': False})
-    
-    providers = [doc for doc in cursor]
-    
-    counters = queries.datasets_counter(match={"enable": True})
-    
-    return render_template("providers.html", providers=providers, counters=counters)
-
-@bp.route('/datasets/<slug>', endpoint="datasets")
-def all_datasets_for_provider_slug(slug):
-
-    is_ajax = request.args.get('json') or request.is_xhr
-
-    provider = queries.col_providers().find_one({"slug": slug, "enable": True})
-    if not provider:
-        abort(404)
-
-    query = {"enable": True, "provider_name": provider["name"]}
-
-    if not is_ajax:
-        datasets_count = queries.col_datasets().count(query)
-        return render_template("datasets.html", 
-                               provider=provider, 
-                               datasets_count=datasets_count)
-
-    projection = {
-        "dimension_list": False, 
-        "attribute_list": False,
-        "concepts": False,
-        "codelists": False,
-        "tags": False,
-        "notes": False,         
-        "attribute_keys": False,
-        "dimension_keys": False,
-    }
-
-    datasets = queries.col_datasets().find(query, 
-                                   projection,
-                                   sort=[('last_update', DESCENDING)])
-    
-    count, objects = filter_query(datasets)
-
-    if is_ajax:
-        datas = {
-            "total": count,
-            "rows": []
-        }
-        for dataset in objects:
-
-            dataset['view'] = url_for('.dataset-by-slug', slug=dataset['slug'])
-            dataset['series'] = url_for('.series_by_dataset_slug', slug=dataset['slug'])
-            doc_href = dataset.get('doc_href', None)                        
-            if doc_href and not doc_href.lower().startswith('http'):
-                dataset['doc_href'] = None
-                
-            datas["rows"].append(dataset)
-
-        return current_app.jsonify(datas)
-
-@bp.route('/series/dataset/<slug>', endpoint="series_by_dataset_slug", methods=('GET', 'POST'))
-def all_series_for_dataset_slug(slug):
-
-    is_ajax = request.args.get('json') or request.is_xhr
-
-    ds_projection = {"_id": False, "slug": True, "name": True,
-                     "provider_name": True, "dataset_code": True}    
-    dataset = queries.col_datasets().find_one({"enable": True,
-                                               "slug": slug},
-                                              ds_projection)
-    
-    if not dataset:
-        abort(404)
-    
-    query = {"provider_name": dataset["provider_name"],
-             "dataset_code": dataset["dataset_code"]}
-
-    limit = None
-    
-    if request.method == 'POST':
-        limit = int(request.form.get("limit", 20))
-        frequency = request.form.get("frequency")
-        for _key, _value in request.form.items():
-            if _key.startswith("dim-"):
-                dimension_key = _key.split("dim-")[1]
-                dimension_values = request.form.getlist(_key)
-                query["dimensions.%s" % dimension_key] = {"$in": dimension_values}
-
-            if _key.startswith("attr-"):
-                attribute_key = _key.split("attr-")[1]
-                attribute_values = request.form.getlist(_key)
-                query["attributes.%s" % attribute_key] = {"$in": attribute_values}
-    
-        if frequency:
-            query["frequency"] = frequency
-    
-    """    
-    search_filter = None
-    if request.args.get('filter'):
-        search_filter = json.loads(request.args.get('filter'))
-        if 'start_date' in search_filter:
-            # Manque la fréquence
-            #pd.Period("1995", freq="A").ordinal
-    """
-    
-    #TODO: Gérer dans tableau pour filtrage dynamique
-    """
-    search_tags = request.args.get('tags')
-    if search_tags:
-        tags = [t.strip().lower() for t in search_tags.split()]
-        query["tags"] =  {"$all": tags}
-    """
-    #if search_filter:
-    #    filter.update(search_filter)
-        
-    if not is_ajax:
-        provider_doc = queries.col_providers().find_one({"name": dataset["provider_name"]})
-
-        return render_template("series_list.html", 
-                               provider=provider_doc, 
-                               dataset=dataset)
-
-    projection = {
-        "dimensions": False, 
-        "attributes": False, 
-        #"values.revisions": False,
-        "notes": False
-    }
-    
-    series = queries.col_series().find(query, projection)
-    count, series = filter_query(series, limit=limit)
-    
-    if is_ajax:
-        datas = {
-            "total": count,
-            "rows": []
-        }
-        series = convert_series_period(series)
-        for s in series:
-            is_revisions = False
-            for value in s["values"]:
-                if value.get("revisions"):
-                    is_revisions = True
-                    break
-            s['is_revisions'] = is_revisions
-            del s["values"]
-            s['view'] = url_for('.series-by-slug', slug=s['slug'])
-            s['export_csv'] = url_for('download.series_csv', 
-                                      slug=s['slug'], 
-                                      #dataset_code=s['dataset_code'], key=s['key']
-                                      )
-            s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
-            #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
-            if s['frequency'] in constants.FREQUENCIES_DICT:
-                s['frequency'] = constants.FREQUENCIES_DICT[s['frequency']]
-            
-            datas["rows"].append(s)
-        #pprint(datas)
-        return current_app.jsonify(datas)
-
 @bp.route('/ajax/slug/dataset/<slug>', endpoint="ajax-dataset-by-slug")
 def ajax_dataset_with_slug(slug):
 
-    query = {"enable": True, "slug": slug}
-    dataset = queries.col_datasets().find_one(query)
-        
-    if not dataset:
-        abort(404)
+    dataset = queries.get_dataset(slug, {"_id": False})
 
     provider = queries.col_providers().find_one({"name": dataset['provider_name']})
-
-    #from flask.globals import _request_ctx_stack
-    #ctx = _request_ctx_stack.top
-    #jinja_env = ctx.app.jinja_env
-    jinja_env = current_app.jinja_env
-    jinja_env.globals.update(dict(moment=current_app.extensions['moment']))
-    template = jinja_env.get_template('dataset-ajax.html')
 
     count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
                                                "dataset_code": dataset['dataset_code']})
     
-    result = template.render(dataset=dataset, 
+    return render_template("dataset-unit-modal.html",
+                             dataset=dataset, 
                              provider=provider, 
                              count=count_series)
-    
-    return current_app.jsonify(dict(html=result))
 
-@bp.route('/slug/dataset/<slug>', endpoint="dataset-by-slug")
-def dataset_with_slug(slug):
-
-    query = {"enable": True, "slug": slug}
-    dataset = queries.col_datasets().find_one(query)
-        
-    if not dataset:
-        abort(404)
-
-    is_ajax = request.args.get('json') or request.is_xhr
-    
-    if is_ajax:
-        '''debug mode'''
-        result = render_template_string("{{ dataset|pprint }}", 
-                                        dataset=dataset)
-        return current_app.jsonify(result)
-    
-    provider = queries.col_providers().find_one({"name": dataset['provider_name']})
-
-    count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
-                                       "dataset_code": dataset['dataset_code']})
-    return render_template("dataset.html", 
-                           provider=provider,
-                           dataset=dataset,
-                           count=count_series)
-
-@bp.route('/dataset/<provider_name>/<dataset_code>', endpoint="dataset-by-code")
-def dataset_with_code(provider_name, dataset_code):
-
-    query = {"enable": True, 
-             "provider_name": provider_name,
-             "dataset_code": dataset_code}
-    dataset = queries.col_datasets().find_one(query)
-        
-    if not dataset:
-        abort(404)
-
-    provider = queries.col_providers().find_one({"name": dataset['provider_name']})
-
-    count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
-                                       "dataset_code": dataset['dataset_code']})
-    return render_template("dataset.html", 
-                           provider=provider,
-                           dataset=dataset,
-                           count=count_series)
-
-@bp.route('/slug/series/<slug>', endpoint="series-by-slug")
-def series_with_slug(slug):
+@bp.route('/ajax/slug/series/<slug>', endpoint="ajax-series-by-slug")
+def ajax_series_with_slug(slug):
     
     is_reverse = request.args.get('reverse')
 
@@ -541,23 +215,6 @@ def series_with_slug(slug):
     if not dataset:
         abort(404)
 
-    is_ajax = request.args.get('json') or request.is_xhr
-    
-    if is_ajax:
-        '''debug mode'''
-        result_dataset = render_template_string("{{ dataset|pprint }}", dataset=dataset)
-        result_series = render_template_string("{{ series|pprint }}", series=series)
-        return current_app.jsonify(dict(dataset=result_dataset, series=result_series))
-    
-    
-    """
-    Faire un tableau de date:
-        1ère ligne: current, dataset.last_udpate
-        lignes suivantes: chaque révisions
-    """
-    
-    
-    
     max_revisions = 0
     revision_dates = []
     obs_attributes_keys = []
@@ -581,70 +238,23 @@ def series_with_slug(slug):
     
     revision_dates.reverse()
     #pprint(revision_dates)
-    """
-    Essai tableau de rev avec series_essai_rev.html
-    > trous dans les period    
-    '2008-10-01 00:00:00': [{'attributes': None,
-                              'period': '1980',
-                              'value': '-83.25'},
-                             {'attributes': None,
-                              'period': '1982',
-                              'value': '-157.75'},]
-                              
-    revision_dates = OrderedDict()
-    revision_dates[str(dataset["last_update"])] = []
-    for v in series["values"]:
-        
-        revision_dates[str(dataset["last_update"])].append({
-            "value": v["value"],
-            "period": v["period"],
-            "attributes": v.get("attributes", {})
-        })
-        
-        if "revisions" in v:
-            for r in v["revisions"]:
-                if not str(r["revision_date"]) in revision_dates:
-                    revision_dates[str(r["revision_date"])] = []
-                #if not r["revision_date"] in revision_dates:
-                #    revision_dates.append(r["revision_date"])
-                revision_dates[str(r["revision_date"])].append({
-                    "value": r["value"],
-                    "period": v["period"],
-                    "attributes": r.get("attributes", {})
-                })
-                
-            count = len(v["revisions"])
-            if count > max_revisions:
-                max_revisions = count
-        else:
-            for rk, vk in revision_dates.items():
-                if rk == str(dataset["last_update"]):
-                    continue
-                vk.append({
-                    "value": v["value"],
-                    "period": v["period"],
-                    "attributes": v.get("attributes", {})
-                })
-        
-        if v.get("attributes"):
-            for key, attr in v["attributes"].items():
-                obs_attributes_keys.append(key)
-                obs_attributes_values.append(attr)       
-    """
-    
     
     dimension_filter = ".".join([series["dimensions"][key] for key in dataset["dimension_keys"]])
     
-    return render_template("series.html", 
-                           series=series,
-                           provider=provider,
-                           dataset=dataset,
-                           dimension_filter=dimension_filter.upper(),
-                           is_reverse=is_reverse,
-                           obs_attributes_keys=list(set(obs_attributes_keys)),
-                           obs_attributes_values=list(set(obs_attributes_values)),
-                           revision_dates=list(set(revision_dates)),
-                           max_revisions=max_revisions)
+    result = render_template(
+                    "series-unit-modal.html",
+                    series=series,
+                    provider=provider,
+                    dataset=dataset,
+                    dimension_filter=dimension_filter.upper(),
+                    is_reverse=is_reverse,
+                    obs_attributes_keys=list(set(obs_attributes_keys)),
+                    obs_attributes_values=list(set(obs_attributes_values)),
+                    revision_dates=list(set(revision_dates)),
+                    max_revisions=max_revisions)
+    
+    return result
+    
     
 def send_file_csv(fileobj, mimetype=None, content_length=0):
 
@@ -659,224 +269,47 @@ def send_file_csv(fileobj, mimetype=None, content_length=0):
     response.make_conditional(request)
     return response
 
-#@cache.memoize(360)
-@bp.route('/plot/series/<slug>', endpoint="series_plot")
-def plot_series(slug):
+@bp.route('/ajax/plot/series/<slug>', endpoint="ajax_series_plot")
+def ajax_plot_series(slug):
     
-    is_ajax = request.args.get('json') or request.is_xhr
-
-    tmpl = "series_plot.html"
-    if is_ajax:
-        tmpl = "series_plot_ajax.html"
-
     series = queries.col_series().find_one({"slug": slug})
 
     if not series:
         abort(404)
 
-    dataset = queries.col_datasets().find_one({"enable": True,
-                                               "provider_name": series["provider_name"],
-                                               "dataset_code": series["dataset_code"]})    
+    ds_projection = {"enable": True}
+    dataset = queries.col_datasets().find_one({"provider_name": series["provider_name"],
+                                               "dataset_code": series["dataset_code"]},
+                                              ds_projection)    
     if not dataset:
         abort(404)
+    if dataset["enable"] is False:
+        abort(307)
 
+    meta = {
+        "provider_name": series["provider_name"],
+        "dataset_code": series["dataset_code"],
+        "name": series["name"],
+        "key": series["key"],
+        "slug": series["slug"],
+    }
     datas = []    
-    datas.append(("Dates", "Values"))
-    for period, value in datas_from_series(series):
-        datas.append((period, value))
+    #datas.append(("Dates", "Values"))
+    for period, period_ts, value in datas_from_series(series):
+        datas.append({"period": period, "period_ts": str(period_ts), "value": value})
     
-    return render_template(tmpl,
-                           is_ajax=is_ajax, 
-                           datas=datas,
-                           series=series)
+    return json_tools.json_response(datas, meta)
 
-def get_search_form(form_klass):
-    if request.json:
-        return form_klass(MultiDict(request.json))
-    else:
-        return form_klass()
-    
-def get_search_datas(form, search_type="datasets"):
-
-    providers = None
-    datasets = None
-    frequency = None
-    limit = None
-    sort = None
-    sort_desc = False
-
-    start_date = None
-    end_date = None
-
-    query = form.query.data.strip()
-
-    if form.sort.data:
-        sort = form.sort.data
-
-    #TODO:            
-    #if form_sort_desc.data:
-    #    sort_desc = form_sort_desc.data
-    
-    if form.limit.data:
-        limit = int(form.limit.data)
-        
-    if search_type == "series":
-        
-        if form.datasets.data:
-            datasets = form.datasets.data
-        
-        frequency_data = form.frequency.data
-        if frequency_data and frequency_data not in ["", "All"]:
-            frequency = frequency_data        
-        
-        if form.start_date.data:
-            start_date = form.start_date.data
-
-        if form.end_date.data:
-            end_date = form.end_date.data
-    
-    providers_data = form.providers.data
-    if providers_data:
-        providers = providers_data
-        
-    kwargs = {}
-    
-    if providers:
-        #str or array if multiple choices
-        kwargs["provider_name"] = providers
-    
-    if limit:
-        kwargs["limit"] = limit
-    
-    #if sort:
-    #    kwargs["sort"] = sort
-    
-    if search_type == "series":
-
-        if datasets:
-            #str or array if multiple choices
-            kwargs["dataset_code"] = datasets
-        
-        if frequency:
-            kwargs["frequency"] = frequency
-            
-        if start_date: 
-            kwargs["start_date"] = start_date
-        
-        if end_date: 
-            kwargs["end_date"] = end_date
-    
-    if query:
-        kwargs["search_tags"] = query
-
-    return kwargs
-
-
-def record_query(query=None, result_count=0, duration=0, form=None, tags=[]):
-    if not queues.RECORD_QUERY:
-        return
-
-    queues.RECORD_QUERY.put({
-         "created": utils.utcnow(),
-         "duration": duration,
-         "tags": tags,
-         "remote_addr": request.remote_addr,
-         "remote_user": request.remote_user,
-         "query": query,
-         "query_string": form.query.data.strip(),        
-         "result_count": result_count,
-    })
-
-@bp.route('/search/datasets', methods=('GET', 'POST'), endpoint="search_datasets")
-def search_in_datasets():
-
-    form = get_search_form(forms.SearchFormDatasets)
-    
-    if form.validate_on_submit():
-        
-        projection = {
-            "dimension_list": False, 
-            "attribute_list": False,
-            "concepts": False,
-            "codelists": False 
-        }
-        
-        kwargs = get_search_datas(form, search_type="datasets")
-    
-        start = time.time()
-        object_list, _query = search_datasets_tags(current_app.widukind_db,
-                                                   projection=projection, 
-                                                   **kwargs)
-
-        object_list = list(object_list)
-
-        #TODO: score max/min        
-        record_query(query=kwargs, 
-                     result_count=len(object_list), 
-                     form=form, 
-                     duration=time.time() - start,
-                     tags=["search", "datasets"])
-
-        for s in object_list:
-            s['view'] = url_for('.dataset-by-slug', slug=s['slug'])
-        
-        return current_app.jsonify(dict(count=len(object_list), object_list=object_list, query=kwargs))
-        
-    return render_template('search-datasets.html', form=form, search_type="datasets")
-
-@bp.route('/search/series', methods=('GET', 'POST'), endpoint="search_series")
-def search_in_series():
-    
-    form = get_search_form(forms.SearchFormSeries)
-    
-    if form.validate_on_submit():
-        
-        projection = {
-            "dimensions": False, 
-            "attributes": False, 
-            #"release_dates": False,
-            #"revisions": False,
-            #"values": False
-            "values.revisions": False,
-        }
-        
-        kwargs = get_search_datas(form, search_type="series")
-
-        start = time.time()        
-        object_list, _query = search_series_tags(current_app.widukind_db,
-                                                 projection=projection, 
-                                                 **kwargs)
-
-        #result_count = object_list.count() # max limit
-        result_count = object_list.count(True) # max count real
-        object_list = convert_series_period(object_list)
-
-        record_query(query=kwargs, 
-                     result_count=result_count, 
-                     duration=time.time() - start,
-                     form=form, 
-                     tags=["search", "series"])
-        
-        for s in object_list:
-            s['view'] = url_for('.series-by-slug', slug=s['slug'])
-        
-        return current_app.jsonify(dict(count=len(object_list), 
-                                        object_list=object_list, 
-                                        query=kwargs))
-        
-    return render_template('search-series.html', 
-                           form=form, 
-                           search_type="series")
-
-#TODO: @cache.cached(360)
+@bp.route('/tree', endpoint="tree_root_base")
 @bp.route('/tree/<provider>', endpoint="tree_root")
-def tree_view(provider):
+@cache.cached(360)
+def tree_view(provider=None):
     
-    _provider = queries.col_providers().find_one({"slug": provider, 
-                                                  "enable": True})
-    if not _provider:
-        abort(404)
-        
+    provider = provider or request.args.get('provider')
+    if not provider:
+        abort(404, "provider is required")
+    
+    _provider = queries.get_provider(provider)
     provider_name = _provider["name"]
 
     query = {"provider_name": provider_name, 
@@ -915,28 +348,62 @@ def tree_view(provider):
             "url": url_for('views.ajax-dataset-by-slug', slug=doc["slug"])
         }
 
-    return render_template('categories.html', 
-                           provider=_provider,
-                           categories=categories,
-                           dataset_codes=dataset_codes)
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    context = dict(
+        provider=_provider,
+        categories=categories,
+        dataset_codes=dataset_codes
+    )
+    
+    if is_ajax:
+        data = render_template("datatree_ajax.html", **context)
+        #context["js"] = data
+        #response_data = json_tools.json_response(data, return_value=True)
+        response = current_app.response_class(data,
+                                mimetype='application/javascript')
+        response.status_code = 200    
+        response.make_conditional(request)
+        return response
+        
 
-@bp.route('/series/cart/add', endpoint="card_add")#, methods=('POST',))
-def ajax_add_cart():
-    _id = request.args.get('id')
+    return render_template('categories.html', **context)
+
+@bp.route('/ajax/series/cart/add', endpoint="ajax-cart-add")
+def ajax_cart_add():
+    slug = request.args.get('slug')
     cart = session.get("cart", [])
-    if not _id in cart:
-        cart.append(_id)
+    if not slug in cart:
+        cart.append(slug)
         flash("Series add to cart.", "success")
     else:
         flash("Series is already in the cart.", "warning")
         
     session["cart"] = cart
     return current_app.jsonify(dict(count=len(session["cart"])))
-        
-@bp.route('/series/cart/view', endpoint="card_view")
-def ajax_view_cart():
 
-    datas = {"rows": [], "total": 0}
+@bp.route('/ajax/series/cart/remove', endpoint="ajax-cart-remove")
+def ajax_cart_remove():
+    slug = request.args.get('slug')
+    cart = session.get("cart", [])
+    if slug in cart:
+        cart.remove(slug)
+        flash("Series remove from cart.", "success")
+    else:
+        flash("Series not in the cart.", "warning")
+        
+    session["cart"] = cart
+    return current_app.jsonify(dict(count=len(session["cart"])))
+        
+@bp.route('/ajax/series/cart/view', endpoint="ajax-cart-view")
+def ajax_cart_view():
+
+    is_ajax = request.args.get('json') #or request.is_xhr
+    
+    if not is_ajax:
+        return render_template("series-cart.html")
+    
+    datas = {"rows": None, "total": 0}
     
     projection = {
         "dimensions": False, 
@@ -948,217 +415,292 @@ def ajax_view_cart():
     cart = session.get("cart", None)
     
     if cart:
-        series_ids = [ObjectId(c) for c in cart]
-        series = queries.col_series().find({"_id": {"$in": series_ids}},
-                                                                    projection=projection)
+        series_slug = [c for c in cart]
+        series = queries.col_series().find({"slug": {"$in": series_slug}},
+                                                    projection=projection)
         
-        series = convert_series_period(series)
-        for s in series:
-            s['view'] = url_for('.series-by-slug', slug=s['slug'])
-            datas["rows"].append(s)
+        docs = list(series)
+        for s in docs:
+            s['view'] = url_for('.ajax-series-by-slug', slug=s['slug'])
+
+            dataset_slug = slugify("%s-%s" % (s["provider_name"], 
+                                              s["dataset_code"]),
+                            word_boundary=False, save_order=True)
         
-        #datas["total"] = len(datas["rows"])
-        #pprint(datas)
+            s['view_dataset'] = url_for('.ajax-dataset-by-slug', slug=dataset_slug)
+            s['dataset_slug'] = dataset_slug
+            s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
+            #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
+            s['frequency_txt'] = s['frequency']
+            if s['frequency'] in constants.FREQUENCIES_DICT:
+                s['frequency_txt'] = constants.FREQUENCIES_DICT[s['frequency']]
+
+        datas["rows"] = docs
+        
     return current_app.jsonify(datas["rows"])
         
-@bp.route('/tags/prefetch/series', endpoint="tag_prefetch_series")
-@cache.cached(timeout=120)
+#@cache.cached(timeout=120)
+@bp.route('/ajax/tags/prefetch/series', endpoint="ajax-tag-prefetch-series")
 def tag_prefetch_series():
-    """
-    TODO: notion de selection provider ?
-    
-    View pour tagsinput et typehead - voir TODO.rst
-    
-    Même chose avec:
-        - provider
-        - provider/dataset pour series
-    
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 20}}))
-    576
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 10}}))
-    615
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 50}}))
-    460
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 5}}))
-    666
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 4}}))
-    676
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 3}}))
-    699
-    >>> len(db.tags.series.distinct("name", {"count": {"$gte": 2}}))
-    712    
-    """
-    
-    provider = request.args.get('provider_name')
+
+    provider = request.args.get('provider')
+    if not provider:
+        abort(400, "provider is required")
+    #dataset = request.args.get('dataset')
     limit = request.args.get('limit', default=200, type=int)
-    count = request.args.get('count', default=10, type=int)
+    count = request.args.get('count', default=0, type=int)
     
-    col = current_app.widukind_db[constants.COL_TAGS_SERIES]
+    col = current_app.widukind_db[constants.COL_TAGS]
     
-    query = {"count": {"$gte": count}}
-    if provider:
-        query["providers.name"] = {"$in": [provider]}
+    """
+        "_id" : ObjectId("570cc1cea7ceda5f82ec4624"),
+        "name" : "ipch-2015-fr-coicop",
+        "enable" : true,
+        "count_datasets" : 1,
+        "count" : 1,
+        "provider_name" : [
+                "INSEE"
+        ],
+        "dataset_code" : [
+                "IPCH-2015-FR-COICOP"
+        ],
+        "datasets" : [
+                "insee-ipch-2015-fr-coicop"
+        ]
+    """
+    #TODO: renvoyer aussi count pour tag(count)
+    query = OrderedDict()
+    query["provider_name"] = {"$in": [provider.upper()]}
+    if count:
+        query["count"] = {"$gte": count}
+    #print("QUERY : ", query)
+    #tags = col.distinct("name", query)
+    #return current_app.jsonify(tags)
     
-    tags = col.distinct("name", query)
-    return current_app.jsonify(tags)
-    
-    projection = {"_id": False, "providers": False}
-    query = {}
+    projection = {"_id": False, "name": True, "count": True, "count_datasets": True}
     docs = col.find(query, projection=projection).sort("count", DESCENDING).limit(limit)
-    tags = [doc['name'] for doc in docs]
-    return current_app.jsonify(tags)
+    return current_app.jsonify(list(docs))
     
-
-def _search_series(provider_name=None, dataset_code=None, 
-                   frequency=None, projection=None, 
-                   search_tags=None,
-                   start_date=None, end_date=None,
-                   sort=None, sort_desc=False,                        
-                   skip=None, limit=None):
-    
-    '''Convert search tag to lower case and strip tag'''
-    
-    import pandas
-    import re
-
-    query = {}
-    
-    if search_tags:
-        tags = str_to_tags(search_tags)
-        # Add OR, NOT
-        tags_regexp = [re.compile('.*%s.*' % e, re.IGNORECASE) for e in tags]
-        #  AND implementation
-        query = {"tags": {"$all": tags_regexp}}
-    
-    if provider_name:
-        query['provider_name'] = provider_name
-        
-    if frequency:
-        query['frequency'] = frequency
-                    
-    if dataset_code:
-        query['dataset_code'] = dataset_code
-
-    try:
-        if start_date:
-            ordinal_start_date = pandas.Period(start_date).ordinal
-            query["start_date"] = {"$gte": ordinal_start_date}
-    except Exception as err:
-        current_app.logger.error(err)
-    
-    try:
-        if end_date:
-            query["end_date"] = {"$lte": pandas.Period(end_date).ordinal}
-    except Exception as err:
-        current_app.logger.error(err)
-        
-    cursor = queries.col_series().find(query, projection)
-    
-    skip = skip or request.args.get('offset', default=0, type=int)
-
-    if skip:
-        cursor = cursor.skip(skip)
-    
-    if limit:
-        cursor = cursor.limit(limit)
-    
-    if sort:
-        sort_direction = ASCENDING
-        if sort_desc:
-            sort_direction = DESCENDING
-        cursor = cursor.sort(sort, sort_direction)
-    
-    return cursor, query
-
-
-@bp.route('/ajax/datasets', endpoint="ajax-datasets")
-def ajax_datasets_list2():
-    
-    provider =  request.args.get('provider')
-
-    query = {"enable": True}
-    if provider:
-        query["provider_name"] = provider
-        
-    projection = {
-        "_id": False,
-        "provider_name": True,
-        "dataset_code": True, 
-        "name": True,
-    }
-
-    datasets = queries.col_datasets().find(query, projection,
-                                           sort=[('name', ASCENDING)])
-    
-    datas = [(d["dataset_code"], d["name"]) for d in datasets]
-    
-    return current_app.jsonify(datas)
-    
-@bp.route('/series/all', endpoint="series-all", methods=('GET',))
-def all_series():
+@bp.route('/ajax/explorer/datas', endpoint="ajax-explorer-datas")
+def ajax_explorer_datas():
 
     limit = request.args.get('limit', default=100, type=int)
+    if limit > 1000:
+        limit = 1000
+        
+    #7 669 115 octets pour 1000 series
     
     projection = {
+        "_id": False,
         "dimensions": False, 
         "attributes": False, 
-        #"values": False,
         "values.revisions": False,
         "notes": False,
         "tags": False
     }
     
-    query = {}
+    query = OrderedDict()
     provider_slug = request.args.get('provider')
     dataset_slug = request.args.get('dataset')
+    search = request.args.get('search')
     
     if dataset_slug:
         dataset = queries.get_dataset(dataset_slug)
         query["provider_name"] = dataset["provider_name"]
-        query["dataset_code"] = dataset["dataset_code"]
+        #query["dataset_code"] = dataset["dataset_code"]
     elif provider_slug:
         provider = queries.get_provider(provider_slug)
         query["provider_name"] = provider["name"]
     
+    if search:
+        query["$text"] = {"$search": search}
+        projection['score'] = {'$meta': 'textScore'}
+        
+    if dataset_slug:
+        query["dataset_code"] = dataset["dataset_code"]
+    else:
+        ds_enabled_query = {"enable": False}
+        if "provider_name" in query:
+            ds_enabled_query["provider_name"] = query["provider_name"]
+        disabled_datasets = [doc["dataset_code"] for doc in queries.col_datasets().find(ds_enabled_query, 
+                                                                                        {"dataset_code": True})]
+        
+        query["dataset_code"] = {"$nin": disabled_datasets}
+    
     query = complex_queries_series(query)
-    cursor = queries.col_series().find(query, projection).limit(limit)
+    cursor = queries.col_series().find(dict(query), projection).limit(limit)
     #cursor.limit(limit)
+    if search:
+        cursor = cursor.sort([('score', {'$meta': 'textScore'})])
+
     count = cursor.count()
     
-    series_list = convert_series_period(cursor)
+    series_list = [doc for doc in cursor]
 
     rows = []
     
     for s in series_list:
+        s['start_date'] = s["values"][0]["period"]
+        s['end_date'] = s["values"][-1]["period"]
+        values = [{"period": v["period"], "value": v["value"]} for v in s['values']]
         del s["values"]
-        s['view'] = url_for('.series-by-slug', slug=s['slug'])
+        s["values"] = values
+
+        s['view'] = url_for('.ajax-series-by-slug', slug=s['slug'])
+
+        dataset_slug = slugify("%s-%s" % (s["provider_name"], 
+                                          s["dataset_code"]),
+                        word_boundary=False, save_order=True)
+        
+        s['view_dataset'] = url_for('.ajax-dataset-by-slug', slug=dataset_slug)
+        s['dataset_slug'] = dataset_slug
         s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
-        s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
+        #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
         #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
+        s['frequency_txt'] = s['frequency']
         if s['frequency'] in constants.FREQUENCIES_DICT:
-            s['frequency'] = constants.FREQUENCIES_DICT[s['frequency']]
+            s['frequency_txt'] = constants.FREQUENCIES_DICT[s['frequency']]
         
         rows.append(s)
 
     return json_tools.json_response(rows, {"total": count})
 
 @bp.route('/explorer', endpoint="explorer")
-@bp.route('/explorer/<provider>')
-@bp.route('/explorer/<provider>/<dataset>')
+@bp.route('/explorer/<provider>', endpoint="explorer_p")
+@bp.route('/explorer/<provider>/<dataset>', endpoint='explorer_p_d')
+@bp.route('/explorer/dataset/<dataset>', endpoint='explorer_d')
 @bp.route('/', endpoint="home")
-def home(provider=None, dataset=None):
+def explorer_view(provider=None, dataset=None):
     """
     http://127.0.0.1:8081/views    
     http://127.0.0.1:8081/views/explorer    
     http://127.0.0.1:8081/views/explorer/insee    
     http://127.0.0.1:8081/views/explorer/insee/insee-cna-2005-ere-a88    
     """
+    if dataset:
+        doc = queries.get_dataset(dataset)
+        provider_doc = queries.col_providers().find_one({"name": doc["provider_name"]},
+                                                        {"slug": True})
+        provider = provider_doc["slug"]
     ctx = {
         "selectedProvider": provider,
         "selectedDataset": dataset
     }
-    if provider:
-        doc = queries.get_provider(provider)
-    if dataset:
-        doc = queries.get_dataset(dataset)
     return render_template("series-home.html", **ctx)
+
+@bp.route('/datasets/last-update.html', endpoint="datasets-last-update")
+def datasets_last_update():
+    
+    is_ajax = request.args.get('json') or request.is_xhr
+    if not is_ajax:
+        return render_template("datasets-last-update.html")
+
+    query = {
+        "$or": [{"count_inserts": {"$gt": 0}}, {"count_updates": {"$gt": 0}}]
+    }
+
+    startDate = arrow.utcnow().replace(days=-1).floor("second")
+    print("startDate : ", startDate, startDate.datetime)
+    query["created"] = {"$gte": startDate.datetime}
+    
+    limit = request.args.get('limit', default=0, type=int)
+    
+    cursor = queries.col_stats_run().find(query)
+    if limit:
+        cursor = cursor.limit(limit)    
+    count = cursor.count()
+    cursor = cursor.sort("created", -1)
+    rows = [doc for doc in cursor]
+    for row in rows:
+        slug = slugify("%s-%s" % (row["provider_name"], row["dataset_code"]),
+                        word_boundary=False, save_order=True)
+        row["view"] = url_for(".explorer_d", dataset=slug)
+    
+    return json_tools.json_response(rows, {"total": count})
+
+def home_views(bp_or_app):
+
+    @bp_or_app.route('/', endpoint="home")
+    @cache.cached(timeout=360)
+    def index():
+    
+        cursor = queries.col_providers().find({}, {"metadata": False})
+        providers = [doc for doc in cursor]
+        
+        total_datasets = 0
+        total_series = 0
+        datas = {}
+        for provider in providers:
+            provider["count_datasets"] = queries.col_datasets().count({"provider_name": provider["name"]})
+            provider["count_series"] = queries.col_series().count({"provider_name": provider["name"]})
+            datas[provider["slug"]] = provider
+            total_datasets += provider["count_datasets"]
+            total_series += provider["count_series"]
+    
+        return render_template("index.html", 
+                               providers=datas, 
+                               total_datasets=total_datasets,
+                               total_series=total_series)
+        
+    @bp_or_app.route('/rss.xml', endpoint="rss")
+    def atom_feed():
+        from werkzeug.contrib.atom import AtomFeed
+        now = arrow.utcnow().datetime
+        feed = AtomFeed("Widukind", 
+                        feed_url=request.url,
+                        #url=request.host_url,
+                        #updated=now,
+                        subtitle="Updated datasets - Last 24 hours"
+                        )
+    
+        query = {
+            "$or": [{"count_inserts": {"$gt": 0}}, {"count_updates": {"$gt": 0}}]
+        }
+    
+        startDate = arrow.utcnow().replace(days=-1).floor("second")
+        print("startDate : ", startDate, startDate.datetime)
+        query["created"] = {"$gte": startDate.datetime}
+        
+        limit = request.args.get('limit', default=0, type=int)
+        
+        cursor = queries.col_stats_run().find(query)
+        if limit:
+            cursor = cursor.limit(limit)    
+    
+        cursor = cursor.sort("created", -1)
+        rows = [doc for doc in cursor]
+        
+        slugs = []
+        
+        for row in rows:
+            slug = slugify("%s-%s" % (row["provider_name"], row["dataset_code"]),
+                            word_boundary=False, save_order=True)
+            slugs.append((row, slug))
+            
+        query_dataset = {"slug": {"$in": [s[1] for s in slugs]}}
+        projection = {"metadata": False, "concepts": False, "codelists": False}
+        datasets = {doc["slug"]: doc for doc in queries.col_datasets().find(query_dataset, projection)}
+        
+        for row, slug in slugs:
+            dataset = datasets.get(slug)
+            if not dataset["enable"]:
+                continue
+            
+            url = url_for("views.explorer_d", dataset=slug, _external=True)
+            #content = """
+            #<p>Updated date from provider : %(last_update)s</p>
+            #"""
+            
+            feed.add(title="%s - %s" % (row["provider_name"], row["dataset_code"]), 
+                     summary=dataset["name"],
+                     #content=content % dataset,
+                     #content_type="html", 
+                     url=url, 
+                     id=slug,
+                     updated=row["created"], #dataset["last_update"], 
+                     published=dataset["download_last"]
+                     )
+        
+        return feed.get_response()
+        
+

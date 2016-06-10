@@ -187,8 +187,8 @@ def _conf_cache(app):
     
 def _conf_default_views(app):
     
-    from widukind_web.views import index
-    app.add_url_rule('/', 'home', index)    
+    from widukind_web.views import home_views
+    home_views(app)
 
 def _conf_record_query(app):
     
@@ -312,6 +312,11 @@ def _conf_processors(app):
         def frequency(value):
             return constants.FREQUENCIES_DICT.get(value, "Unknow")
         return dict(frequency=frequency)
+
+    @app.context_processor
+    def server_time():
+        import arrow
+        return dict(server_time=arrow.utcnow().to('local').format('YYYY-MM-DD HH:mm:ss ZZ'))
                 
 def _conf_bootstrap(app):
     from flask_bootstrap import WebCDN
@@ -363,8 +368,8 @@ def _conf_sitemap(app):
     @extensions.sitemap.register_generator
     def sitemap_global():
         yield ('home', {}, None, "daily", 1.0)
-        yield ('download.fs_list_dataset', {}, None, "daily", 0.8)
-        yield ('download.fs_list_series', {}, None, "hourly", 0.8)
+        #yield ('download.fs_list_dataset', {}, None, "daily", 0.8)
+        #yield ('download.fs_list_series', {}, None, "hourly", 0.8)
 
     extensions.sitemap.decorators = []
     app.config['SITEMAP_VIEW_DECORATORS'] = [load_page]
@@ -381,14 +386,14 @@ def _conf_bp(app):
 
 def _conf_errors(app):
 
-    from werkzeug import exceptions as ex
+    from werkzeug.exceptions import HTTPException
 
-    class DisabledElement(ex.HTTPException):
+    class DisabledElement(HTTPException):
         code = 307
         description = 'Disabled element'
     abort.mapping[307] = DisabledElement
 
-    @app.errorhandler(307)
+    @app.errorhandler(DisabledElement)
     def disable_error(error):
         is_json = request.args.get('json') or request.is_xhr
         values = dict(error="307 Error", original_error=error, referrer=request.referrer)
@@ -431,6 +436,10 @@ def _conf_assets(app):
     #app.debug = True
     assets.init_app(app)
     
+    import os
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "static"))
+    
     common_css = [
         #"local/bootstrap-3.3.6/css/bootstrap.min.css",
         #"local/bootstrap-3.3.6/css/bootstrap-theme.min.css",
@@ -446,6 +455,7 @@ def _conf_assets(app):
         "local/lodash.min.js",
         "local/spin.min.js",
         "local/jquery.spin.js",
+        "local/bootbox.min.js",
         "widukind/scripts.js",
     ]
 
@@ -467,20 +477,23 @@ def _conf_assets(app):
     
     form_css = [
         "local/awesome-bootstrap-checkbox.min.css",
-        "local/select2.min.css",
-        "local/select2-bootstrap.min.css",
+        #"local/select2.min.css",
+        #"local/select2-bootstrap.min.css",
         "local/daterangepicker.min.css",
         "local/formValidation.min.css",
         "local/chosen.min.css",
+        "local/bootstrap-treeview.min.css",
     ] + table_css
 
     form_js = [
-        "local/select2.min.js",
+        #"local/select2.min.js",
         "local/daterangepicker.min.js",
         "local/formValidation.min.js",
         "local/formvalidation-bootstrap.min.js",
         "local/chosen.jquery.min.js",
         "local/mustache.min.js",
+        "local/clipboard.min.js",
+        "local/bootstrap-treeview.min.js",
         #"local/jquery.sparkline.min.js",
         #"local/dygraph-combined.js",
     ] + table_js
@@ -497,6 +510,11 @@ def _conf_assets(app):
         'table-export/jspdf/jspdf.js',
         'table-export/jspdf/libs/base64.js'
     ]
+    
+    for filename in common_css + common_js + form_css + form_js:
+        filepath = os.path.abspath(os.path.join(STATIC_DIR, filename))
+        if not os.path.exists(filepath):
+            raise Exception("file not found [%s]" % filepath)
     
     #274Ko
     common_css_bundler = Bundle(*common_css, 

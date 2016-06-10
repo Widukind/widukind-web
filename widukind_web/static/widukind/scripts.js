@@ -23,27 +23,6 @@ var widukind_options = {
     }
 };
 
-/*
-function toggle_content(options){
-
-    //var menu_left_col = options.menu_left_col || widukind_options.menu_left_col;
-    //var page_col = options.page_col || widukind_options.page_col;
-	
-    var $site_menu_left = $("#site_menu_left");
-    var $site_page = $("#site_content");
-    
-	if ($site_menu_left.is(':visible')) {
-		$site_menu_left.hide();
-		$site_page.removeClass('col-md-10');
-		$site_page.addClass('col-md-12');
-	} else {
-		$site_menu_left.show();
-		$site_page.removeClass('col-md-12');
-		$site_page.addClass('col-md-10');		
-	} 
-}
-*/
-
 function datasetLastUpdateFormatter(value, row) {
     return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
 }
@@ -94,6 +73,7 @@ function seriesNameLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">' + row.name +'</a>';
 }
 
+/*
 function seriesButtonFormatter(value, row, line){
     var _html = [];
     _html.push('<div class="btn-group btn-group-xs btn-group-justified" role="group">');
@@ -112,40 +92,8 @@ function seriesButtonFormatter(value, row, line){
     
     _html.push('</div>');
     return _html.join('');
-    /*
-    return [
-            '<div class="btn-group btn-group-xs btn-group-justified" role="group">',
-            
-                //'<a class="btn btn-xs add_cart" href="#" data-series-id="' + row.slug + '" title="Add Cart">',
-                //  '<i class="fa fa-shopping-cart fa-lg"></i>',                          
-                //'</a>',
-            
-            '</div>'
-    ].join('');
-    */
 }
-
-function addCart(url){
-    $(".add_cart").on('click', function(e){
-
-    	e.preventDefault();
-       
-        var _id = $(this).attr("data-series-id");
-        
-        $.ajax({
-            url: url,
-            data: {"id": _id},
-            cache: false,
-            complete: function(jqXHR, textStatus){
-                if (textStatus == "success"){
-                	var response = jqXHR.responseJSON;
-                    $("#badge_cart").text(response.count);
-                }
-            }
-       });
-        
-    });
-}
+*/
     
 function spinnerShow(){
     $('#spinner').spin(widukind_options.spin_opts);
@@ -178,21 +126,35 @@ function AdminQueriesLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">Show</a>';
 }
 
-function ajax(uri, method, data) {
+function ajax(uri, method, data, options, callback_error) {
+	
+	var options = options || {};
+	options.contentType = options.contentType || "application/json";
+	options.accepts = options.accepts || "application/json";
+	options.dataType = options.dataType || 'json';
+	options.cache = options.cache || true;
+	options.async = options.async || false;
+	options.timeout = options.timeout || 120 * 1000; //120 seconds
+	
     var request = {
         url: uri,
         type: method,
         async: false,
-        timeout: 60 * 1000,
-        contentType: "application/json",
-        accepts: "application/json",
-        //cache: false,
-        dataType: 'json',
+        timeout: options.timeout,
+        contentType: options.contentType,
+        accepts: options.accepts,
+        cache: options.cache,
+        dataType: options.dataType,
         data: data,
         traditional: true,
-        error: function(jqXHR) {
+        error: function(jqXHR, textStatus, errorThrown) {
         	//TODO: ecrire erreur dans champs status
-            console.log("ajax error " + jqXHR.status);
+        	//if(textStatus === 'timeout')
+        	if (callback_error){
+        		callback_error(jqXHR, textStatus, uri, method, data, options);
+        	} else {
+        		console.log("ajax error : ", jqXHR, textStatus);
+        	}
         }
     };
     return $.ajax(request);

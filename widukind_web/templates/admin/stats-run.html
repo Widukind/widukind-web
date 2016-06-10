@@ -130,6 +130,8 @@
 		if (row.enable == false){
 			return '<span class="danger">' + value + '</span>';
 		}
+		return value;
+		//TODO:
 	    return '<a href="' + row.view + '" target="_blank" title="Show detail">' + row.dataset_code +'</a>';
 	}
 	

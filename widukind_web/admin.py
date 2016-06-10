@@ -267,10 +267,11 @@ def stats_run_json():
     count = cursor.count()
     cursor = cursor.sort("created", -1)
     rows = [doc for doc in cursor]
+    """
     for row in rows:
         row["view"] = url_for("views.dataset-by-code", 
                               provider_name=row["provider_name"],
                               dataset_code=row["dataset_code"])
-    
+    """
     return json_tools.json_response(rows, {"total": count})
 
