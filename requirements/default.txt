@@ -1,4 +1,3 @@
-Flask==0.10.1
 https://github.com/Widukind/widukind-common/tarball/master
 pandas>=0.14.1
 python-dateutil
