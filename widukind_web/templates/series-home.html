@@ -2,44 +2,9 @@
 
 {% block title %}{{super()}} - Series Explorer{% endblock %}
 
-{% block styles %}
+{%- block head %}
     {{super()}}
-    <style>
-    /*
-    #tab-infos strong {
-    }
-    */
-    .nopadding {
-    	padding: 0;
-    }
-    .nopadding-bottom {
-    	padding-bottom: 0;
-    }
-    .nopadding-left {
-    	padding-left: 0;
-    }
-    .nopadding-right {
-    	padding-right: 0;
-    }
-    .nomargin-bottom {
-    	margin-bottom: 0;
-    }
-    .noborder {
-    	border: 0;
-    }
-    .modal-detail {
-    	color: #fff;
-    }
-    
-    .modal-detail table a:link, .modal-detail table a:visited {
-    	color: #77ad8d;
-	}
-	
-	.modal-detail .panel-heading {
-		padding-left: 0;
-	}    
-    </style>
-    
+    <link href="{{ url_for('static', filename="widukind/explorer.css") }}" rel="stylesheet">
 {% endblock %}
 
 
@@ -93,14 +58,6 @@
 								<div class="panel panel-default noborder">
 							    	<div class="panel-body">
 										<form id="form-explorer" class="col-md-10 nopadding">
-											<!--
-											{# 
-											<div class="form-group">
-												<label class="control-label" for="period">Period:</label>
-												<input type="text" id="period" name="period" class="form-control input-sm"/>
-											</div>
-											#}
-											 -->
 											<div class="form-group">
 												<label class="control-label" for="provider">Provider:</label>
 												<select id="provider" name="provider" class="form-control chosen-select"></select>
@@ -164,20 +121,19 @@
 													</div>
 													<div class="help_text">
 													<small>
-<p>
-<br/>
-Entering text separated by spaces will search for each word individually in order.<br/>
-Example: <strong>Exchange Rates</strong><br/>
-Will return results that contain the words <strong>Exchange</strong> OR <strong>Rates</strong><br/>
-<br/>
-To search for a phrase, enclose it in quotes<br/>
-Example: <strong>"Exchange Rates"</strong><br/>
-Will return results that contain the phrase <strong>Exchange Rates</strong><br/>
-<br/>
-All searches are case-insensitive.
-</p>
-</small>
-													
+                                                        <p>
+                                                        <br/>
+                                                        Entering text separated by spaces will search for each word individually in order.<br/>
+                                                        Example: <strong>Exchange Rates</strong><br/>
+                                                        Will return results that contain the words <strong>Exchange</strong> OR <strong>Rates</strong><br/>
+                                                        <br/>
+                                                        To search for a phrase, enclose it in quotes<br/>
+                                                        Example: <strong>"Exchange Rates"</strong><br/>
+                                                        Will return results that contain the phrase <strong>Exchange Rates</strong><br/>
+                                                        <br/>
+                                                        All searches are case-insensitive.
+                                                        </p>
+                                                        </small>
 													</div>
 										    	</form>
 										    </div>
@@ -216,7 +172,7 @@ All searches are case-insensitive.
 
 								<!-- toogle left sidebar -->							
 								<li role="presentation">
-									<a id="sidetoogle" class="success" href="#" aria-controls="not" role="tab">
+									<a id="sidetoogle" class="success" href="javascript:void(0)" aria-controls="not" role="tab">
 										<i class="fa fa-bars fa-fw" aria-hidden="true" title="Sidebar toogle"></i>
 									</a>
 							  	</li>
@@ -228,40 +184,19 @@ All searches are case-insensitive.
 									</a>
 							  	</li>
 
-								{#
-								<!-- chart -->
-							 	<li role="presentation">
-							  		<a href="#tab-chart" aria-controls="tab-chart" role="tab" data-toggle="tab">
-							  			<i class="fa fa-line-chart fa-fw"></i> Chart
-							  		</a>
-							  	</li>
-							  	#}
-							  	{#
-							 	<li role="presentation">
-							  		<a href="#tab-apis" aria-controls="tab-apis" role="tab" data-toggle="tab">
-							  			<i class="fa fa-share-alt fa-fw"></i> APIs
-							  		</a>
-							  	</li>
-							  	#}
-							 	
 								<li role="presentation" class="btn-group">
-									<a class="btn btn-default" data-toggle="dropdown" href="#"><i class="fa fa-download fa-fw"></i> Download</a>
+									<a class="btn btn-default" data-toggle="dropdown" href="javascript:void(0)"><i class="fa fa-download fa-fw"></i> API Link</a>
 								    <ul class="dropdown-menu">
-								    	<li><a id="down-json" href="#">JSON</a></li>
-								    	<li><a id="down-sdmx" href="#">SDMX</a></li>
+								    	<li><a id="down-json" href="javascript:void(0)">JSON</a></li>
+								    	<li><a id="down-sdmx" href="javascript:void(0)">SDMX</a></li>
+								    	{#
+                                        <li><a id="down-html" href="javascript:void(0)">HTML</a></li>
+                                        #}
 								   	</ul>
 								</li>							  	
 		
-								{#
-							 	<li role="presentation">
-							  		<a href="#tab-cart" aria-controls="tab-cart" role="tab" data-toggle="tab">
-							  			<i class="fa fa-shopping-cart fa-fw"></i> Cart <span id="cart_count" class="badge">{{session.cart|length}}</span>
-							  		</a>
-							  	</li>
-							  	#}
-							  	
 								<li role="presentation">
-									<a id="viewCart" class="success" href="#" aria-controls="not" role="tab">
+									<a id="viewCart" class="success" href="javascript:void(0)" aria-controls="not" role="tab">
 										<i class="fa fa-shopping-cart fa-fw" aria-hidden="true" title="View cart"></i>
 										 Cart <span id="cart_count" class="badge">{{session.cart|length}}</span> 
 									</a>
@@ -273,6 +208,13 @@ All searches are case-insensitive.
 							  		</a>
 							  	</li>
 							  	
+                                <li role="presentation">
+                                    <a id="tab-reset-filters" href="javascript:void(0)">
+                                        <i class="fa fa-times fa-fw"></i> Reset filters
+                                    </a>
+                                </li>
+							  	
+							  	
 							</ul><!-- infosnavbar -->
 						</div><!-- panel-heading -->
 						
@@ -281,12 +223,11 @@ All searches are case-insensitive.
 					    		<table id="tab-infos" class="table nomargin-bottom table-hover table-condensed table-striped">
 					    			<tbody>
 					    				<tr>
-					    					<td class="col-md-1">Count</td>
+					    					<td class="col-md-1">Series</td>
 					    					<td class="col-md-2">Provider</td>
 					    					<td class="col-md-3">Dataset</td>
 					    					<td class="col-md-3">Tags</td>
 					    					<td class="col-md-3">Search Terms</td>
-					    					{#<td class="col-md-4">Categories</td>#}
 				    					</tr>
 					    				<tr>
 					    					<td>
@@ -304,50 +245,10 @@ All searches are case-insensitive.
 					    					<td>
 					    						<small><span id="selectedSearch">None</span></small>
 					    					</td>
-					    					{#
-					    					<td>
-					    						<strong><span id="selectedCategory">&nbsp;</span></strong>
-					    					</td>
-					    					#}
 					    				</tr>
 					    			</tbody>
 					    		</table>
 							</div>
-							
-							{#
-							<div role="tabpanel" class="tab-pane fade" id="tab-apis">
-					    		
-					    		<table class="table nomargin-bottom">
-					    			<tbody>
-					    				<tr>
-					    					<td class="col-md-1">JSON Api</td>
-					    					<td class="col-md-7">
-					    						<a href="" id="jsonURL">Too many data. Select an provider and an dataset for completed URL !</a>
-					    					</td>
-					    				</tr>
-					    				<tr>
-					    					<td class="col-md-1">SDMX Api</td>
-					    					<td class="col-md-7">
-					    						<a href="" id="sdmxURL">Select an provider and an dataset for completed URL !</a>
-					    					</td>
-					    				</tr>
-					    				<tr>
-					    					<td class="col-md-1">HTML Api</td>
-					    					<td class="col-md-7">
-					    						<a href="" id="htmlURL">Select an provider and an dataset for completed URL !</a>
-					    					</td>
-					    				</tr>
-					    			</tbody>
-					    		</table>
-							</div><!-- tabpanel tab-apis -->
-							#}
-							
-							<div role="tabpanel" class="tab-pane fade" id="tab-chart">
-								<span>Chart under construction...</span>
-							</div><!-- tabpanel tab-chart -->
-
-							<div role="tabpanel" class="tab-pane fade" id="tab-cart">
-							</div><!-- tabpanel tab-cart -->
 							
 							<div role="tabpanel" class="tab-pane fade" id="tab-settings">
 							
@@ -366,7 +267,7 @@ All searches are case-insensitive.
 																<option value="500">500 series</option>
 																<option value="1000">1000 series</option>
 															</select>
-															{#<span class="help-text">Select a value for limit results.</span>#}
+															<span class="help-text">Select a value for limit results.</span>
 														</td>
 													</tr>
 												</tbody>
@@ -394,15 +295,15 @@ All searches are case-insensitive.
 						<table class="table" id="series-list" 
 							data-classes="table table-hover table-condensed table-striped table-no-bordered"    
 		        			data-striped="true"
-			    			{#data-cookie="true"
+			    			data-cookie="true"
 			    			data-cookie-id-table="saveExplorer"
-			    			#}
 					        data-card-view="false"        
 		        			data-detail-view="false" 
 	               			{#data-detail-formatter="detailFormatter"#}
 	               			data-show-toggle="false"
 	               			data-show-columns="false" 
-		        			data-mobile-responsive="true" 
+		        			data-mobile-responsive="true"
+		        			{#TODO: data-resizable="true" #} 
 					        data-buttons-align="left" 
 					        data-toolbar-align="right" 
 					        data-pagination-h-align="left" 
@@ -417,13 +318,13 @@ All searches are case-insensitive.
 					                <th data-field="key" data-checkbox="true" class="styled"></th>
 					                <th data-class="col-md-1" data-formatter="sparkFormatter" data-cell-style="sparkStyle" data-width="5%" data-card-visible="false">&nbsp;</th>
 					                #}
-					                <th data-class="col-md-1" data-field="key" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false">&nbsp;</th>
-						            <th data-class="col-md-1" data-field="provider_name" data-formatter="providerFormatter" {#data-events="choiceEvent"#} data-sortable="true">Provider</th>
-						            <th data-class="col-md-2" data-field="dataset_code" data-formatter="datasetCodeLinkFormatter" data-sortable="true">Dataset</th>
-					                <th data-class="col-md-1" data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true" data-sort-name="key">key</th>
-					                <th data-class="col-md-5" data-field="name" data-formatter="nameFormatter" data-sortable="true">Name</th>
-					                <th data-class="col-md-1" data-field="frequency" data-formatter="frequencyFormatter" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
-						            <th data-class="col-md-1" data-field="start_date" data-formatter="periodFormatter" data-align="center">Period</th>                         
+					                <th data-width="100px" data-field="key" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false">&nbsp;</th>
+						            <th data-field="provider_name" data-formatter="providerFormatter" {#data-events="choiceEvent"#} data-sortable="true">Provider</th>
+						            <th data-field="dataset_code" data-formatter="datasetCodeLinkFormatter" data-sortable="true">Dataset</th>
+					                <th data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true" data-sort-name="key">key</th>
+					                <th data-field="name" data-formatter="nameFormatter" data-sortable="true">Name</th>
+					                <th data-field="frequency" data-formatter="frequencyFormatter" data-align="center" data-sortable="true" data-title-tooltip="Frequency">Freq</th>
+						            <th data-field="start_date" data-formatter="periodFormatter" data-align="center">Period</th>                         
 								</tr>
 							</thead>
 						</table>
@@ -495,6 +396,7 @@ All searches are case-insensitive.
       		<a title="Export series to CSV" type="button" class="btn btn-default" href="{{export_csv}}"><i class="fa fa-table"></i></a>
       		<button title="Show Graphic" type="button" class="btn btn-default view_graph" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-area-chart"></i></button>
 			<button title="Add to cart" type="button" class="btn btn-default add_cart" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-shopping-cart"></i></button>
+            <a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
 		</div>
 		{% endraw %}
 	</script>
@@ -505,6 +407,7 @@ All searches are case-insensitive.
       		<a title="Export series to CSV" type="button" class="btn btn-default" href="{{export_csv}}"><i class="fa fa-table"></i></a>
       		<button title="Show Graphic" type="button" class="btn btn-default view_graph" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-area-chart"></i></button>
       		<button title="Delete" type="button" class="btn btn-default remove_cart" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-trash"></i></button>
+            <a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
 		</div>
 		{% endraw %}
 	</script>
@@ -526,6 +429,7 @@ All searches are case-insensitive.
     
 	var selectedProvider = {% if selectedProvider %}"{{selectedProvider}}"{% else %}null{% endif %};
 	var selectedDataset = {% if selectedDataset %}"{{selectedDataset}}"{% else %}null{% endif %};
+    //{#var selectedSeries = {% if selectedSeries %}"{{selectedSeries}}"{% else %}null{% endif %};#}
 	var selectedTags = [];
     var providers_by_slug = {};
     var datasets_by_slug = {};
@@ -533,7 +437,7 @@ All searches are case-insensitive.
     var cartSeries = [];
     var search;
     var bestTags;
-    var cartCount = 0;
+    var cartCount = {{session.cart|length}};
 	var dimension_filter = [];
  	var full_dimension_filter = {};
  	var is_filter = false;
@@ -544,9 +448,11 @@ All searches are case-insensitive.
 	var loaded_datatree = null;
 	var loaded_tags = null;
     
+    /*
     function choiceEvent(e, value, row, index){
     	console.log("event : ", e, value, row, index);
     }
+    */
     
     function sparkFormatter(value, row) {
     	var 	values = _.sortBy(row.values, function(num) { return _.ceil(parseFloat(num), 2); });
@@ -573,11 +479,13 @@ All searches are case-insensitive.
     }
 
     function seriesKeyLinkFormatter(value, row){
-    	return '<small><a class="modal_show" data-title="Series details" data-url="' + row.view +'" data-series-slug="' + row.slug + '" href="javascript:void(0)" title="Show detail">' + row.key +'</a></small>';
+        return '<small>' + value + '</small>';
+    	//return '<small><a class="modal_show" data-title="Series details" data-url="' + row.view +'" data-series-slug="' + row.slug + '" href="javascript:void(0)" title="Show detail">' + row.key +'</a></small>';
     }
 
     function datasetCodeLinkFormatter(value, row){
-    	return '<small><a class="modal_show" data-title="Dataset" data-url="' + row.view_dataset +'" data-dataset-slug="' + row.dataset_slug + '" href="javascript:void(0)" title="Show dataset">' + value +'</a></small>';
+        return '<small>' + value + '</small>';
+    	//return '<small><a class="modal_show" data-title="Dataset" data-url="' + row.view_dataset +'" data-dataset-slug="' + row.dataset_slug + '" href="javascript:void(0)" title="Show dataset">' + value +'</a></small>';
     }
     
     function periodFormatter(value, row){
@@ -618,7 +526,13 @@ All searches are case-insensitive.
     }
     
     function local_tags(){
-    	
+    
+        if (_.isEmpty(selectedProvider)){
+            var _error = '<div class="alert alert-danger" role="alert">Select a provider for load tags.</div>'
+            $('#tags-cloud').html(_error);
+            return;
+        }
+
     	if (loaded_tags === selectedProvider){
     		return;
     	}
@@ -656,7 +570,7 @@ All searches are case-insensitive.
         	}
         });
 
-        var search = function(e) {
+        $('#tree_btn_search').off('click').on('click', function(e){
             var pattern = $('#tree_search').val();
             var options = {
               ignoreCase: true,
@@ -664,11 +578,6 @@ All searches are case-insensitive.
               revealResults: true
             };
             var results = $searchableTree.treeview('search', [ pattern, options ]);
-            console.log("results : ", results);
-        }
-
-        $('#tree_btn_search').off('click').on('click', function(e){
-      	  search();
         });
 
         $('#tree_btn_clear').off('click').on('click', function (e) {
@@ -720,6 +629,9 @@ All searches are case-insensitive.
 	    			message: data
 	    		}).on('shown.bs.modal', function () {
 		    		flask_moment_render_all();
+		    		$('[data-toggle="tooltip"]').tooltip({
+		    		    placement: 'auto left',
+		    		});
 		    	});
 	    	});
 	    });
@@ -730,6 +642,8 @@ All searches are case-insensitive.
 	    	var slug = $(this).attr("data-series-slug");
 	    	ajax(url, 'GET', {"slug": slug}).done(function(data) {
 	    		$("#cart_count").text(data.count);
+	    		cartCount = data.count;
+	    		toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
 	    	});			
 	    });
 		
@@ -777,6 +691,25 @@ All searches are case-insensitive.
     			return '';	
     		}
     	});
+    	/*
+        FIXME: bypass buttons click
+        .on('click-row.bs.table', function(e, row, element){
+            console.log("event : ", e);
+            e.preventDefault();
+            //$(element).toggleClass("active-row");
+            ajax(row.view, 'GET', {}, {dataType: 'html', accepts: 'text/html'}).done(function(data) {
+                var dialog = bootbox.alert({
+                    title: row.name,
+                    backdrop: true,
+                    size: 'large',
+                    closeButton: false,
+                    message: data
+                }).on('shown.bs.modal', function () {
+                    flask_moment_render_all();
+                });
+            });
+        });
+        */    	
     	
         var $search_form = $('#form-search').formValidation({
             framework: 'bootstrap',
@@ -808,8 +741,8 @@ All searches are case-insensitive.
        	})
         .on('success.form.fv', function(e) {
             e.preventDefault();
-            console.log("event e : ", e);
-			console.log("success.form - search val : ", $('#search').val());
+            //console.log("event e : ", e);
+			//console.log("success.form - search val : ", $('#search').val());
 			search = $('#search').val();
 			loadData();
 			$('#sidebarnav a[href="#tab-form"]').tab('show');
@@ -909,6 +842,11 @@ All searches are case-insensitive.
 	  		else if (! _.isEmpty(selectedProvider)) {
 	  			options.provider = selectedProvider;
 	  		}
+            /*
+            if (! _.isEmpty(selectedSeries)) {
+                options.series = selectedSeries;
+            }
+            */
 	  		
 	  		dimension_filter = [];
 	  		full_dimension_filter = {};
@@ -925,7 +863,7 @@ All searches are case-insensitive.
 	  		
 	  		_.forEach(dimensionFields, function(dim) {
 	  			var add_filter;
-	  			if (dim.selectedOption){
+	  			if (! _.isEmpty(dim.selectedOption)){
 	  				options['dimensions_' + dim.key] = dim.selectedOption.join(' ');
 	  				add_filter = dim.selectedOption.join('+');
 	  				if (! _.isEmpty(add_filter) ){
@@ -1151,7 +1089,7 @@ All searches are case-insensitive.
   			loadDimensions();
   		}
 
-	    $("body").delegate('.tag', 'click', function(e){
+        $("#tab-tags").delegate('.tag', 'click', function(e){
 	    	e.preventDefault();
 	    	var tag = $(this).attr('data-tag');
 	    	if (_.indexOf(selectedTags, tag) >= 0){
@@ -1164,7 +1102,7 @@ All searches are case-insensitive.
 	    	loadData();
 	    });
 		
-    	$("body").delegate('.tag-selected', 'click', function(e){
+    	$("#tab-infos").delegate('.tag-selected', 'click', function(e){
 	    	e.preventDefault();
 	    	var tag = $(this).attr('data-tag');
 	    	_.pull(selectedTags, tag);
@@ -1267,9 +1205,35 @@ All searches are case-insensitive.
 			e.preventDefault();
 			api_display_json();
 		});
-
-	    $("#viewCart").off('click').on('click', function(e){
+		
+		function reset_all_filters(){
+            cleanDimensions();
+            cleanDataset();
+            selectedTags = [];
+            refresh_selectedTags();
+            search = null;
+            $('#search').empty();
+            if (! _.isEmpty(search)){
+                $('#tree-tree').treeview('clearSearch');
+            }
+            loadDatasets();
+            $('a.label-success').each(function(item){
+                $(this).toggleClass("label label-success");
+            });
+            loadData();
+		}
+		
+        $("#tab-reset-filters").off('click').on('click', function(e){
+            e.preventDefault();
+            reset_all_filters();
+        });
+		
+        $("#viewCart").off('click').on('click', function(e){
 			e.preventDefault();
+			
+			if (cartCount <= 0){
+			 return false;
+			}
 			
 	    	var url = "{{ url_for(".ajax-cart-view") }}";
 	    	ajax(url, 'GET', {}, {cache: false, dataType: 'html', accepts: 'text/html'}).done(function(data) {
@@ -1292,6 +1256,7 @@ All searches are case-insensitive.
 	    			$cart.on('load-success.bs.table', function(data){
 	    				table_buttons();
 	    			
+		    	    	/*
 		    	    	$('#checkAll').off('click').on('click', function () {
 		    	            $cart.bootstrapTable('checkAll');
 		    	        });
@@ -1308,14 +1273,21 @@ All searches are case-insensitive.
 		    	            });
 		    	            console.log('Checked : ', index);
 		    	        });
+		    	        */
 		    	        
-		    	        $('.remove_cart').off('click').on('click', function () {
+		    	        $('.remove_cart').off('click').on('click', function (e) {
 		    		    	e.preventDefault();
 		    		    	var slug = $(this).attr("data-series-slug");
 		    		    	var url = '{{url_for(".ajax-cart-remove")}}';
 		    		    	ajax(url, 'GET', {"slug": slug}).done(function(data) {
 		    		    		$("#cart_count").text(data.count);
-		    		    		$cart.bootstrapTable('refresh', {});
+		    		    		cartCount = data.count;
+                                if (cartCount > 0) {
+                                    $cart.bootstrapTable('refresh', {});
+                                } else {
+                                  dialog.modal('hide');
+                                }
+		    		    		toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
 		    		    	});
 		    	        });
 		    			
