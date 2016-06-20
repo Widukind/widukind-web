@@ -3,13 +3,16 @@
 from pprint import pprint
 from collections import OrderedDict
 
+from jinja2 import Markup
 from flask import (Blueprint, 
                    current_app, 
                    request, 
                    render_template,
                    url_for, 
                    session, 
-                   flash, 
+                   flash,
+                   jsonify,
+                   redirect, 
                    abort)
 
 from werkzeug.wsgi import wrap_file
@@ -108,6 +111,7 @@ def datas_from_series(series):
         yield value["period"], pandas.Period(value["period"], freq=series['frequency']).to_timestamp().strftime("%Y-%m-%d"), value["value"]        
 
 @bp.route('/ajax/providers', endpoint="ajax-providers-list")
+@cache.cached(timeout=3600) #1H
 def ajax_providers_list():
     query = {"enable": True}
     projection = {"_id": False, "slug": True, "name": True}
@@ -178,25 +182,37 @@ def ajax_dataset_frequencies(dataset):
             freqs.append({"value": freq, "text": freq})
     return json_tools.json_response(freqs)
 
-@bp.route('/ajax/slug/dataset/<slug>', endpoint="ajax-dataset-by-slug")
-def ajax_dataset_with_slug(slug):
+@bp.route('/dataset/<slug>', endpoint="dataset-by-slug")
+def dataset_with_slug(slug):
 
     dataset = queries.get_dataset(slug, {"_id": False})
+    is_modal = request.args.get('modal', default=0, type=int)
 
-    provider = queries.col_providers().find_one({"name": dataset['provider_name']})
+    provider = queries.col_providers().find_one({"name": dataset['provider_name']},
+                                                {"metadata": False})
 
-    count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
-                                               "dataset_code": dataset['dataset_code']})
+    #count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
+    #                                           "dataset_code": dataset['dataset_code']})
+
+    url_provider = url_for('.explorer_p', provider=dataset["slug"])
+    url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
+    url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
     
     return render_template("dataset-unit-modal.html",
-                             dataset=dataset, 
-                             provider=provider, 
-                             count=count_series)
+                           is_modal=is_modal,
+                           url_provider=url_provider,
+                           url_dataset=url_dataset,
+                           url_dataset_direct=url_dataset_direct,
+                           dataset=dataset, 
+                           provider=provider, 
+                           #count=count_series
+                           )
 
-@bp.route('/ajax/slug/series/<slug>', endpoint="ajax-series-by-slug")
-def ajax_series_with_slug(slug):
+@bp.route('/series/<slug>', endpoint="series-by-slug")
+def series_with_slug(slug):
     
     is_reverse = request.args.get('reverse')
+    is_modal = request.args.get('modal', default=0, type=int)
 
     query = {"slug": slug}    
     series = queries.col_series().find_one(query)
@@ -204,16 +220,24 @@ def ajax_series_with_slug(slug):
     if not series:
         abort(404)
         
-    provider = queries.col_providers().find_one({"enable": True,
-                                                 "name": series['provider_name']})
+    provider = queries.col_providers().find_one({"name": series['provider_name'],
+                                                 "enable": True},
+                                                {"metadata": False})
     if not provider:
         abort(404)
 
-    dataset = queries.col_datasets().find_one({"enable": True,
-                                               'provider_name': series['provider_name'],
-                                               "dataset_code": series['dataset_code']})
+    dataset = queries.col_datasets().find_one({'provider_name': series['provider_name'],
+                                               "dataset_code": series['dataset_code'],
+                                               "enable": True},
+                                              {"metadata": False})
     if not dataset:
         abort(404)
+
+    #view_explorer = url_for('.explorer_s', series=slug, _external=True)
+    url_provider = url_for('.explorer_p', provider=dataset["slug"])
+    url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
+    url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
+    url_series = url_for('.series-by-slug', slug=slug, _external=True)
 
     max_revisions = 0
     revision_dates = []
@@ -241,11 +265,18 @@ def ajax_series_with_slug(slug):
     
     dimension_filter = ".".join([series["dimensions"][key] for key in dataset["dimension_keys"]])
     
+    
     result = render_template(
                     "series-unit-modal.html",
+                    url_provider=url_provider,
+                    url_dataset=url_dataset,
+                    url_dataset_direct=url_dataset_direct,
+                    url_series=url_series,
                     series=series,
+                    is_modal=is_modal,
                     provider=provider,
                     dataset=dataset,
+                    #view_explorer=view_explorer,
                     dimension_filter=dimension_filter.upper(),
                     is_reverse=is_reverse,
                     obs_attributes_keys=list(set(obs_attributes_keys)),
@@ -345,7 +376,7 @@ def tree_view(provider=None):
     for doc in cursor:
         dataset_codes[doc['dataset_code']] = {
             "slug": doc['slug'],
-            "url": url_for('views.ajax-dataset-by-slug', slug=doc["slug"])
+            "url": url_for('.dataset-by-slug', slug=doc["slug"])
         }
 
     is_ajax = request.args.get('json') or request.is_xhr
@@ -375,12 +406,12 @@ def ajax_cart_add():
     cart = session.get("cart", [])
     if not slug in cart:
         cart.append(slug)
-        flash("Series add to cart.", "success")
+        msg = {"msg": "Series add to cart.", "category": "success"}
     else:
-        flash("Series is already in the cart.", "warning")
+        msg = {"msg": "Series is already in the cart.", "category": "warning"}
         
     session["cart"] = cart
-    return current_app.jsonify(dict(count=len(session["cart"])))
+    return current_app.jsonify(dict(notify=msg, count=len(session["cart"])))
 
 @bp.route('/ajax/series/cart/remove', endpoint="ajax-cart-remove")
 def ajax_cart_remove():
@@ -388,12 +419,12 @@ def ajax_cart_remove():
     cart = session.get("cart", [])
     if slug in cart:
         cart.remove(slug)
-        flash("Series remove from cart.", "success")
+        msg = {"msg": "Series remove from cart.", "category": "success"}
     else:
-        flash("Series not in the cart.", "warning")
+        msg = {"msg": "Series not in the cart.", "category": "warning"}
         
     session["cart"] = cart
-    return current_app.jsonify(dict(count=len(session["cart"])))
+    return current_app.jsonify(dict(notify=msg, count=len(session["cart"])))
         
 @bp.route('/ajax/series/cart/view', endpoint="ajax-cart-view")
 def ajax_cart_view():
@@ -421,13 +452,13 @@ def ajax_cart_view():
         
         docs = list(series)
         for s in docs:
-            s['view'] = url_for('.ajax-series-by-slug', slug=s['slug'])
+            s['view'] = url_for('.series-by-slug', slug=s['slug'], modal=1)
 
             dataset_slug = slugify("%s-%s" % (s["provider_name"], 
                                               s["dataset_code"]),
                             word_boundary=False, save_order=True)
         
-            s['view_dataset'] = url_for('.ajax-dataset-by-slug', slug=dataset_slug)
+            s['view_dataset'] = url_for('.dataset-by-slug', slug=dataset_slug, modal=1)
             s['dataset_slug'] = dataset_slug
             s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
             #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
@@ -502,6 +533,7 @@ def ajax_explorer_datas():
     query = OrderedDict()
     provider_slug = request.args.get('provider')
     dataset_slug = request.args.get('dataset')
+    #series_slug = request.args.get('series')
     search = request.args.get('search')
     
     if dataset_slug:
@@ -515,7 +547,7 @@ def ajax_explorer_datas():
     if search:
         query["$text"] = {"$search": search}
         projection['score'] = {'$meta': 'textScore'}
-        
+
     if dataset_slug:
         query["dataset_code"] = dataset["dataset_code"]
     else:
@@ -525,13 +557,19 @@ def ajax_explorer_datas():
         disabled_datasets = [doc["dataset_code"] for doc in queries.col_datasets().find(ds_enabled_query, 
                                                                                         {"dataset_code": True})]
         
-        query["dataset_code"] = {"$nin": disabled_datasets}
+        if disabled_datasets:
+            query["dataset_code"] = {"$nin": disabled_datasets}
     
     query = complex_queries_series(query)
     cursor = queries.col_series().find(dict(query), projection).limit(limit)
+    
     #cursor.limit(limit)
     if search:
         cursor = cursor.sort([('score', {'$meta': 'textScore'})])
+            
+    #else:
+    #    query = {"slug": series_slug}
+    #    cursor = queries.col_series().find(dict(query), projection)
 
     count = cursor.count()
     
@@ -546,13 +584,16 @@ def ajax_explorer_datas():
         del s["values"]
         s["values"] = values
 
-        s['view'] = url_for('.ajax-series-by-slug', slug=s['slug'])
+        s['view'] = url_for('.series-by-slug', slug=s['slug'], modal=1)
 
         dataset_slug = slugify("%s-%s" % (s["provider_name"], 
                                           s["dataset_code"]),
                         word_boundary=False, save_order=True)
         
-        s['view_dataset'] = url_for('.ajax-dataset-by-slug', slug=dataset_slug)
+        s['view_dataset'] = url_for('.dataset-by-slug', slug=dataset_slug, modal=1)
+        
+        #s["view_explorer"] = url_for('.explorer_s', series=s['slug'], _external=True)
+        
         s['dataset_slug'] = dataset_slug
         s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
         #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
@@ -565,26 +606,30 @@ def ajax_explorer_datas():
 
     return json_tools.json_response(rows, {"total": count})
 
-@bp.route('/explorer', endpoint="explorer")
+@bp.route('/explorer/dataset/<dataset>', endpoint='explorer_d')
 @bp.route('/explorer/<provider>', endpoint="explorer_p")
 @bp.route('/explorer/<provider>/<dataset>', endpoint='explorer_p_d')
-@bp.route('/explorer/dataset/<dataset>', endpoint='explorer_d')
+@bp.route('/explorer', endpoint="explorer")
 @bp.route('/', endpoint="home")
-def explorer_view(provider=None, dataset=None):
+def explorer_view(provider=None, dataset=None, series=None):
     """
     http://127.0.0.1:8081/views    
     http://127.0.0.1:8081/views/explorer    
     http://127.0.0.1:8081/views/explorer/insee    
-    http://127.0.0.1:8081/views/explorer/insee/insee-cna-2005-ere-a88    
+    http://127.0.0.1:8081/views/explorer/insee/insee-cna-2005-ere-a88
+    http://127.0.0.1:8081/views/explorer/dataset/insee-cna-2005-ere-a88
     """
     if dataset:
         doc = queries.get_dataset(dataset)
         provider_doc = queries.col_providers().find_one({"name": doc["provider_name"]},
                                                         {"slug": True})
         provider = provider_doc["slug"]
+    elif provider:
+        queries.get_provider(provider, {"slug": True, "enable": True})
+
     ctx = {
         "selectedProvider": provider,
-        "selectedDataset": dataset
+        "selectedDataset": dataset,
     }
     return render_template("series-home.html", **ctx)
 
@@ -621,7 +666,7 @@ def datasets_last_update():
 def home_views(bp_or_app):
 
     @bp_or_app.route('/', endpoint="home")
-    @cache.cached(timeout=360)
+    @cache.cached(timeout=3600) #1H
     def index():
     
         cursor = queries.col_providers().find({}, {"metadata": False})
@@ -631,16 +676,49 @@ def home_views(bp_or_app):
         total_series = 0
         datas = {}
         for provider in providers:
-            provider["count_datasets"] = queries.col_datasets().count({"provider_name": provider["name"]})
-            provider["count_series"] = queries.col_series().count({"provider_name": provider["name"]})
+            #provider["count_datasets"] = queries.col_datasets().count({"provider_name": provider["name"]})
+            #provider["count_series"] = queries.col_series().count({"provider_name": provider["name"]})
             datas[provider["slug"]] = provider
-            total_datasets += provider["count_datasets"]
-            total_series += provider["count_series"]
+            #total_datasets += provider["count_datasets"]
+            #total_series += provider["count_series"]
     
         return render_template("index.html", 
                                providers=datas, 
                                total_datasets=total_datasets,
-                               total_series=total_series)
+                               total_series=total_series
+                               )
+        
+    @bp_or_app.route('/contact', endpoint="contact", methods=['GET', 'POST'])
+    def contact_form():
+        is_modal = request.args.get('modal', default=0, type=int)
+        
+        if request.method == "GET":
+            return render_template("contact.html", is_modal=is_modal)
+        
+        field_src = request.args
+        if request.method == "POST":
+            field_src = request.form
+
+        msg = {"msg": "Your message has been registred.", "category": "success"}
+        try:
+            contact = dict(
+                user_agent = None,
+                remote_addr = request.remote_addr,
+                created = arrow.utcnow().datetime,
+                fullName = field_src.get('fullName'),
+                companyName = field_src.get('companyName'),
+                subject = field_src.get('subject'),
+                email = field_src.get('email'),
+                message = Markup.escape(field_src.get('message'))
+            )
+            queries.col_contact().insert(contact)
+            #flash("Your message has been registred.", "success")
+        except Exception as err:
+            #flash("Sorry, An unexpected error has occurred. Your message has not registred.", "error")
+            msg = {"msg": "Sorry, An unexpected error has occurred. Your message has not registred.", "category": "error"}
+            current_app.logger.fatal(str(err))
+        
+        return jsonify({"notify": msg, "redirect": url_for('home', _external=True)})
         
     @bp_or_app.route('/rss.xml', endpoint="rss")
     def atom_feed():

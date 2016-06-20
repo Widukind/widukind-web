@@ -164,11 +164,14 @@ def _conf_sentry(app):
     except ImportError:
         pass
     
-def _conf_db(app):
+def _conf_db(app, db=None):
     import gridfs
     from widukind_common.utils import get_mongo_db
     from widukind_web.utils import create_or_update_indexes
-    app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL"), connect=False)
+    if not db:
+        app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL"), connect=False)
+    else:
+        app.widukind_db = db
     app.widukind_fs = gridfs.GridFS(app.widukind_db)
     create_or_update_indexes(app.widukind_db)
 
@@ -446,6 +449,7 @@ def _conf_assets(app):
         "themes/bootswatch/widukind/bootstrap.min.css", #3.3.6
         "local/font-awesome.min.css",
         #"widukind/style-light.css",
+        "local/toastr.min.css",
     ]
     
     common_js = [
@@ -456,6 +460,7 @@ def _conf_assets(app):
         "local/spin.min.js",
         "local/jquery.spin.js",
         "local/bootbox.min.js",
+        "local/toastr.min.js",
         "widukind/scripts.js",
     ]
 
@@ -466,12 +471,13 @@ def _conf_assets(app):
         "local/bootstrap-table.min.js",
         "local/bootstrap-table-cookie.min.js",
         "local/bootstrap-table-export.min.js",
-        "local/bootstrap-table-filter-control.min.js",
-        "local/bootstrap-table-filter.min.js",
-        "local/bootstrap-table-flat-json.min.js",
+        #"local/bootstrap-table-filter-control.min.js",
+        #"local/bootstrap-table-filter.min.js",
+        #"local/bootstrap-table-flat-json.min.js",
         "local/bootstrap-table-mobile.min.js",
-        "local/bootstrap-table-natural-sorting.min.js",
-        "local/bootstrap-table-toolbar.min.js",
+        #"local/bootstrap-table-natural-sorting.min.js",
+        #"local/bootstrap-table-toolbar.min.js",
+        #"local/bootstrap-table-resizable.min.js",
         "local/bootstrap-table-en-US.min.js",
     ]
     
@@ -553,15 +559,15 @@ def _conf_assets(app):
         assets.manifest = 'cache' if not app.debug else False
         assets.debug = False #app.debug
         #print(assets['common_css'].urls())
-    
-def create_app(config='widukind_web.settings.Prod'):
+
+def create_app(config='widukind_web.settings.Prod', db=None):
     
     env_config = config_from_env('WIDUKIND_SETTINGS', config)
     
     app = Flask(__name__)
     app.config.from_object(env_config)    
 
-    _conf_db(app)
+    _conf_db(app, db=db)
 
     app.config['LOGGER_NAME'] = 'widukind_web'
     app._logger = _conf_logging(debug=app.debug, prog_name='widukind_web')
