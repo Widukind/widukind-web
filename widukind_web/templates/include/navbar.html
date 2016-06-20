@@ -33,22 +33,20 @@
 	                <a href="{{ url_for("views.datasets-last-update") }}"><i class="fa fa-info-circle fa-fw"></i> Last Updated</a>
 	            </li>	            
 
-				{#
 	            <li>
-	                <a href=""><i class="fa fa-envelope-o fa-fw"></i> Contact</a>
+	                <a id="contactLink" data-url="{{ url_for("contact") }}" href="javascript:void(0)"><i class="fa fa-envelope-o fa-fw"></i> Contact</a>
 	            </li>
-	            #}	            
 
 		        <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                         <i class="fa fa-link fa-fw"></i> Links <span class="caret"></span>
                     </a>
 					<ul class="dropdown-menu">
-						<li><a href="http://www.cepremap.fr/modelisation/widukind/">Cepremap</a></li>
+						<li><a href="http://www.cepremap.fr">Cepremap</a></li>
 						<li><a href="http://www.strategie.gouv.fr">France Stratégie</a></li>
 						<li class="divider"></li>
-						<li><a href="http://widukind-api.cepremap.org">Widukind API Site</a></li>
-						<li><a href="https://github.com/Widukind">Widukind Sources Projects</a></li>
+						<li><a href="http://widukind-api.cepremap.org">API Site</a></li>
+						<li><a href="https://github.com/Widukind/widukind">Support</a></li>
 					</ul>
 		        </li>
 				
@@ -58,15 +56,19 @@
                         <i class="fa fa-cog fa-fw"></i> Admin <span class="caret"></span>
                     </a>
 					<ul class="dropdown-menu">
-						<li><a href="{{ url_for("admin.datasets-disable") }}">All Disable Datasets</a></li>
-						<li><a href="{{ url_for("admin.providers") }}">Providers</a></li>
-						<li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
-						<li><a href="{{ url_for("admin.profile") }}">Profiles</a></li>						
-						<li><a href="{{ url_for("admin.logs") }}">Logs</a></li>
-						<li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>
+                        <li><a id="contactLink" data-url="{{ url_for("admin.contacts") }}" href="javascript:void(0)">Contacts</a></li>
+                        <li class="divider"></li>
+                        <li><a href="{{ url_for("admin.stats-run") }}">Stats Run</a></li>                                               
+                        <li class="divider"></li>
+                        <li><a href="{{ url_for("admin.datasets-disable") }}">All Disable Datasets</a></li>
+                        <li><a href="{{ url_for("admin.providers") }}">Providers</a></li>
 						<li><a href="{{ url_for("admin.stats-datasets") }}">Stats Datasets</a></li>												
 						<li><a href="{{ url_for("admin.stats-series") }}">Stats Series</a></li>												
-						<li><a href="{{ url_for("admin.stats-run") }}">Stats Run</a></li>												
+                        <li class="divider"></li>
+                        <li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
+                        <li><a href="{{ url_for("admin.profile") }}">Profiles</a></li>                      
+                        <li><a href="{{ url_for("admin.logs") }}">Logs</a></li>
+                        <li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>
 					</ul>
 		        </li>
 		        {% endif %}
