@@ -275,3 +275,23 @@ def stats_run_json():
     """
     return json_tools.json_response(rows, {"total": count})
 
+@bp.route('/contacts', endpoint="contacts")
+@auth.required
+def contacts_view():
+    
+    is_ajax = request.args.get('json') or request.is_xhr
+    
+    if not is_ajax:
+        return render_template("admin/contacts.html")
+    
+    col = queries.col_contact()
+    
+    object_list = col.find({}).sort("created", DESCENDING)
+
+    result = []
+    for obj in object_list:
+        obj["view"] = url_for(".doc", col=constants.COL_CONTACT, objectid=obj["_id"])
+        result.append(obj)
+
+    return current_app.jsonify(result)
+

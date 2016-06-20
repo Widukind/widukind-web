@@ -1,0 +1,176 @@
+{% if not is_modal %}
+{% extends "base_form.html" %}
+{% endif %}
+
+{#
+{% if not is_modal %}
+{% block title %}{{super()}} - Contact Form{% endblock %}
+{% endif %}
+#}
+
+{#% block page %#}
+
+<div class="container">
+    <div class="panel panel-default col-md-8" style="padding: 0;">
+        <div class="panel-heading">
+            <h3>Contact Form</h3>
+        </div>
+        <div class="panel-body">
+
+            <form id="contactForm" method="post" class="form-horizontal"
+                {%- if config.RECAPTCHA2_SITEKEY -%}
+                data-fv-addons="reCaptcha2"
+                data-fv-addons-recaptcha2-element="captchaContainer"
+                data-fv-addons-recaptcha2-language="en"
+                data-fv-addons-recaptcha2-theme="light"
+                data-fv-addons-recaptcha2-sitekey="{{ config.RECAPTCHA2_SITEKEY }}"
+                data-fv-addons-recaptcha2-timeout="120"
+                data-fv-addons-recaptcha2-message="The captcha is not valid">
+                {%- else -%}
+                > 
+                {%- endif -%}
+                <div id="alertContainer" class="alert" style="display: none;"></div>
+            
+                <div class="form-group">
+                    <label for="fullName" class="col-xs-3 control-label">Full name</label>
+                    <div class="col-xs-8">
+                        <input type="text" class="form-control" name="fullName" />
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    <label class="col-xs-3 control-label">Company Name</label>
+                    <div class="col-xs-8">
+                        <input type="text" class="form-control" name="companyName" />
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    <label class="col-xs-3 control-label">Email address</label>
+                    <div class="col-xs-8">
+                        <input type="text" class="form-control" name="email" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-xs-3 control-label">Subject</label>
+                    <div class="col-xs-8">
+                        <input type="text" class="form-control" name="subject" />
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    <label class="col-xs-3 control-label">Message</label>
+                    <div class="col-xs-8">
+                        <textarea class="form-control" name="message" rows="5"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="col-xs-3 control-label">Captcha</label>
+                    <div class="col-xs-8">
+                        <div id="captchaContainer"></div>
+                    </div>
+                </div>                
+            
+                <div class="form-group">
+                    <div class="col-xs-9 col-xs-offset-3">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button id="contactFormCancel" type="button" class="btn btn-primary">Cancel</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{#% endblock page %#}
+
+{#
+{% block scripts %}
+    {{super()}}
+#}    
+    {%- if config.RECAPTCHA2_SITEKEY -%}
+    <script type="text/javascript" src="{{ url_for('static', filename='local/formvalidation-reCaptcha2.min.js') }}"></script>
+    {%- endif -%}
+
+<script>
+$(document).ready(function() {
+
+    $('#contactForm')
+        .formValidation({
+            framework: 'bootstrap',
+            icon: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                fullName: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The full name is required'
+                        }
+                    }
+                },
+                subject: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The subject is required'
+                        },
+                    }
+                },
+                email: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The email address is required'
+                        },
+                        emailAddress: {
+                            message: 'The input is not a valid email address'
+                        }
+                    }
+                },
+                message: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The message is required'
+                        },
+                        stringLength: {
+                            max: 1000,
+                            message: 'The message must be less than 1000 characters long'
+                        }
+                    }
+                },
+            }
+        })
+        .on('err.field.fv', function(e, data) {
+            data.fv.disableSubmitButtons(false);
+        })
+        .on('success.field.fv', function(e, data) {
+            data.fv.disableSubmitButtons(false);
+        })
+        .on('success.form.fv', function(e) {
+            e.preventDefault();
+            var $form = $(e.target);
+            var url = '{{request.url}}';
+            ajax(url, 'POST', $form.serialize()).done(function(data) {
+                toastr[data.notify.category](data.notify.msg, {timeOut: 1000});
+                {% if not is_modal %}
+                if (data.notify.category == "success" ){
+                    setTimeout(function(){
+                        window.location = data.redirect;
+                    }, 2000);
+                }
+                {% else %}
+                $form.parents('.bootbox').modal('hide');
+                {% endif %}
+            });
+            //fv.defaultSubmit();            
+        });
+        
+});
+</script>
+    
+{#% endblock scripts %#}
+
