@@ -1,4 +1,4 @@
-https://github.com/Widukind/widukind-common/tarball/master
+git+git://github.com/Widukind/widukind-common@master#egg=widukind-common
 pandas>=0.14.1
 python-dateutil
 arrow
@@ -14,10 +14,7 @@ Flask-WTF
 Flask-Sitemap
 Flask-BasicAuth
 Flask-Mail
-
-#TODO: redis gevent
 redis
-
 psutil
 Flask-Assets
 jsmin
