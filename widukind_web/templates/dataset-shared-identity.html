@@ -1,0 +1,73 @@
+                        <table id="series-identity" class="table table-striped table-condensed">
+                            <tbody>
+                                <tr>
+                                    <td class="col-md-2">Url</td>
+                                    <td class="col-md-10">
+                                        <a href="{{ url_dataset}}">In Explorer</a> - <a target="_blank" href="{{ url_dataset_direct }}">Direct Access</a>
+                                    </td>
+                                </tr>
+                                {#
+                                <tr>
+                                    <td class="col-md-2">Direct Url</td>
+                                    <td class="col-md-10">
+                                        <a target="_blank" href="{{ url_dataset_direct }}">{{ url_dataset_direct }}</a>
+                                    </td>
+                                </tr>
+                                #}
+                                <tr>
+                                    <td class="col-md-2">Provider</td>
+                                    <td class="col-md-10">
+                                        <a href="{{ url_provider }}">{{ provider.long_name }}</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Key</td>
+                                    <td class="col-md-10">
+                                        {{ dataset.dataset_code }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Slug</td>
+                                    <td class="col-md-10">
+                                        {{ dataset.slug }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Name</td>
+                                    <td class="col-md-10">
+                                        {{ dataset.name }}
+                                    </td>
+                                </tr>
+                                <!--{#
+                                <tr>
+                                    <td class="col-md-2">Series available</td>
+                                    <td class="col-md-10">
+                                        {{ count }}
+                                    </td>
+                                </tr>
+                                #}-->
+                                <tr>
+                                    <td class="col-md-2">Last Update</td>
+                                    <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Last Download</td>
+                                    <td class="col-md-10">{{ moment(dataset.download_last).format('LLL') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Web Site</td>
+                                    <td class="col-md-10">
+                                        {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
+                                            {{ dataset.doc_href }}
+                                        {% else %}
+                                            {{ provider.website }}
+                                        {% endif %}                
+                                    </td>
+                                </tr>
+                                {% if dataset.notes %}
+                                <tr>
+                                    <td class="col-md-12" colspan="2">{{dataset.notes}}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
