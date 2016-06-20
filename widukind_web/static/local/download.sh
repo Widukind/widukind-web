@@ -16,7 +16,8 @@ curl -OL https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen-sprite@2x.pn
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/select2/3.5.4/select2.min.js
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.19/daterangepicker.min.js
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/js/formValidation.min.js
-curl http://cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/js/framework/bootstrap.min.js -o formvalidation-bootstrap.min.js 
+curl http://cdnjs.cloudflare.com/ajax/libs/formvalidation/0.6.1/js/framework/bootstrap.min.js -o formvalidation-bootstrap.min.js
+curl https://raw.githubusercontent.com/formvalidation/formvalidation.io/master/vendor/formvalidation/js/addons/reCaptcha2.min.js -o formvalidation-reCaptcha2.min.js 
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.jquery.min.js
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js    
@@ -36,6 +37,7 @@ curl -OL http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/extensions
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/extensions/natural-sorting/bootstrap-table-natural-sorting.min.js
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/extensions/toolbar/bootstrap-table-toolbar.min.js
 curl -OL http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/locale/bootstrap-table-en-US.min.js
+#curl -OL http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/extensions/resizable/bootstrap-table-resizable.min.js
 
 mkdir css fonts
 curl http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css -o css/font-awesome.min.css 
@@ -56,11 +58,10 @@ curl -O http://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js
 curl -O http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js
 
 curl -OL http://dygraphs.com/1.1.1/dygraph-combined.js
-curl -O http://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js 
-
-curl -L -o bootstrap3-typeaheadjs.css http://raw.githubusercontent.com/bassjobsen/typeahead.js-bootstrap-css/master/typeaheadjs.css
-curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js
-curl -O http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min.js
+#curl -O http://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js 
+#curl -L -o bootstrap3-typeaheadjs.css http://raw.githubusercontent.com/bassjobsen/typeahead.js-bootstrap-css/master/typeaheadjs.css
+#curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.1/bootstrap3-typeahead.min.js
+#curl -O http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min.js
 #bloodhound.js + typeahead.jquery.js
 #curl -O http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js
 
@@ -70,5 +71,8 @@ curl -O http://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstra
 
 curl -O http://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js
 curl -O http://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.12/clipboard.min.js
+
+curl -O https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.min.css
+curl -O https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.min.js
 
 

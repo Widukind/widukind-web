@@ -1,0 +1,61 @@
+.nopadding {
+	padding: 0;
+}
+
+.nopadding-top {
+    padding-top: 0;
+}
+
+.nopadding-bottom {
+	padding-bottom: 0;
+}
+
+.nopadding-left {
+	padding-left: 0;
+}
+
+.nopadding-right {
+	padding-right: 0;
+}
+
+.nomargin-bottom {
+	margin-bottom: 0;
+}
+
+.noborder {
+	border: 0;
+}
+
+.modal-detail {
+	color: #fff;
+}
+ 
+.modal-detail table a:link, .modal-detail table a:visited {
+ 	color: #77ad8d;
+}
+
+.modal-detail .panel-heading {
+	padding-left: 0;
+}    
+
+.nav-pills > .active > a {
+    font-weight: bold;
+    border-radius:0px;
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+    border-bottom-color: #FFD;
+    background-color: transparent !important;
+}
+
+/* fixes on bootstrap-table pagination */
+.pagination > li > a, .pagination > li > span {
+    background-color: #0a1b21 !important;
+    color: #fff !important;
+}
+
+.pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus { 
+    background-color: #12323d !important;
+}
+
+
+

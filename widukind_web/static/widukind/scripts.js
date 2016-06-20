@@ -129,24 +129,25 @@ function AdminQueriesLinkFormatter(value, row){
 function ajax(uri, method, data, options, callback_error) {
 	
 	var options = options || {};
-	options.contentType = options.contentType || "application/json";
-	options.accepts = options.accepts || "application/json";
-	options.dataType = options.dataType || 'json';
-	options.cache = options.cache || true;
-	options.async = options.async || false;
+	//options.contentType = options.contentType || "application/json";
+	//options.accepts = options.accepts || "application/json";
+	//options.dataType = options.dataType || 'json';
+	//options.cache = options.cache || true;
+	options.async = options.async || true;
 	options.timeout = options.timeout || 120 * 1000; //120 seconds
+	//console.log("ajax options : ", options);
 	
     var request = {
         url: uri,
         type: method,
-        async: false,
+        //async: options.async,
         timeout: options.timeout,
-        contentType: options.contentType,
-        accepts: options.accepts,
+        //contentType: options.contentType,
+        //accepts: options.accepts,
         cache: options.cache,
-        dataType: options.dataType,
+        //dataType: options.dataType,
         data: data,
-        traditional: true,
+        //traditional: true,
         error: function(jqXHR, textStatus, errorThrown) {
         	//TODO: ecrire erreur dans champs status
         	//if(textStatus === 'timeout')
