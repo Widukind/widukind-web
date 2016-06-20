@@ -1,0 +1,36 @@
+                        <table id="seriesDim" class="table table-striped table-condensed">
+                            <tbody>
+                                <tr>
+                                    <td class="col-md-2">Dimensions</td>
+                                    <td class="col-md-10">
+                                        {% for key in dataset.dimension_keys %}
+                                            {% if key in dataset.codelists %}
+                                                {% set concept = dataset.concepts[key] %}
+                                                <a href="#dim-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+                                            {% endif %}
+                                        {% endfor %}
+                                     </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Attributes</td>
+                                    <td class="col-md-10">
+                                        {% if dataset.attribute_keys %}
+                                            {% for key in dataset.attribute_keys %}
+                                                {% if key in dataset.codelists %}
+                                                    {% if dataset.codelists[key] %}
+                                                        {% set concept = dataset.concepts[key] %}
+                                                        <a href="#attr-{{key}}">{{concept}}{% if concept != key %} ({{key}}){% endif %}</a><br/>
+                                                        {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            None
+                                        {% endif %}
+                                     </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        {% include "dataset-shared-dimensions.html" with context %}
+                        
+                        {% include "dataset-shared-attributes.html" with context %}

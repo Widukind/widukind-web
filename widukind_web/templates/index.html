@@ -1,48 +1,228 @@
 {% extends "layout.html" %}
 
-{#
-{% block custom_navbar %}
-{% endblock %}
-#}
-
 {% macro static(filename) %}
 {{ url_for('static', filename="widukind/" + filename)}}
 {%- endmacro %}
 
 {% block styles %}
     {{super()}}
-    <link href="{{ url_for('static', filename="widukind/style-index.css") }}" rel="stylesheet">
+    {% assets "form_css" %}
+        <link href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
+    
+    <style>
+    .profile-img{box-shadow: 0 5px 15px rgba(0,0,0,.5)}
+    
+    .noborder {
+        border: 0;
+    }
+    
+  	div.provider {
+		background-color: #fff;
+	   	border-top-right-radius: 10px;
+	   	border-top-left-radius: 10px;
+	   	border-bottom-right-radius: 10px;
+	   	border-bottom-left-radius: 10px;
+	   	overflow: hidden;
+  	}
+
+  	div.provider * h5, div.provider .human-number, div.provider * small {
+  		color: #000;
+  	}
+      
+    .provider-name {
+    	font-weight: bold;
+    	box-sizing: border-box;
+    	font-size: 20px;
+    	font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+
+    .provider .panel-body {
+	   	padding-top: 0;
+	   	padding-bottom: 5px;
+    }
+    
+	.logos {
+	   margin: 0;
+	   padding: 0;
+	   background-color: #FFF;
+	   list-style: none;
+	   border-top: none;
+	   border-bottom-right-radius: 6px;
+	   border-bottom-left-radius: 6px;
+	   overflow: hidden;
+	}
+	
+	.logos img {
+	   width: 100%;
+	}
+    /*
+    div.home-intro {
+        padding-left: 100px;
+        padding-right: 100px;
+    }
+    */
+    
+    </style>
 {% endblock %}
 
+{% block scripts %}
+    {{super()}}
+    {% assets "form_js" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
+{% macro card(provider, dataset=None) %}
+<div class="container-fluid">
+  <div class="row">
+      <div class="panel panel-default provider">
+			<div class="panel-body">
+             		<div class="row">
+                       <div class="col-md-12">
+                       		<div class="row">
+                       			<div class="col-md-10">
+                       			    {% if dataset %}
+                                    <a title="View datas" class="text-primary" href="{{ url_for("views.explorer_p_d", provider=provider.slug, dataset=dataset) }}">
+                       			    {% else %}
+	                       			<a title="View datas" class="text-primary" href="{{ url_for("views.explorer_p", provider=provider.slug) }}">
+                                    {% endif %}
+	                       				<h3 class="provider-name">
+	                       				{{ provider.name }}
+	                       				<span class="pull-right"><small><i class="fa fa-eye" aria-hidden="true"></small></i>
+	                       				</span>
+	                       				</h3>
+	                       			</a>
+	                       			
+                       				<h5>{{ provider.long_name }}</h5>
+                       				<h5>{{ provider.website }}</h5>
+                       			</div>
+                       			<div class="col-md-2">
+                       				<h3>
+                       				<img src="{{ url_for('static', filename='widukind/logos/provider-'+ provider.slug + '.png') }}" alt="" class="center-block img-thumbnail img-responsive profile-img" />
+                       				</h3>	
+                       			</div>
+                       		</div>
+                       </div><!--/col-->          
+                   </div>
+                   {#
+             		<div class="row">
+                       <div class="col-md-6">
+                           <h3 class="text-left"><strong class="human-number">{{provider.count_datasets}}</strong><small> Datasets</small></h3>
+                       </div>
+                       <div class="col-md-6">
+                           <h3 class="text-right"><strong class="human-number">{{provider.count_series}}</strong><small> Series</small></h3>
+                       </div><!--/col-->
+             		</div><!--/row-->
+             		#}
+              </div><!--/panel-body-->
+          </div><!--/panel-->
+  </div>
+</div>
+{%- endmacro %}
 
 {% block page %}
-<div class="homepage">
-    <div id="banner">
-        <h1>International Economics Database</h1>
-        <p class="lead">A database of international macroeconomic data</p>
-    </div>
-      <div class="main-inner">
-         <div class="home-logos">
-            <h2>Partners</h2>
-            <ul class="logos">
-               <li class="logo logo-fs">
-               		<a href="http://www.strategie.gouv.fr" target="_blank">
-               			<img src="{{ static("logos/logo-fs.png") }}" alt="France Stratégie">
-               		</a>
-               </li>
-               <li class="logo logo-cepremap">
-               		<a href="http://www.cepremap.org" target="_blank">               
-               			<img src="{{ static("logos/logo-cepremap.png") }}" alt="CEPREMAP">
-               		</a>
-               </li>
-            </ul>
-         </div>
-         <div class="home-intro">
-            <p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;). These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
-            <p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
-         </div>
-      </div><!-- //end of main-inner -->
 
-</div><!-- //end of homepage -->
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            
+            <div class="panel panel-default noborder nomargin-bottom">
+                <div class="panel-body nopadding-bottom">
+                
+                    <h3 class="text-center" style="margin-top: 0;">
+                        International Economics Database
+                    </h3>
+                    
+                    <p class="text-center">A database of international macroeconomic data</p>
+        
+                    <div class="partner-logos text-center">
+                        <h3 style="margin-top: 0;"><small>Partners</small></h3>
+                        <p>
+                            <a href="http://www.strategie.gouv.fr" target="_blank">
+                                <img class="img-rounded" src="{{ static("logos/logo-fs-new-40.png") }}" alt="France Stratégie">
+                            </a>
+                            
+                            <i class="fa fa-refresh fa-lg fa-fw"></i>
+                            
+                            <a href="http://www.cepremap.org" target="_blank">               
+                                <img class="img-rounded" src="{{ static("logos/logo-cepremap-40-new.png") }}" alt="CEPREMAP">
+                            </a>
+                        </p>
+                        
+                    </div>
+                    
+                    <p>&nbsp;</p>
+                    
+                    <div class="home-intro text-justify">
+                        <p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;).</p> 
+                        <p>These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
+                        <p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
+                    </div>
+
+                    <div class="partner-logos text-center">
+                        <h3 style="margin-top: 0;"><small>Providers</small></h3>
+                    </div>
+                        
+                </div>
+            </div>
+            
+        </div>
+    </div>
+	<div class="row">
+	
+        <div class="panel panel-default noborder">
+            <div class="panel-body nopadding-top">
+    
+        		<div class="col-md-6">
+        			{% if "insee" in providers %}
+        			{{ card(providers["insee"], "insee-ipch-2015-fr-coicop")}}
+        			{% endif %}
+        			
+        			{% if "imf" in providers %}
+        			{{ card(providers["imf"], "imf-weo")}}
+        			{% endif %}
+        
+        			{% if "esri" in providers %}
+        			{{ card(providers["esri"])}}
+        			{% endif %}
+        			
+                    {% if "ecb" in providers %}
+                    {{ card(providers["ecb"], "ecb-exr")}}
+                    {% endif %}
+                    
+                    {% if "bea" in providers %}
+                    {{ card(providers["bea"])}}
+                    {% endif %}
+        
+        		</div>
+        		<div class="col-md-6">
+                    {% if "eurostat" in providers %}
+                    {{ card(providers["eurostat"], "eurostat-namq-10-gdp")}}
+                    {% endif %}
+                    
+                    {% if "bis" in providers %}
+                    {{ card(providers["bis"], "bis-pp-ls")}}
+                    {% endif %}
+        
+        			{% if "oecd" in providers %}
+        			{{ card(providers["oecd"], "oecd-eo")}}
+        			{% endif %}
+        			
+        			{% if "worldbank" in providers %}
+        			{{ card(providers["worldbank"], "worldbank-gem")}}
+        			{% endif %}
+        			
+        			{% if "fed" in providers %}
+        			{{ card(providers["fed"], "fed-h15")}}			
+        			{% endif %}
+        		</div>
+        		
+            </div>
+        </div>
+		
+	</div>
+	
+</div>
 {% endblock %}
 

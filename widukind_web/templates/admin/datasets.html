@@ -24,9 +24,7 @@
         <tr>
             <td>
             	{% if obj.enable %}
-                <a href="{{ url_for('views.dataset-by-slug', slug=obj.slug) }}">
                     {{obj.dataset_code}}
-                </a>
                 {% else %}
                 	{{obj.dataset_code}}
                 {% endif %}                

@@ -7,7 +7,9 @@ SESSION_TIMEZONE_KEY = "current_tz"
 SESSION_THEME_KEY = "current_theme"
 
 COL_SESSION = "session_web"
+COL_CONTACT = "contact"
 COL_ALL.append(COL_SESSION)
+COL_ALL.append(COL_CONTACT)
 
 CHOICES_SORT_DATASETS = (
     ('provider_name', 'Provider Name'),

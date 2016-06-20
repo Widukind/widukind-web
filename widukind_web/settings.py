@@ -6,6 +6,8 @@ gettext = lambda s: s
 class Config(object):
     
     BOOTSTRAP_SERVE_LOCAL = True
+    TEMPLATES_AUTO_RELOAD = config('WIDUKIND_WEB_DEBUG', False, cast=bool)
+    DEBUG = config('WIDUKIND_WEB_DEBUG', False, cast=bool)
     
     DEFAULT_URL_API = config('WIDUKIND_BASE_URL_API', "http://widukind-api.cepremap.org/api/v1")
     BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)
@@ -13,6 +15,9 @@ class Config(object):
     BASE_URL_API_HTML = config('WIDUKIND_BASE_URL_API_HTML', "%s/html" % DEFAULT_URL_API)
 
     GOOGLE_ANALYTICS_ID = config('WIDUKIND_WEB_GOOGLE_ANALYTICS_ID', None)
+    
+    RECAPTCHA2_SITEKEY = config('WIDUKIND_WEB_RECAPTCHA2_SITEKEY', None)
+    RECAPTCHA2_SECRETKEY = config('WIDUKIND_WEB_RECAPTCHA2_SECRETKEY', None)
     
     PIWIK_ENABLE = config('WIDUKIND_PIWIK_ENABLE', False, cast=bool)
     PIWIK_URL = config('WIDUKIND_PIWIK_URL', None)

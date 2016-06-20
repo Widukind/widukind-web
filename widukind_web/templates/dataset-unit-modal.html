@@ -1,0 +1,58 @@
+{% if not is_modal %}
+{% extends "layout.html" %}
+{% endif %}
+
+{% block page %}
+
+<a name="top"></a>
+<div class="container-fluid modal-detail">
+	<div class="row">
+		<div class="col-md-12 nopadding">				
+			<div class="panel panel-default">
+		    	<div class="panel-heading nopadding">
+		    	
+					<ul class="nav nav-pills" role="tablist">
+					
+						<li role="series" class="active">
+							<a href="#tab-modal-identity" aria-controls="tab-modal-identity" data-toggle="tab">
+								<i class="fa fa-user fa-fw"></i> Identity
+							</a>
+					  	</li>
+					  	
+						<li role="series">
+							<a href="#tab-modal-dim" aria-controls="tab-modal-dim" data-toggle="tab">
+								<i class="fa fa-wpforms fa-fw"></i> Dimensions
+							</a>
+					  	</li>
+
+						<li role="series">
+							<a href="#tab-modal-tags" aria-controls="tab-modal-tags" data-toggle="tab">
+								<i class="fa fa-tag fa-fw"></i> Tags
+							</a>
+					  	</li>
+					  	
+					</ul><!-- nav-pills -->
+				</div><!-- panel-heading -->
+				
+				<div class="tab-content">
+
+					<div role="tabpanel" class="tab-pane fade in active" id="tab-modal-identity">
+						{% include "dataset-shared-identity.html" with context %}
+					</div><!-- tabpanel tab-modal-identity -->
+					
+					<div role="tabpanel" class="tab-pane fade" id="tab-modal-dim">
+					    {% include "dataset-shared-dims-attrs.html" with context %}
+					</div><!-- tabpanel tab-modal-dim -->
+
+					<div role="tabpanel" class="tab-pane fade" id="tab-modal-tags">
+                        {% include "dataset-shared-tags.html" with context %}
+					</div><!-- tabpanel tab-modal-tags -->
+					
+				</div><!-- tab-content -->
+			</div><!-- panel -->
+		</div><!-- col-md-12 -->
+	</div><!-- row -->
+</div><!-- container-fluid -->
+
+				
+{% endblock page %}

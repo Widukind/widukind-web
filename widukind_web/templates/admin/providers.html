@@ -25,9 +25,7 @@
         <tr>
             <td>
             	{% if obj.enable %}
-            	<a href="{{ url_for('views.datasets', slug=obj.slug) }}">
                 	{{obj.name}}
-                </a>
                 {% else %}
                 	{{obj.name}}
                 {% endif %}
@@ -36,7 +34,7 @@
 				{{obj.long_name}}            
             </td>
             <td>
-            	<a href="{{ url_for('admin.datasets', slug=obj.slug) }}" type="button" class="btn btn-primary btn-xs">
+            	<a href="{{ url_for('.datasets', slug=obj.slug) }}" type="button" class="btn btn-primary btn-xs">
 					{{datasets_counters["datasets"][obj.name]|default('0')}}
 				</a>
             </td>

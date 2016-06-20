@@ -130,6 +130,8 @@
 		if (row.enable == false){
 			return '<span class="danger">' + value + '</span>';
 		}
+		return value;
+		//TODO:
 	    return '<a href="' + row.view + '" target="_blank" title="Show detail">' + row.dataset_code +'</a>';
 	}
 	
@@ -146,7 +148,7 @@
 		
 		$('#created').daterangepicker({
 			alwaysShowCalendars: false,
-			maxDate: today,
+			//maxDate: today,
 	        ranges: {
 	            'Today': [moment(), moment()],
 	            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],

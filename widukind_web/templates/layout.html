@@ -15,7 +15,7 @@
     {% assets "common_css" %}
 	    <link href="{{ ASSET_URL }}" rel="stylesheet">
     {% endassets %}
-    
+ 	<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
 {% endblock %}
 
 {%- block head %}
@@ -37,19 +37,17 @@
         {% endblock %}
         
         <div class="row">
+            {#
             <div id="site_menu_left" {% block menu_left_attrs %}class="col-md-2"{% endblock %} style="display: none;">
                 {% block menu_left %}&nbsp;{% endblock %}
             </div>
+            #}
             <div id="site_content" {% block site_content_attrs %}class="col-md-12"{% endblock %}>
 	            <span id="spinner" class="spinner-container"></span>
-	            {#% include "include/series-cart.html" with context %#}
 	            {% block breadcrumb %}{% endblock %}
 	            {% block page %}{% endblock %}
             </div>
 	    </div>
-	    {#
-	    {% include "include/messages.html" with context %}
-        #}
 	</div>     
 {% endblock content %}
 
@@ -63,24 +61,16 @@
 
 //var $table;
 
-$(document).ajaxStart(function() {
-    spinnerShow();
-}).ajaxStop(function() {
-    spinnerHide();
-}).ajaxError(function() {
-    spinnerHide();
-});
-
 $(document).ready(function() {
-    
-    {#
-    $('#card_btn').on('click', function (e) {
-    	e.preventDefault();
-    	$("#series_cart").bootstrapTable('refresh');
-    	$("#cart_table").toggle();
-    });
-    #}
-    
+
+	$(document).ajaxStart(function() {
+	    spinnerShow();
+	}).ajaxStop(function() {
+	    spinnerHide();
+	}).ajaxError(function() {
+	    spinnerHide();
+	});
+
     $('.human-number').each(function(i, item){
         var value = $(item).text();
          $(item).text(Humanize.formatNumber(value));
@@ -90,7 +80,62 @@ $(document).ready(function() {
         var value = $(item).text();
          $(item).text(Humanize.fileSize(value));
     });
+    
+    toastr.options = {
+      "closeButton": true,
+      "debug": false,
+      "newestOnTop": false,
+      "progressBar": true,
+      "positionClass": "toast-top-right",
+      "preventDuplicates": false,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "100",
+      "timeOut": "2000",
+      "extendedTimeOut": "3000",
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut"
+    };
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}        
+          toastr['{{category}}']("{{message}}");
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    $("#contactLink").on('click', function(e){
+        e.preventDefault();
+        var url = $(this).attr("data-url") + '?modal=1';
+        ajax(url, 'GET').done(function(data) {
+            var dialog = bootbox.dialog({
+                //title: 'Contact Form',
+                backdrop: true,
+                size: 'large',
+                closeButton: false,
+                show: false,
+                message: data
+            }).on('shown.bs.modal', function () {
+                $('#contactForm')
+                    .show()
+                    .formValidation('resetForm', true);
+                    
+                $('#contactFormCancel').on('click', function(e){
+                    //$('#contactForm').hide();
+                    //$('#contactForm').formValidation('resetForm', true);
+                    dialog.modal('hide');
+                });
+                    
+            }).on('hide.bs.modal', function(e) {
+                $('#contactForm').hide();
+            }).modal('show');
+        });
+    });
         
+
 });
 </script>
 

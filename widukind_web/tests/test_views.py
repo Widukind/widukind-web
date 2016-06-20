@@ -5,6 +5,9 @@ from flask import url_for
 from widukind_web.tests.base import TestCase
 
 class ViewsTestCase(TestCase):
+    """
+    Extraire json 1 provider, 1 ds, N series, ???
+    """
     
     # nosetests -s -v widukind_web
     

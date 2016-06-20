@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from flask import current_app, abort, request
+
 from widukind_common.flask_utils.queries import *
+
+from widukind_web import constants
+
+def col_contact(db=None):
+    db = db or current_app.widukind_db
+    return db[constants.COL_CONTACT]
 
 def datasets_counter(db=None, match=None):
     pipelines = []

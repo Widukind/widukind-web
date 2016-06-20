@@ -1,0 +1,105 @@
+{% extends "base_form.html" %}
+
+{% block styles %}
+    {{super()}}
+    {% assets "table_css" %}
+        <link href="{{ ASSET_URL }}" rel="stylesheet">
+    {% endassets %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+    {% assets "table_js" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
+{% block title %}{{super()}} - Admin - Contacts{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+      <li><a href="{{ url_for("home") }}">Home</a></li>
+      <li class="active">Admin Contacts</li>
+    </ol>
+{% endblock %}                                    
+
+{% block page %}
+
+<div class="panel panel-default">
+    <table id="contact_table" 
+        data-toggle="table"
+        data-classes="table table-hover table-condensed table-stripped"  
+        data-url="{{ url_for(".contacts") }}"
+        {#
+        data-response-handler="AdminQueriesResponseHandler"
+        data-toolbar="#toolbar"
+        data-query-params="queryParams"
+        #}
+        data-striped="true"
+        data-mobile-responsive="true"
+        data-check-on-init="true"
+
+        data-pagination="true"
+        data-side-pagination="client"  
+        data-page-size="{{ page_size|default('10') }}"
+        data-page-list="[10, 25, 50, 100]"  
+
+        data-show-toggle="true"
+        data-show-refresh="true"
+        data-show-columns="true"
+        data-show-pagination-switch="false" 
+
+        data-search-align="left"
+        data-buttons-align="left"
+        data-toolbar-align="right"
+        data-pagination-h-align="left"
+        data-pagination-detail-h-align="left"
+        data-pagination-v-align="top">
+        <thead> 
+            <tr>
+                {#<th data-field="_id" data-align="center" data-formatter="LinkFormatter">&nbsp;</th>#}
+                <th data-field="created" data-formatter="createdFormatter" data-sortable="true">Date</th>
+                <th data-field="subject" data-formatter="SubjectFormatter">Subject</th>
+                <th data-field="fullName" data-sortable="true">FullName</th>
+                <th data-field="companyName" data-sortable="true">Company</th>
+                <th data-field="email">Email</th>
+                <th data-field="message" data-formatter="MessageFormatter">Message</th>
+                <th data-field="remote_addr" data-sortable="true" data-visible="false">Remote Address</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block add_scripts %}
+    {{super()}}
+    
+    <script type="text/javascript">
+    
+    function LinkFormatter(value, row){
+        return '<a href="' + row.view + '" title="Show detail">Show</a>';
+    }
+    
+    function createdFormatter(value, row) {
+        return new String(moment(value).format('YYYY-MM-DD - HH:mm'));
+    }
+    
+    function MessageFormatter(value, row) {
+        return '<code>' + value + '</code>';
+    }
+
+    function SubjectFormatter(value, row) {
+        return '<code>' + value + '</code>';
+    }
+    
+    $(document).ready(function(){
+    
+        var $table = $('#contact_table');
+        
+    });    
+    
+    </script>
+{% endblock %}
+

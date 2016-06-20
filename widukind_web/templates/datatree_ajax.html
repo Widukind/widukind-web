@@ -1,0 +1,43 @@
+
+var dataset_codes = {{dataset_codes|tojson}};
+
+var tree = [
+{%- with childrens = categories.values() -%}
+    {%- for item in childrens recursive %}
+       	{ 
+       		text: "{{ item.name|e|safe }}",
+       		state: {expanded: false},
+       		{%- if item.datasets %}
+       		tags: [{%- for ds in item.datasets %}"{{ds.dataset_code}}",{%- endfor %}],
+       		nodes:
+       		[
+        		{%- for ds in item.datasets %}
+        			{ 
+        				text: "{{ ds.name|e|safe }} ({{ds.dataset_code}})", 
+        				{% if ds.dataset_code in dataset_codes -%}
+        					href: "{{dataset_codes[ds.dataset_code].url}}",
+        					state: {expanded: false},
+        				{%- else -%}
+        					state: {disabled: true, expanded: false},
+        				{%- endif %}
+        			},
+        		{%- endfor %}
+        		{%- if item.children %}	
+        			{{ loop(item.children) }}
+        		{%- endif -%}
+       		]
+       		{%- else -%}
+       		nodes: [{{ loop(item.children) }}]
+       		{%- endif -%}
+       	},
+    {% endfor -%}
+{%- endwith -%}
+];
+
+
+var datatree = {
+	dataset_codes: dataset_codes,
+	tree: tree
+};
+
+

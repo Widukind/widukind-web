@@ -1,0 +1,36 @@
+<div class="panel panel-default modal-detail">
+
+    <div id="toolbar">
+	{#
+        <button id="checkAll" class="btn btn-default btn-sm">check All</button>
+        <button id="uncheckAll" class="btn btn-default btn-sm">uncheck All</button>
+        <button id="delete" class="btn btn-default btn-sm">Delete Checked</button>
+    #}
+    </div>
+
+	<table id="series_cart"
+		data-url="{{ url_for(".ajax-cart-view") }}?json=1"
+		data-toggle="table"
+		data-classes="table table-hover table-condensed table-striped table-no-bordered"    
+		data-striped="true"
+		data-show-toggle="false"
+       	data-show-columns="false" 
+ 		data-mobile-responsive="true" 
+        data-buttons-align="left" 
+        data-toolbar-align="left" 
+        data-pagination="false" 
+        data-toolbar="#toolbar"
+		>
+		<thead>
+		    <tr>
+                {#<th data-checkbox="true" class="styled"></th>#}
+                <th data-width="100px" data-field="key" data-formatter="seriesButtonFormatterLight" data-card-visible="false" data-switchable="false">&nbsp;</th>
+	            <th data-field="provider_name" data-formatter="providerFormatter" data-sortable="false">Provider</th>
+	            <th data-field="dataset_code" data-formatter="datasetCodeLinkFormatter" data-sortable="false">Dataset</th>
+                <th data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="false" data-sort-name="key">key</th>
+                <th data-field="name" data-formatter="nameFormatter" data-sortable="false">Name</th>
+                {#<th data-class="col-md-1" data-field="frequency" data-formatter="frequencyFormatter" data-align="center" data-sortable="false" data-title-tooltip="Frequency">Freq</th>#}
+			</tr>
+		</thead>
+	</table>
+</div>
