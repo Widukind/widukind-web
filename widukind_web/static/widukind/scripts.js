@@ -126,21 +126,23 @@ function AdminQueriesLinkFormatter(value, row){
     return '<a href="' + row.view + '" title="Show detail">Show</a>';
 }
 
-function ajax(uri, method, data, options, callback_error) {
+function ajax(uri, method, data, new_options, callback_error) {
 	
-	var options = options || {};
-	//options.contentType = options.contentType || "application/json";
-	//options.accepts = options.accepts || "application/json";
-	//options.dataType = options.dataType || 'json';
-	//options.cache = options.cache || true;
-	options.async = options.async || true;
-	options.timeout = options.timeout || 120 * 1000; //120 seconds
-	//console.log("ajax options : ", options);
+    var options_default = {
+        timeout: 120 * 1000, //120 seconds
+        async: true,
+        //cache: true,
+        //accepts: "application/json",
+        //contentType: "application/json",
+        //dataType: 'json',
+    };
+	
+	var options = $.extend(true, {}, options_default, new_options);
 	
     var request = {
         url: uri,
         type: method,
-        //async: options.async,
+        async: options.async,
         timeout: options.timeout,
         //contentType: options.contentType,
         //accepts: options.accepts,
