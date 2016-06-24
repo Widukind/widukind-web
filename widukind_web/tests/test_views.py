@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import unittest
 from datetime import datetime
 from flask import url_for
 
@@ -206,16 +207,15 @@ class ViewsTestCase(TestCase):
         
         self.assert_template_used("datatree_ajax.html")
         
-
+    @unittest.skipIf(True, "TODO")
     def test_views_ajax_tag_prefetch_series(self):
-        """
-        @bp.route('/ajax/tags/prefetch/series', endpoint="ajax-tag-prefetch-series")
-        """
+        pass
+        #@bp.route('/ajax/tags/prefetch/series', endpoint="ajax-tag-prefetch-series")
 
+    @unittest.skipIf(True, "TODO")
     def test_views_datasets_last_update(self):
-        """
-        @bp.route('/datasets/last-update.html', endpoint="datasets-last-update")
-        """
+        pass
+        #@bp.route('/datasets/last-update.html', endpoint="datasets-last-update")
 
 class ExplorerViewsTestCase(TestCase):
     
@@ -225,19 +225,19 @@ class ExplorerViewsTestCase(TestCase):
         super().setUp()
         self.fixtures()
 
+    @unittest.skipIf(True, "TODO")
     def test_views_ajax_explorer_datas(self):
-        """
-        @bp.route('/ajax/explorer/datas', endpoint="ajax-explorer-datas")
-        """
+        pass
+        #@bp.route('/ajax/explorer/datas', endpoint="ajax-explorer-datas")
 
+    @unittest.skipIf(True, "TODO")
     def test_views_explorer_view(self):
-        """
-        @bp.route('/explorer/dataset/<dataset>', endpoint='explorer_d')
-        @bp.route('/explorer/<provider>', endpoint="explorer_p")
-        @bp.route('/explorer/<provider>/<dataset>', endpoint='explorer_p_d')
-        @bp.route('/explorer', endpoint="explorer")
-        @bp.route('/', endpoint="home")
-        """
+        pass
+        #@bp.route('/explorer/dataset/<dataset>', endpoint='explorer_d')
+        #@bp.route('/explorer/<provider>', endpoint="explorer_p")
+        #@bp.route('/explorer/<provider>/<dataset>', endpoint='explorer_p_d')
+        #@bp.route('/explorer', endpoint="explorer")
+        #@bp.route('/', endpoint="home")
 
 class CartViewsTestCase(TestCase):
 
@@ -247,22 +247,22 @@ class CartViewsTestCase(TestCase):
         super().setUp()
         self.fixtures()
 
+    @unittest.skipIf(True, "TODO")
     def test_views_ajax_cart_add(self):
-        """
-        @bp.route('/ajax/series/cart/add', endpoint="ajax-cart-add")
-        slug = request.args.get('slug')
-        cart = session.get("cart", [])
-        """
+        pass
+        #@bp.route('/ajax/series/cart/add', endpoint="ajax-cart-add")
+        #slug = request.args.get('slug')
+        #cart = session.get("cart", [])
     
+    @unittest.skipIf(True, "TODO")
     def test_views_ajax_cart_remove(self):
-        """
-        @bp.route('/ajax/series/cart/remove', endpoint="ajax-cart-remove")
-        """
+        pass
+        #@bp.route('/ajax/series/cart/remove', endpoint="ajax-cart-remove")
 
+    @unittest.skipIf(True, "TODO")
     def test_views_ajax_cart_view(self):
-        """
-        @bp.route('/ajax/series/cart/view', endpoint="ajax-cart-view")
-        """
+        pass
+        #@bp.route('/ajax/series/cart/view', endpoint="ajax-cart-view")
 
 class HomeViewsTestCase(TestCase):
 
@@ -273,37 +273,21 @@ class HomeViewsTestCase(TestCase):
         self.fixtures()
 
     def test_views_index(self):
-        """
-        @bp_or_app.route('/', endpoint="home")
-        @cache.cached(timeout=3600) #1H
-        content_encoding', 'content_language
-        """
+        #TODO: @cache.cached(timeout=3600) #1H
+        #TODO: content_encoding', 'content_language
         response = self.client.get(url_for('home'))
         self.assertOkHtml(response)
         #self.assert_template_used("layout.html")
         self.assert_template_used("index.html")
         #self.assert_template_used("navbar.html")
 
+    @unittest.skipIf(True, "TODO")
     def test_views_contact_form(self):
-        """
-        @bp_or_app.route('/contact', endpoint="contact", methods=['GET', 'POST'])
-        """
+        pass
+        #@bp_or_app.route('/contact', endpoint="contact", methods=['GET', 'POST'])
 
+    @unittest.skipIf(True, "TODO")
     def test_views_atom_feed(self):
-        """
-        @bp_or_app.route('/rss.xml', endpoint="rss")
-        """
-
-class DownloadViewsTestCase(TestCase):
-    
-
-    def test_views_download_file(self):
-        """
-        @bp.route('/byid/<objectid:unid>', endpoint="download-file-by-id")
-        """
-
-    def test_views_download_series(self):
-        """
-        @bp.route('/series/<slug>', endpoint="series_csv")
-        """
+        pass
+        #@bp_or_app.route('/rss.xml', endpoint="rss")
 
