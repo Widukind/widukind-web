@@ -371,8 +371,6 @@ def _conf_sitemap(app):
     @extensions.sitemap.register_generator
     def sitemap_global():
         yield ('home', {}, None, "daily", 1.0)
-        #yield ('download.fs_list_dataset', {}, None, "daily", 0.8)
-        #yield ('download.fs_list_series', {}, None, "hourly", 0.8)
 
     extensions.sitemap.decorators = []
     app.config['SITEMAP_VIEW_DECORATORS'] = [load_page]
@@ -380,10 +378,8 @@ def _conf_sitemap(app):
     extensions.sitemap.init_app(app)
     
 def _conf_bp(app):
-    from widukind_web import download
     from widukind_web import views
     from widukind_web import admin
-    app.register_blueprint(download.bp, url_prefix='/download')    
     app.register_blueprint(views.bp, url_prefix='/views')
     app.register_blueprint(admin.bp, url_prefix='/_cepremap/admin')
 

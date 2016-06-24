@@ -444,7 +444,7 @@ def ajax_cart_view():
         
             s['view_dataset'] = url_for('.dataset-by-slug', slug=dataset_slug, modal=1)
             s['dataset_slug'] = dataset_slug
-            s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
+            s['export_csv'] = url_for('.export-series-csv', slug=s['slug'])
             #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
             s['frequency_txt'] = s['frequency']
             if s['frequency'] in constants.FREQUENCIES_DICT:
