@@ -657,8 +657,6 @@ def export_series_csv(slug=None):
     if not slug:
         abort(404, "slug is required parameter")
     
-    print("slug : ", slug)
-    
     if "+" in slug:
         query = {'slug': {"$in": slug.split("+")}}
     else:
@@ -666,13 +664,13 @@ def export_series_csv(slug=None):
     
     series_list = [doc for doc in queries.col_series().find(query, {"tags": False, "notes": False})]
     
-    ds_slugs = []
-    for doc in series_list:
-        dataset_slug = slugify("%s-%s" % (doc["provider_name"], doc["dataset_code"]), word_boundary=False, save_order=True)
-        ds_slugs.append(dataset_slug)
-        doc["dataset_slug"] = dataset_slug
+    #ds_slugs = []
+    #for doc in series_list:
+    #    dataset_slug = slugify("%s-%s" % (doc["provider_name"], doc["dataset_code"]), word_boundary=False, save_order=True)
+    #    ds_slugs.append(dataset_slug)
+    #    doc["dataset_slug"] = dataset_slug
     
-    datasets = {ds['slug']: ds for ds in queries.col_datasets().find({"slug": {"$in": ds_slugs}})}
+    #datasets = {ds['slug']: ds for ds in queries.col_datasets().find({"slug": {"$in": ds_slugs}})}
     
     fp = StringIO()
     writer = csv.writer(fp, quoting=csv.QUOTE_NONNUMERIC)
@@ -680,7 +678,7 @@ def export_series_csv(slug=None):
     headers = ["provider", "dataset_code", "key", "slug", "name", "frequency", "period", "value"]
     values = []
     for doc in series_list:
-        dataset_slug = doc["dataset_slug"]
+        #dataset_slug = doc["dataset_slug"]
         provider_name = doc["provider_name"]
         dataset_code = doc["dataset_code"]
         key = doc["key"]
