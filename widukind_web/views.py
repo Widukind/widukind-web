@@ -200,7 +200,7 @@ def dataset_with_slug(slug):
     #count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
     #                                           "dataset_code": dataset['dataset_code']})
 
-    url_provider = url_for('.explorer_p', provider=dataset["slug"])
+    url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
     url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
     
@@ -240,7 +240,7 @@ def series_with_slug(slug):
         abort(404)
 
     #view_explorer = url_for('.explorer_s', series=slug, _external=True)
-    url_provider = url_for('.explorer_p', provider=dataset["slug"])
+    url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
     url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
     url_series = url_for('.series-by-slug', slug=slug, _external=True)
