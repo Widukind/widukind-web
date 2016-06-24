@@ -2,6 +2,8 @@
 
 from pprint import pprint
 from collections import OrderedDict
+from io import StringIO
+import csv
 
 from jinja2 import Markup
 from flask import (Blueprint, 
@@ -120,6 +122,11 @@ def ajax_providers_list():
 
 @bp.route('/ajax/providers/<provider>/datasets', endpoint="ajax-datasets-list")
 def ajax_datasets_list(provider):
+    """
+    TODO: covered query
+        provider_name + enable + dataset_code + name + slug ???
+        partialfilter sur enable = True
+    """
     provider_doc = queries.get_provider(provider)
     query = {'provider_name': provider_doc["name"],
              "enable": True}
@@ -152,7 +159,6 @@ def ajax_datasets_dimensions_all(dataset):
     doc = queries.get_dataset(dataset, projection)
 
     dimensions = []
-    print("dimension_keys : ", doc["dimension_keys"])
     for key in doc["dimension_keys"]:
         if key in doc["codelists"] and doc["codelists"][key]:
             dimensions.append({
@@ -194,7 +200,7 @@ def dataset_with_slug(slug):
     #count_series = queries.col_series().count({"provider_name": dataset['provider_name'],
     #                                           "dataset_code": dataset['dataset_code']})
 
-    url_provider = url_for('.explorer_p', provider=dataset["slug"])
+    url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
     url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
     
@@ -234,7 +240,7 @@ def series_with_slug(slug):
         abort(404)
 
     #view_explorer = url_for('.explorer_s', series=slug, _external=True)
-    url_provider = url_for('.explorer_p', provider=dataset["slug"])
+    url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
     url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
     url_series = url_for('.series-by-slug', slug=slug, _external=True)
@@ -286,20 +292,6 @@ def series_with_slug(slug):
     
     return result
     
-    
-def send_file_csv(fileobj, mimetype=None, content_length=0):
-
-    data = wrap_file(request.environ, fileobj, buffer_size=1024*256)
-    response = current_app.response_class(
-                        data,
-                        mimetype=mimetype,
-                        #direct_passthrough=True
-                        )
-    response.status_code = 200    
-    #response.content_length = content_length
-    response.make_conditional(request)
-    return response
-
 @bp.route('/ajax/plot/series/<slug>', endpoint="ajax_series_plot")
 def ajax_plot_series(slug):
     
@@ -331,10 +323,10 @@ def ajax_plot_series(slug):
     
     return json_tools.json_response(datas, meta)
 
+#@bp.route('/tree/<provider>', endpoint="tree_root")
 @bp.route('/tree', endpoint="tree_root_base")
-@bp.route('/tree/<provider>', endpoint="tree_root")
 @cache.cached(360)
-def tree_view(provider=None):
+def ajax_tree_view(provider=None):
     
     provider = provider or request.args.get('provider')
     if not provider:
@@ -379,27 +371,19 @@ def tree_view(provider=None):
             "url": url_for('.dataset-by-slug', slug=doc["slug"])
         }
 
-    is_ajax = request.args.get('json') or request.is_xhr
-    
     context = dict(
         provider=_provider,
         categories=categories,
         dataset_codes=dataset_codes
     )
     
-    if is_ajax:
-        data = render_template("datatree_ajax.html", **context)
-        #context["js"] = data
-        #response_data = json_tools.json_response(data, return_value=True)
-        response = current_app.response_class(data,
-                                mimetype='application/javascript')
-        response.status_code = 200    
-        response.make_conditional(request)
-        return response
+    data = render_template("datatree_ajax.html", **context)
+    response = current_app.response_class(data,
+                            mimetype='application/javascript')
+    response.status_code = 200    
+    response.make_conditional(request)
+    return response
         
-
-    return render_template('categories.html', **context)
-
 @bp.route('/ajax/series/cart/add', endpoint="ajax-cart-add")
 def ajax_cart_add():
     slug = request.args.get('slug')
@@ -460,7 +444,7 @@ def ajax_cart_view():
         
             s['view_dataset'] = url_for('.dataset-by-slug', slug=dataset_slug, modal=1)
             s['dataset_slug'] = dataset_slug
-            s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
+            s['export_csv'] = url_for('.export-series-csv', slug=s['slug'])
             #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
             s['frequency_txt'] = s['frequency']
             if s['frequency'] in constants.FREQUENCIES_DICT:
@@ -472,18 +456,19 @@ def ajax_cart_view():
         
 #@cache.cached(timeout=120)
 @bp.route('/ajax/tags/prefetch/series', endpoint="ajax-tag-prefetch-series")
-def tag_prefetch_series():
+def ajax_tag_prefetch_series():
 
     provider = request.args.get('provider')
     if not provider:
         abort(400, "provider is required")
-    #dataset = request.args.get('dataset')
+    dataset = request.args.get('dataset')
     limit = request.args.get('limit', default=200, type=int)
     count = request.args.get('count', default=0, type=int)
     
     col = current_app.widukind_db[constants.COL_TAGS]
     
     """
+    {
         "_id" : ObjectId("570cc1cea7ceda5f82ec4624"),
         "name" : "ipch-2015-fr-coicop",
         "enable" : true,
@@ -497,18 +482,19 @@ def tag_prefetch_series():
         ],
         "datasets" : [
                 "insee-ipch-2015-fr-coicop"
-        ]
+        ],
+        "count_series" : 9
+    }   
     """
     #TODO: renvoyer aussi count pour tag(count)
     query = OrderedDict()
     query["provider_name"] = {"$in": [provider.upper()]}
+    if dataset:
+        query["datasets"] = {"$in": [dataset]}
     if count:
         query["count"] = {"$gte": count}
-    #print("QUERY : ", query)
-    #tags = col.distinct("name", query)
-    #return current_app.jsonify(tags)
     
-    projection = {"_id": False, "name": True, "count": True, "count_datasets": True}
+    projection = {"_id": False, "name": True, "count": True, "count_datasets": True, "count_series": True}
     docs = col.find(query, projection=projection).sort("count", DESCENDING).limit(limit)
     return current_app.jsonify(list(docs))
     
@@ -548,6 +534,7 @@ def ajax_explorer_datas():
         query["$text"] = {"$search": search}
         projection['score'] = {'$meta': 'textScore'}
 
+    disabled_datasets = []
     if dataset_slug:
         query["dataset_code"] = dataset["dataset_code"]
     else:
@@ -557,19 +544,18 @@ def ajax_explorer_datas():
         disabled_datasets = [doc["dataset_code"] for doc in queries.col_datasets().find(ds_enabled_query, 
                                                                                         {"dataset_code": True})]
         
-        if disabled_datasets:
-            query["dataset_code"] = {"$nin": disabled_datasets}
-    
     query = complex_queries_series(query)
-    cursor = queries.col_series().find(dict(query), projection).limit(limit)
-    
-    #cursor.limit(limit)
+    cursor = queries.col_series().find(dict(query), projection)
+
     if search:
         cursor = cursor.sort([('score', {'$meta': 'textScore'})])
             
     #else:
     #    query = {"slug": series_slug}
     #    cursor = queries.col_series().find(dict(query), projection)
+    
+    if limit:
+        cursor = cursor.limit(limit)
 
     count = cursor.count()
     
@@ -578,6 +564,9 @@ def ajax_explorer_datas():
     rows = []
     
     for s in series_list:
+        if disabled_datasets and s["dataset_code"] in disabled_datasets:
+            continue
+        
         s['start_date'] = s["values"][0]["period"]
         s['end_date'] = s["values"][-1]["period"]
         values = [{"period": v["period"], "value": v["value"]} for v in s['values']]
@@ -595,7 +584,7 @@ def ajax_explorer_datas():
         #s["view_explorer"] = url_for('.explorer_s', series=s['slug'], _external=True)
         
         s['dataset_slug'] = dataset_slug
-        s['export_csv'] = url_for('download.series_csv', slug=s['slug'])
+        s['export_csv'] = url_for('.export-series-csv', slug=s['slug'])
         #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
         #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
         s['frequency_txt'] = s['frequency']
@@ -619,19 +608,116 @@ def explorer_view(provider=None, dataset=None, series=None):
     http://127.0.0.1:8081/views/explorer/insee/insee-cna-2005-ere-a88
     http://127.0.0.1:8081/views/explorer/dataset/insee-cna-2005-ere-a88
     """
+
+    if not dataset and not provider:
+        provider = current_app.config.get('DEFAULT_PROVIDER', None)
+        dataset = current_app.config.get('DEFAULT_DATASET', None)
+    
     if dataset:
         doc = queries.get_dataset(dataset)
         provider_doc = queries.col_providers().find_one({"name": doc["provider_name"]},
                                                         {"slug": True})
         provider = provider_doc["slug"]
     elif provider:
-        queries.get_provider(provider, {"slug": True, "enable": True})
+        provider_doc = queries.get_provider(provider, {"slug": True, "name": True, "enable": True})
+        dataset_doc = queries.col_datasets().find_one({"provider_name": provider_doc["name"],
+                                                      "enable": True},
+                                                     {"slug": True})
+        dataset = dataset_doc["slug"]
 
     ctx = {
         "selectedProvider": provider,
         "selectedDataset": dataset,
     }
     return render_template("series-home.html", **ctx)
+
+def send_file_csv(fileobj, mimetype=None, content_length=0):
+
+    data = wrap_file(request.environ, fileobj, buffer_size=1024*256)
+    response = current_app.response_class(
+                        data,
+                        mimetype=mimetype,
+                        )
+    response.status_code = 200    
+    response.make_conditional(request)
+    return response
+
+@bp.route('/export/series', endpoint="export-series-csv-base")
+@bp.route('/export/series/<slug>', endpoint="export-series-csv")
+def export_series_csv(slug=None):
+    """
+    http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971
+    http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971+insee-ipch-2015-fr-coicop-001762151
+    http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971+bis-cbs-q-s-5a-4b-f-b-a-a-lc1-a-1c
+    """
+
+    if not slug:
+        slug = request.args.get('slug')
+
+    if not slug:
+        abort(404, "slug is required parameter")
+    
+    if "+" in slug:
+        query = {'slug': {"$in": slug.split("+")}}
+    else:
+        query = {'slug': slug}
+    
+    series_list = [doc for doc in queries.col_series().find(query, {"tags": False, "notes": False})]
+    
+    #ds_slugs = []
+    #for doc in series_list:
+    #    dataset_slug = slugify("%s-%s" % (doc["provider_name"], doc["dataset_code"]), word_boundary=False, save_order=True)
+    #    ds_slugs.append(dataset_slug)
+    #    doc["dataset_slug"] = dataset_slug
+    
+    #datasets = {ds['slug']: ds for ds in queries.col_datasets().find({"slug": {"$in": ds_slugs}})}
+    
+    fp = StringIO()
+    writer = csv.writer(fp, quoting=csv.QUOTE_NONNUMERIC)
+
+    headers = ["provider", "dataset_code", "key", "slug", "name", "frequency", "period", "value"]
+    values = []
+    for doc in series_list:
+        #dataset_slug = doc["dataset_slug"]
+        provider_name = doc["provider_name"]
+        dataset_code = doc["dataset_code"]
+        key = doc["key"]
+        slug = doc["slug"]
+        name = doc["name"]
+        frequency = doc["frequency"]
+        
+        """
+        _dimensions = []
+        for dim, dim_key in doc["dimensions"].items():
+            dim_title = datasets[dataset_slug]["concepts"].get(dim, dim)
+            dim_value = datasets[dataset_slug]["codelists"].get(dim, {}).get(dim_key, dim_key)
+            if not dim_title in headers:
+                headers.append(dim_title)
+            _dimensions.append(dim_value)
+        """
+        
+        for val in doc['values']:
+            values.append([
+                provider_name,
+                dataset_code,
+                key,
+                slug,
+                name,
+                frequency,
+                val["period"], 
+                val["value"],
+            ]# + _dimensions
+            )
+            
+    
+    writer.writerow(headers)
+    writer.writerows(values)
+        
+    #print(fp.getvalue())
+    fp.seek(0)
+        
+    return send_file_csv(fp, mimetype='text/csv')
+
 
 @bp.route('/datasets/last-update.html', endpoint="datasets-last-update")
 def datasets_last_update():

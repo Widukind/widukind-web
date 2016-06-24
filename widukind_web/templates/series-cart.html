@@ -1,12 +1,15 @@
 <div class="panel panel-default modal-detail">
 
     <div id="toolbar">
-	{#
         <button id="checkAll" class="btn btn-default btn-sm">check All</button>
         <button id="uncheckAll" class="btn btn-default btn-sm">uncheck All</button>
+        <button id="cart-export-csv" class="btn btn-default btn-sm">Export CSV</button>
+        {#
         <button id="delete" class="btn btn-default btn-sm">Delete Checked</button>
-    #}
+        #}
     </div>
+    
+    <div id="cart-export-csv-link" style="display: none;"></div>
 
 	<table id="series_cart"
 		data-url="{{ url_for(".ajax-cart-view") }}?json=1"
@@ -23,7 +26,7 @@
 		>
 		<thead>
 		    <tr>
-                {#<th data-checkbox="true" class="styled"></th>#}
+                <th data-checkbox="true" class="styled"></th>
                 <th data-width="100px" data-field="key" data-formatter="seriesButtonFormatterLight" data-card-visible="false" data-switchable="false">&nbsp;</th>
 	            <th data-field="provider_name" data-formatter="providerFormatter" data-sortable="false">Provider</th>
 	            <th data-field="dataset_code" data-formatter="datasetCodeLinkFormatter" data-sortable="false">Dataset</th>

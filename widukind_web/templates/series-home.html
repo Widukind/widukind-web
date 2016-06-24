@@ -538,6 +538,9 @@
     	}
     	
     	var url = '{{ url_for(".ajax-tag-prefetch-series") }}?limit=50&provider=' + selectedProvider;
+    	if (! _.isEmpty(selectedDataset) ){
+    	   url = url + '&dataset=' + selectedDataset;
+    	}
 		ajax(url, 'GET').done(function(data) {
 			if (data.length > 0) {
 				//remove tag if name start with number value
@@ -876,7 +879,7 @@
 	  			dimension_filter.push(add_filter);
 	  		});
 
-	  		ajax(url, 'GET', options).done(function(data) {
+	  		ajax(url, 'GET', options, {async: false}).done(function(data) {
 	        	$table.bootstrapTable('load', data.data);
 	        	$("#count_series").text(Humanize.formatNumber(data.data.length));
 	            $("#total_series").text(Humanize.formatNumber(data.meta.total));
@@ -923,7 +926,8 @@
 
 	  	function loadProviders(){
 			var url = '{{ url_for(".ajax-providers-list") }}';
-			ajax(url, 'GET').done(function(data) {
+			
+			ajax(url, 'GET', {}, {"async": false}).done(function(data) {
 	            var providers = $.map(data.data, function(item) { return new Provider(item) });
 	            
 	            $('#provider').empty().append('<option value="">Select a Provider</option>');
@@ -950,7 +954,7 @@
 	  		$("#dataset").chosen("destroy");
 	  		
 			var url = '/views/ajax/providers/'+ selectedProvider +'/datasets';
-			ajax(url, 'GET').done(function(data) {
+			ajax(url, 'GET', {}, {"async": false}).done(function(data) {
 	            var datasets = $.map(data.data, function(item) { return new Dataset(item) });
 	            
 	            $('#dataset').empty().append('<option value="">Select a Dataset</option>');
@@ -1078,16 +1082,17 @@
 
 		loadProviders();
 		loadDatasets();
-		loadData();
 
-  		if (selectedProvider){
+  		if (!_.isEmpty(selectedProvider)){
   			$("#selectedProvider").text(providers_by_slug[selectedProvider]);
   		}
   		
-  		if (selectedDataset){
+  		if (!_.isEmpty(selectedDataset)){
   			$("#selectedDataset").text(datasets_by_slug[selectedDataset]);
   			loadDimensions();
   		}
+
+        loadData();
 
         $("#tab-tags").delegate('.tag', 'click', function(e){
 	    	e.preventDefault();
@@ -1236,7 +1241,7 @@
 			}
 			
 	    	var url = "{{ url_for(".ajax-cart-view") }}";
-	    	ajax(url, 'GET', {}, {cache: false, dataType: 'html', accepts: 'text/html'}).done(function(data) {
+	    	ajax(url, 'GET').done(function(data) {
 	    		
 	    		var dialog = bootbox.alert({
 	    			title: "Series cart",
@@ -1256,15 +1261,17 @@
 	    			$cart.on('load-success.bs.table', function(data){
 	    				table_buttons();
 	    			
-		    	    	/*
-		    	    	$('#checkAll').off('click').on('click', function () {
+		    	    	$('#checkAll').off('click').on('click', function (e) {
+                            e.preventDefault();
 		    	            $cart.bootstrapTable('checkAll');
 		    	        });
-		    	    	$('#uncheckAll').off('click').on('click', function () {
+		    	    	$('#uncheckAll').off('click').on('click', function (e) {
+                            e.preventDefault();
 		    	            $cart.bootstrapTable('uncheckAll');
 		    	        });
 		    	    	
-		    	        $('#delete').off('click').on('click', function () {
+		    	        $('#delete').off('click').on('click', function (e) {
+                            e.preventDefault();
 		    	            var index = [];
 		    	            var selected = $cart.bootstrapTable('getData');
 		    	            console.log("selected : ", selected);
@@ -1273,7 +1280,34 @@
 		    	            });
 		    	            console.log('Checked : ', index);
 		    	        });
-		    	        */
+		    	        
+                        $('#cart-export-csv').off('click').on('click', function (e) {
+                            e.preventDefault();
+                            
+                            var index = [];
+                            var selected = $cart.bootstrapTable('getData');
+                            
+                            $('input[name="btSelectItem"]:checked').each(function () {
+                                index.push(selected[$(this).data('index')].slug);
+                            });
+                            
+                            if (_.isEmpty(index)){
+                                var err_msg = "No selected series.";
+                                toastr['error'](err_msg, {showDuration: 3000, 
+                                                         timeOut: 4000,
+                                                         closeButton: true});
+                                return;
+                            }
+                            
+                            var url_export_csv = "{{ url_for('.export-series-csv-base', _external=True) }}/" + index.join('+');
+                            $("#cart-export-csv-link").toggle().html('<a target="_blank" href="' + url_export_csv + '">Click here for download</a>');
+                            
+                            $("#cart-export-csv-link a").on('click', function(e){
+                                $("#cart-export-csv-link").toggle();
+                                return true;
+                            });
+                            
+                        });
 		    	        
 		    	        $('.remove_cart').off('click').on('click', function (e) {
 		    		    	e.preventDefault();

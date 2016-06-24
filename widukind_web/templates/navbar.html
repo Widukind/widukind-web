@@ -56,7 +56,7 @@
                         <i class="fa fa-cog fa-fw"></i> Admin <span class="caret"></span>
                     </a>
 					<ul class="dropdown-menu">
-                        <li><a id="contactLink" data-url="{{ url_for("admin.contacts") }}" href="javascript:void(0)">Contacts</a></li>
+                        <li><a href="{{ url_for("admin.contacts") }}">Contacts</a></li>
                         <li class="divider"></li>
                         <li><a href="{{ url_for("admin.stats-run") }}">Stats Run</a></li>                                               
                         <li class="divider"></li>
@@ -68,6 +68,7 @@
                         <li><a href="{{ url_for("admin.queries") }}">Queries</a></li>
                         <li><a href="{{ url_for("admin.profile") }}">Profiles</a></li>                      
                         <li><a href="{{ url_for("admin.logs") }}">Logs</a></li>
+                        <li class="divider"></li>
                         <li><a href="{{ url_for("admin.cache_clear") }}">Clear Cache</a></li>
 					</ul>
 		        </li>

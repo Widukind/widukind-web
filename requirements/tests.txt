@@ -5,3 +5,4 @@ nose
 coverage
 flake8
 git+git://github.com/Widukind/dlstats.git@master#egg=dlstats
+mongomock

@@ -371,8 +371,6 @@ def _conf_sitemap(app):
     @extensions.sitemap.register_generator
     def sitemap_global():
         yield ('home', {}, None, "daily", 1.0)
-        #yield ('download.fs_list_dataset', {}, None, "daily", 0.8)
-        #yield ('download.fs_list_series', {}, None, "hourly", 0.8)
 
     extensions.sitemap.decorators = []
     app.config['SITEMAP_VIEW_DECORATORS'] = [load_page]
@@ -380,10 +378,8 @@ def _conf_sitemap(app):
     extensions.sitemap.init_app(app)
     
 def _conf_bp(app):
-    from widukind_web import download
     from widukind_web import views
     from widukind_web import admin
-    app.register_blueprint(download.bp, url_prefix='/download')    
     app.register_blueprint(views.bp, url_prefix='/views')
     app.register_blueprint(admin.bp, url_prefix='/_cepremap/admin')
 
@@ -528,31 +524,37 @@ def _conf_assets(app):
                                 #output='gen/common-%(version)s.css'
                                 output='local/common.css'
                                 )
-    assets.register('common_css', common_css_bundler)
+    if not 'common_css' in assets._named_bundles:
+        assets.register('common_css', common_css_bundler)
     
     #207Ko
     common_js_bundler = Bundle(*common_js,
                                filters='jsmin', 
                                output='local/common.js')
-    assets.register('common_js', common_js_bundler)
+    if not 'common_js' in assets._named_bundles:
+        assets.register('common_js', common_js_bundler)
     
     #49Ko
-    assets.register('form_css', Bundle(*form_css,
-                                       filters='cssmin', 
-                                       output='local/form.css'))
+    if not 'form_css' in assets._named_bundles:
+        assets.register('form_css', Bundle(*form_css,
+                                           filters='cssmin', 
+                                           output='local/form.css'))
     
     #505Ko
-    assets.register('form_js', Bundle(*form_js, 
-                                      filters='jsmin',
-                                      output='local/form.js'))
+    if not 'form_js' in assets._named_bundles:
+        assets.register('form_js', Bundle(*form_js, 
+                                          filters='jsmin',
+                                          output='local/form.js'))
 
-    assets.register('table_css', Bundle(*table_css,
-                                       filters='cssmin', 
-                                       output='local/table.css'))
+    if not 'table_css' in assets._named_bundles:
+        assets.register('table_css', Bundle(*table_css,
+                                           filters='cssmin', 
+                                           output='local/table.css'))
 
-    assets.register('table_js', Bundle(*table_js,
-                                       filters='jsmin', 
-                                       output='local/table.js'))
+    if not 'table_js' in assets._named_bundles:
+        assets.register('table_js', Bundle(*table_js,
+                                           filters='jsmin', 
+                                           output='local/table.js'))
     
     with app.app_context():
         assets.cache = True #not app.debug

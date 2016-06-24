@@ -13,3 +13,9 @@ dist
 build
 TODO.rst
 .webassets-cache
+widukind_web/static/local/common.css
+widukind_web/static/local/common.js
+widukind_web/static/local/form.css
+widukind_web/static/local/form.js
+widukind_web/static/local/table.css
+widukind_web/static/local/table.js
