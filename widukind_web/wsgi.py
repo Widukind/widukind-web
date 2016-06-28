@@ -355,7 +355,7 @@ def _conf_sitemap(app):
         query = {"enable": True}
         providers = queries.col_providers().find(query, {'_id': False, 'slug': True})
         for doc in providers:
-            yield ('views.datasets', {'slug': doc['slug']}, None, "weekly", 0.9)
+            yield ('views.explorer_p', {'provider': doc['slug']}, None, "weekly", 0.9)
 
     @extensions.sitemap.register_generator
     def sitemap_datasets():
