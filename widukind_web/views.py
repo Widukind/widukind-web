@@ -128,16 +128,16 @@ def ajax_datasets_list(provider):
         partialfilter sur enable = True
     """
     provider_doc = queries.get_provider(provider)
-    query = {'provider_name': provider_doc["name"],
-             "enable": True}
-    projection = {"_id": False, 
+    query = {'provider_name': provider_doc["name"]}
+    
+    projection = {"_id": False, "enable": True, 
                   "dataset_code": True, "name": True, "slug": True}
     
     is_meta = request.args.get('is_meta', type=int, default=0) == 1
     if is_meta:
         projection["metadata"] = True
         
-    docs = [doc for doc in queries.col_datasets().find(query, projection)]
+    docs = [doc for doc in queries.col_datasets().find(query, projection) if doc["enable"] is True]
     return json_tools.json_response(docs)
 
 @bp.route('/ajax/datasets/<dataset>/dimensions/keys', endpoint="ajax-datasets-dimensions-keys")
@@ -226,18 +226,20 @@ def series_with_slug(slug):
     if not series:
         abort(404)
         
-    provider = queries.col_providers().find_one({"name": series['provider_name'],
-                                                 "enable": True},
+    provider = queries.col_providers().find_one({"name": series['provider_name']},
                                                 {"metadata": False})
     if not provider:
         abort(404)
+    if provider["enable"] is False:
+        abort(307)
 
     dataset = queries.col_datasets().find_one({'provider_name': series['provider_name'],
-                                               "dataset_code": series['dataset_code'],
-                                               "enable": True},
+                                               "dataset_code": series['dataset_code']},
                                               {"metadata": False})
     if not dataset:
         abort(404)
+    if dataset["enable"] is False:
+        abort(307)
 
     #view_explorer = url_for('.explorer_s', series=slug, _external=True)
     url_provider = url_for('.explorer_p', provider=provider["slug"])
@@ -522,13 +524,18 @@ def ajax_explorer_datas():
     #series_slug = request.args.get('series')
     search = request.args.get('search')
     
+    is_eurostat = False
     if dataset_slug:
         dataset = queries.get_dataset(dataset_slug)
         query["provider_name"] = dataset["provider_name"]
         #query["dataset_code"] = dataset["dataset_code"]
+        if dataset["provider_name"] == "EUROSTAT":
+            is_eurostat = True
     elif provider_slug:
         provider = queries.get_provider(provider_slug)
         query["provider_name"] = provider["name"]
+        if provider["name"] == "EUROSTAT":
+            is_eurostat = True
     
     if search:
         query["$text"] = {"$search": search}
@@ -557,7 +564,10 @@ def ajax_explorer_datas():
     if limit:
         cursor = cursor.limit(limit)
 
-    count = cursor.count()
+    if is_eurostat:
+        count = 0
+    else:
+        count = cursor.count()
     
     series_list = [doc for doc in cursor]
 
