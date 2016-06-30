@@ -2,6 +2,10 @@
 {% extends "layout.html" %}
 {% endif %}
 
+{% if not is_modal %}
+{% block title %}{{super()}} | Series | {{ provider.long_name }} | {{ dataset.dataset_code }} | {{ dataset.name }} | {{ series.key }} | {{ series.name }}{% endblock %}
+{% endif %}
+
 {% block page %}
 
 <div class="container-fluid modal-detail">
@@ -10,7 +14,9 @@
 			<div class="panel panel-default nomargin-bottom">
 		    	<div class="panel-heading nopadding">
 		    	
-					<ul class="nav nav-pills" role="tablist">
+                    <h4>{{ provider.name }} - {{ dataset.dataset_code }} - {{ series.key }} - {{ series.name }}</h4>
+                    
+					<ul id="sidebarnav-series" class="nav nav-pills" role="tablist">
 					
 						<li role="series" class="active">
 							<a href="#tab-modal-identity" aria-controls="tab-modal-identity" data-toggle="tab">
@@ -37,7 +43,7 @@
 					  	</li>
 
 						<li role="series">
-							<a href="#tab-modal-graph" aria-controls="tab-modal-grah" data-toggle="tab">
+							<a data-series-plot-url="{{url_series_plot}}" href="#tab-modal-graph" aria-controls="tab-modal-graph" data-toggle="tab">
 								<i class="fa fa-area-chart"></i> Graph
 							</a>
 					  	</li>
@@ -53,6 +59,20 @@
                                 <i class="fa fa-tag fa-fw"></i> Dataset
                             </a>
                         </li>
+                        
+                        <li role="series">
+                            <a href="#tab-modal-api" aria-controls="tab-modal-api" data-toggle="tab">
+                                <i class="fa fa-download fa-fw"></i> API Links
+                            </a>
+                        </li>
+                        
+                        {% if not is_modal and is_logged() %}
+                        <li role="series">
+                            <a href="#tab-modal-debug" aria-controls="tab-modal-debug" data-toggle="tab">
+                                <i class="fa fa-code fa-fw"></i> Debug
+                            </a>
+                        </li>
+                        {% endif %}
 					  	
 					</ul><!-- nav-pills -->
 				</div><!-- panel-heading -->
@@ -205,7 +225,7 @@
 					</div><!-- tabpanel tab-modal-rev -->
 
 					<div role="tabpanel" class="tab-pane fade" id="tab-modal-graph">
-						<p class="text-warning">Under construction...</p>
+						<div id="graphdiv-modal" style="width:100%; background-color: white;"></div>
 					</div><!-- tabpanel tab-modal-graph -->
 					
 					<div role="tabpanel" class="tab-pane fade" id="tab-modal-tags">
@@ -237,6 +257,57 @@
                         
                         {% include "dataset-shared-tags.html" with context %}
                     </div><!-- tabpanel tab-modal-dataset -->
+                    
+                    <div role="tabpanel" class="tab-pane fade" id="tab-modal-api">
+                        <table class="table">
+                            <tr>
+                                <td class="col-md-2">
+                                    <h5 class="pull-right">SDMX :</h5>
+                                </td>
+                                <td>
+                                    <pre>{{ config.BASE_URL_API_SDMX}}/{{series.provider_name}}/data/{{dataset.dataset_code}}/{{dimension_filter}}</pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-md-2">
+                                    <h5 class="pull-right">JSON :</h5>
+                                </td>
+                                <td>
+                                    <pre>{{ config.BASE_URL_API_JSON}}/series/{{series.slug}}</pre>
+                                </td>
+                            </tr>
+                            {#
+                            <tr>
+                                <td class="col-md-2">
+                                    <h5 class="pull-right">HTML :</h5>
+                                </td>
+                                <td>
+                                    <pre>{{ config.BASE_URL_API_HTML}}/series/{{series.slug}}</pre>
+                                </td>
+                            </tr>
+                            #}
+                        </table>
+                    </div><!-- tabpanel tab-modal-api -->
+                    
+                    {% if not is_modal and is_logged() %}
+                    <div role="tabpanel" class="tab-pane fade" id="tab-modal-debug">
+                        
+                        <a id="debug" class="btn btn-default btn-sm" href="#"><i class="fa fa-cog"></i> Click for load</a>
+                        
+                        <div class="debug" style="display: none">
+                            <h2>Series:</h2>
+                            <pre id="debug_object_series"></pre>
+                        
+                            <h2>Dataset:</h2>
+                            <pre id="debug_object_dataset"></pre>
+                            
+                            <h2>Provider:</h2>
+                            <pre id="debug_object_provider"></pre>
+                            
+                        </div>
+                    </div><!-- tabpanel tab-modal-debug -->
+                    {% endif %}
+                    
 					
 				</div><!-- tab-content -->
 			</div><!-- panel -->
@@ -246,4 +317,31 @@
 
 {% endblock page %}				
 
+{% if not is_modal %}
+
+{% block add_scripts %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='local/dygraph-combined.js') }}"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+    onLoadSeries();
+        
+    var debug_options = {
+        url: "{{ url_for('.series-by-slug', slug=series.slug) }}?debug=1",
+        button_id: "#debug",
+        parent_id: ".debug",
+        target_series_id: "#debug_object_series",
+        target_dataset_id: "#debug_object_dataset", 
+        target_provider_id: "#debug_object_provider", 
+    };
+    debug_series(debug_options);
+    
+});
+</script>
+{% endblock %}
+
+{% endif %}
 

@@ -1,0 +1,82 @@
+<script id="template-select" type="x-tmpl-mustache">
+    {% raw %}
+    <div class="form-group" id="form_group_{{key}}">
+        <label class="control-label" for="{{key}}">{{caption}}:</label>
+        <select id="{{key}}" name="{{key}}" class="form-control input-sm chosen-select" multiple="true" data-placeholder="Choose a {{caption}}">
+            {#<option value="">Choose a {{caption}}</option>#}
+            {{#options}}
+            <option value="{{id}}">{{text}}</option>
+            {{/options}}
+        </select>
+    </div>
+    {% endraw %}
+</script>
+
+<script id="template-detail" type="x-tmpl-mustache">
+    {% raw %}
+    <div>
+    {{ meta.index }} {{ row.key }} : {{ row.name }}
+    </div>
+    {% endraw %}
+    {#
+    <span class="label label-success">{{name}}<span class="badge">{{count}}</span></span>
+    #}
+</script>
+
+<script id="template-tags-cloud" type="x-tmpl-mustache">
+    {% raw %}
+    <ul class="list-group">
+    {{#tags}}
+        <li class="list-group-item">
+            <span class="badge">{{count}}</span>
+            <a class="tag" data-tag="{{name}}">{{ name }}</a> 
+        </li>
+    {{/tags}}
+    </ul>
+    {% endraw %}
+</script>
+
+<script id="template-tags-selected" type="x-tmpl-mustache">
+    {% raw %}
+    {{#tags}}
+    <span class="tag-selected label label-default" data-tag="{{.}}">{{.}}<i class="fa fa-times fa-fw"></i></span> 
+    {{/tags}}
+    {% endraw %}
+</script>
+
+<script id="template-table-buttons" type="x-tmpl-mustache">
+    <div class="btn-group btn-group-xs" role="group">
+    {% raw %}
+        <a title="Export series to CSV" type="button" class="btn btn-default" href="{{export_csv}}"><i class="fa fa-table"></i></a>
+        <button title="Show Graphic" type="button" class="btn btn-default view_graph" href="javascript:void(0)" data-series-plot-url="{{url_series_plot}}" data-series-slug="{{slug}}"><i class="fa fa-area-chart"></i></button>
+        <button title="Add to cart" type="button" class="btn btn-default add_cart" href="javascript:void(0)" data-cart-add-url="{{url_cart_add}}" data-series-slug="{{slug}}"><i class="fa fa-shopping-cart"></i></button>
+        <a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
+    </div>
+    {% endraw %}
+</script>
+
+<script id="template-table-buttons-light" type="x-tmpl-mustache">
+    <div class="btn-group btn-group-xs" role="group">
+    {% raw %}
+        <a title="Export series to CSV" type="button" class="btn btn-default" href="{{export_csv}}"><i class="fa fa-table"></i></a>
+        <button title="Show Graphic" type="button" class="btn btn-default view_graph" href="javascript:void(0)" data-series-plot-url="{{url_series_plot}}" data-series-slug="{{slug}}"><i class="fa fa-area-chart"></i></button>
+        <button title="Delete" type="button" class="btn btn-default remove_cart" href="javascript:void(0)" data-cart-remove-url="{{url_cart_remove}}" data-series-slug="{{slug}}"><i class="fa fa-trash"></i></button>
+        <a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
+    </div>
+    {% endraw %}
+</script>
+
+<script type="text/javascript">
+var template = $('#template-select').html();
+var template_detail = $('#template-detail').html();
+var template_tags = $('#template-tags-cloud').html();
+var template_tags_selected = $('#template-tags-selected').html();
+var template_table_buttons = $('#template-table-buttons').html();
+var template_table_buttons_light = $('#template-table-buttons-light').html();
+Mustache.parse(template);
+Mustache.parse(template_detail);
+Mustache.parse(template_tags);
+Mustache.parse(template_tags_selected);
+Mustache.parse(template_table_buttons);
+Mustache.parse(template_table_buttons_light);
+</script>
