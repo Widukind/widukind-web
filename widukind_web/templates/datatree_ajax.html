@@ -1,6 +1,4 @@
 
-var dataset_codes = {{dataset_codes|tojson}};
-
 var tree = [
 {%- with childrens = categories.values() -%}
     {%- for item in childrens recursive %}
@@ -34,9 +32,7 @@ var tree = [
 {%- endwith -%}
 ];
 
-
 var datatree = {
-	dataset_codes: dataset_codes,
 	tree: tree
 };
 

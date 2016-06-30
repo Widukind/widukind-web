@@ -10,6 +10,7 @@ from flask import (Blueprint,
                    current_app, 
                    request, 
                    render_template,
+                   render_template_string,
                    url_for, 
                    session, 
                    flash,
@@ -240,12 +241,25 @@ def series_with_slug(slug):
         abort(404)
     if dataset["enable"] is False:
         abort(307)
+        
+    is_debug = request.args.get('debug')
+    
+    if is_debug:
+        '''debug mode'''
+        result_provider = render_template_string("{{ provider|pprint|safe }}", provider=provider)
+        result_dataset = render_template_string("{{ dataset|pprint|safe }}", dataset=dataset)
+        result_series = render_template_string("{{ series|pprint|safe }}", series=series)
+        return current_app.jsonify(dict(provider=result_provider, 
+                                        dataset=result_dataset, 
+                                        series=result_series))        
 
     #view_explorer = url_for('.explorer_s', series=slug, _external=True)
     url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
     url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
     url_series = url_for('.series-by-slug', slug=slug, _external=True)
+    url_series_plot = url_for('.ajax_series_plot', slug=slug)
+    url_export_csv = url_for('.export-series-csv', slug=slug)
 
     max_revisions = 0
     revision_dates = []
@@ -273,13 +287,14 @@ def series_with_slug(slug):
     
     dimension_filter = ".".join([series["dimensions"][key] for key in dataset["dimension_keys"]])
     
-    
     result = render_template(
                     "series-unit-modal.html",
                     url_provider=url_provider,
                     url_dataset=url_dataset,
                     url_dataset_direct=url_dataset_direct,
                     url_series=url_series,
+                    url_series_plot=url_series_plot,
+                    url_export_csv=url_export_csv,
                     series=series,
                     is_modal=is_modal,
                     provider=provider,
@@ -325,9 +340,7 @@ def ajax_plot_series(slug):
     
     return json_tools.json_response(datas, meta)
 
-#@bp.route('/tree/<provider>', endpoint="tree_root")
 @bp.route('/tree', endpoint="tree_root_base")
-@cache.cached(360)
 def ajax_tree_view(provider=None):
     
     provider = provider or request.args.get('provider')
@@ -390,6 +403,7 @@ def ajax_tree_view(provider=None):
 def ajax_cart_add():
     slug = request.args.get('slug')
     cart = session.get("cart", [])
+    
     if not slug in cart:
         cart.append(slug)
         msg = {"msg": "Series add to cart.", "category": "success"}
@@ -447,7 +461,8 @@ def ajax_cart_view():
             s['view_dataset'] = url_for('.dataset-by-slug', slug=dataset_slug, modal=1)
             s['dataset_slug'] = dataset_slug
             s['export_csv'] = url_for('.export-series-csv', slug=s['slug'])
-            #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
+            s['url_series_plot'] = url_for('.ajax_series_plot', slug=s['slug'])
+            s['url_cart_remove'] = url_for('.ajax-cart-remove', slug=s['slug'])
             s['frequency_txt'] = s['frequency']
             if s['frequency'] in constants.FREQUENCIES_DICT:
                 s['frequency_txt'] = constants.FREQUENCIES_DICT[s['frequency']]
@@ -456,7 +471,6 @@ def ajax_cart_view():
         
     return current_app.jsonify(datas["rows"])
         
-#@cache.cached(timeout=120)
 @bp.route('/ajax/tags/prefetch/series', endpoint="ajax-tag-prefetch-series")
 def ajax_tag_prefetch_series():
 
@@ -469,25 +483,6 @@ def ajax_tag_prefetch_series():
     
     col = current_app.widukind_db[constants.COL_TAGS]
     
-    """
-    {
-        "_id" : ObjectId("570cc1cea7ceda5f82ec4624"),
-        "name" : "ipch-2015-fr-coicop",
-        "enable" : true,
-        "count_datasets" : 1,
-        "count" : 1,
-        "provider_name" : [
-                "INSEE"
-        ],
-        "dataset_code" : [
-                "IPCH-2015-FR-COICOP"
-        ],
-        "datasets" : [
-                "insee-ipch-2015-fr-coicop"
-        ],
-        "count_series" : 9
-    }   
-    """
     #TODO: renvoyer aussi count pour tag(count)
     query = OrderedDict()
     query["provider_name"] = {"$in": [provider.upper()]}
@@ -595,7 +590,8 @@ def ajax_explorer_datas():
         
         s['dataset_slug'] = dataset_slug
         s['export_csv'] = url_for('.export-series-csv', slug=s['slug'])
-        #s['view_graphic'] = url_for('.series_plot', slug=s['slug'])
+        s['url_series_plot'] = url_for('.ajax_series_plot', slug=s['slug'])
+        s['url_cart_add'] = url_for('.ajax-cart-add', slug=s['slug'])
         #TODO: s['url_dataset'] = url_for('.dataset', id=s['_id'])
         s['frequency_txt'] = s['frequency']
         if s['frequency'] in constants.FREQUENCIES_DICT:
@@ -612,11 +608,11 @@ def ajax_explorer_datas():
 @bp.route('/', endpoint="home")
 def explorer_view(provider=None, dataset=None, series=None):
     """
-    http://127.0.0.1:8081/views    
-    http://127.0.0.1:8081/views/explorer    
+    http://127.0.0.1:8081/views/explorer/dataset/insee-cna-2005-ere-a88
     http://127.0.0.1:8081/views/explorer/insee    
     http://127.0.0.1:8081/views/explorer/insee/insee-cna-2005-ere-a88
-    http://127.0.0.1:8081/views/explorer/dataset/insee-cna-2005-ere-a88
+    http://127.0.0.1:8081/views/explorer    
+    http://127.0.0.1:8081/views    
     """
 
     if not dataset and not provider:
@@ -625,9 +621,8 @@ def explorer_view(provider=None, dataset=None, series=None):
     
     if dataset:
         doc = queries.get_dataset(dataset)
-        provider_doc = queries.col_providers().find_one({"name": doc["provider_name"]},
-                                                        {"slug": True})
-        provider = provider_doc["slug"]
+        #provider_doc = queries.col_providers().find_one({"name": doc["provider_name"]},{"slug": True})
+        provider = doc["provider_name"].lower()
     elif provider:
         provider_doc = queries.get_provider(provider, {"slug": True, "name": True, "enable": True})
         dataset_doc = queries.col_datasets().find_one({"provider_name": provider_doc["name"],

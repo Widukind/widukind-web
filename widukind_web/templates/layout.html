@@ -6,6 +6,7 @@
 
 {%- block metas %}
 {{super()}}
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 <meta name="description" content="{% block meta_description %}International Economics Database - A database of international macroeconomic data{% endblock %}" xml:lang="en-US" lang="en-US">
 <meta name="keywords" content="{% block meta_keywords %}International Economics Database, international macroeconomic data{% endblock %}" xml:lang="en-US" lang="en-US">
 <meta name="robots" content="index, follow">
@@ -43,7 +44,6 @@
             </div>
             #}
             <div id="site_content" {% block site_content_attrs %}class="col-md-12"{% endblock %}>
-	            <span id="spinner" class="spinner-container"></span>
 	            {% block breadcrumb %}{% endblock %}
 	            {% block page %}{% endblock %}
             </div>
@@ -57,48 +57,18 @@
     {% endassets %}
     {{ moment.include_moment(local_js=url_for('static', filename="local/moment.min.js")) }}
        
+    <script type="text/javascript">
+    widukind_options.url_tags = '{{ url_for("views.ajax-tag-prefetch-series") }}?limit=50&provider=';
+    widukind_options.url_tree = '{{ url_for("views.tree_root_base")}}?json=1&provider=';
+    widukind_options.url_explorer = '{{url_for("views.ajax-explorer-datas")}}';
+    widukind_options.url_providers = '{{ url_for("views.ajax-providers-list") }}';
+    widukind_options.url_cart_view = '{{ url_for("views.ajax-cart-view") }}';
+    widukind_options.url_export_csv = '{{ url_for("views.export-series-csv-base", _external=True) }}';
+    </script> 
+
 <script type="text/javascript">
 
-//var $table;
-
 $(document).ready(function() {
-
-	$(document).ajaxStart(function() {
-	    spinnerShow();
-	}).ajaxStop(function() {
-	    spinnerHide();
-	}).ajaxError(function() {
-	    spinnerHide();
-	});
-
-    $('.human-number').each(function(i, item){
-        var value = $(item).text();
-         $(item).text(Humanize.formatNumber(value));
-    });
-
-    $('.human-size-mb').each(function(i, item){
-        var value = $(item).text();
-         $(item).text(Humanize.fileSize(value));
-    });
-    
-    toastr.options = {
-      "closeButton": true,
-      "debug": false,
-      "newestOnTop": false,
-      "progressBar": true,
-      "positionClass": "toast-top-right",
-      "preventDuplicates": false,
-      "onclick": null,
-      "showDuration": "300",
-      "hideDuration": "100",
-      "timeOut": "2000",
-      "extendedTimeOut": "3000",
-      "showEasing": "swing",
-      "hideEasing": "linear",
-      "showMethod": "fadeIn",
-      "hideMethod": "fadeOut"
-    };
-    
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}        
@@ -106,36 +76,6 @@ $(document).ready(function() {
         {% endfor %}
       {% endif %}
     {% endwith %}
-    
-    $("#contactLink").on('click', function(e){
-        e.preventDefault();
-        var url = $(this).attr("data-url") + '?modal=1';
-        ajax(url, 'GET').done(function(data) {
-            var dialog = bootbox.dialog({
-                //title: 'Contact Form',
-                backdrop: true,
-                size: 'large',
-                closeButton: false,
-                show: false,
-                message: data
-            }).on('shown.bs.modal', function () {
-                $('#contactForm')
-                    .show()
-                    .formValidation('resetForm', true);
-                    
-                $('#contactFormCancel').on('click', function(e){
-                    //$('#contactForm').hide();
-                    //$('#contactForm').formValidation('resetForm', true);
-                    dialog.modal('hide');
-                });
-                    
-            }).on('hide.bs.modal', function(e) {
-                $('#contactForm').hide();
-            }).modal('show');
-        });
-    });
-        
-
 });
 </script>
 

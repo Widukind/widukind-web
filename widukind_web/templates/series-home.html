@@ -318,7 +318,7 @@
 					                <th data-field="key" data-checkbox="true" class="styled"></th>
 					                <th data-class="col-md-1" data-formatter="sparkFormatter" data-cell-style="sparkStyle" data-width="5%" data-card-visible="false">&nbsp;</th>
 					                #}
-					                <th data-width="100px" data-field="key" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false">&nbsp;</th>
+					                <th data-width="120px" data-field="key" data-formatter="seriesButtonFormatter" data-card-visible="false" data-switchable="false">&nbsp;</th>
 						            <th data-field="provider_name" data-formatter="providerFormatter" {#data-events="choiceEvent"#} data-sortable="true">Provider</th>
 						            <th data-field="dataset_code" data-formatter="datasetCodeLinkFormatter" data-sortable="true">Dataset</th>
 					                <th data-field="key" data-formatter="seriesKeyLinkFormatter" data-sortable="true" data-sort-name="key">key</th>
@@ -341,92 +341,13 @@
 
 {% block scripts %}
     {{super()}}
-	<script type="text/javascript" src="{{ url_for('static', filename='local/jquery.sparkline.min.js') }}"></script>
+	{#<script type="text/javascript" src="{{ url_for('static', filename='local/jquery.sparkline.min.js') }}"></script>#}
 	<script type="text/javascript" src="{{ url_for('static', filename='local/dygraph-combined.js') }}"></script>
 
-	<script id="template-select" type="x-tmpl-mustache">
-		{% raw %}
-		<div class="form-group" id="form_group_{{key}}">
-			<label class="control-label" for="{{key}}">{{caption}}:</label>
-			<select id="{{key}}" name="{{key}}" class="form-control input-sm chosen-select" multiple="true" data-placeholder="Choose a {{caption}}">
-				{#<option value="">Choose a {{caption}}</option>#}
-				{{#options}}
-				<option value="{{id}}">{{text}}</option>
-				{{/options}}
-			</select>
-		</div>
-		{% endraw %}
-	</script>
-	
-	<script id="template-detail" type="x-tmpl-mustache">
-		{% raw %}
-		<div>
-		{{ meta.index }} {{ row.key }} : {{ row.name }}
-		</div>
-		{% endraw %}
-		{#
-		<span class="label label-success">{{name}}<span class="badge">{{count}}</span></span>
-		#}
-	</script>
-
-	<script id="template-tags-cloud" type="x-tmpl-mustache">
-		{% raw %}
-		<ul class="list-group">
-		{{#tags}}
-  			<li class="list-group-item">
-    			<span class="badge">{{count}}</span>
-				<a class="tag" data-tag="{{name}}">{{ name }}</a> 
-  			</li>
-		{{/tags}}
-		</ul>
-		{% endraw %}
-	</script>
-
-	<script id="template-tags-selected" type="x-tmpl-mustache">
-		{% raw %}
-		{{#tags}}
-		<span class="tag-selected label label-default" data-tag="{{.}}">{{.}}<i class="fa fa-times fa-fw"></i></span> 
-		{{/tags}}
-		{% endraw %}
-	</script>
-	
-	<script id="template-table-buttons" type="x-tmpl-mustache">
-		<div class="btn-group btn-group-xs" role="group">
-		{% raw %}
-      		<a title="Export series to CSV" type="button" class="btn btn-default" href="{{export_csv}}"><i class="fa fa-table"></i></a>
-      		<button title="Show Graphic" type="button" class="btn btn-default view_graph" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-area-chart"></i></button>
-			<button title="Add to cart" type="button" class="btn btn-default add_cart" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-shopping-cart"></i></button>
-            <a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
-		</div>
-		{% endraw %}
-	</script>
-
-	<script id="template-table-buttons-light" type="x-tmpl-mustache">
-		<div class="btn-group btn-group-xs" role="group">
-		{% raw %}
-      		<a title="Export series to CSV" type="button" class="btn btn-default" href="{{export_csv}}"><i class="fa fa-table"></i></a>
-      		<button title="Show Graphic" type="button" class="btn btn-default view_graph" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-area-chart"></i></button>
-      		<button title="Delete" type="button" class="btn btn-default remove_cart" href="javascript:void(0)" data-series-slug="{{slug}}"><i class="fa fa-trash"></i></button>
-            <a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
-		</div>
-		{% endraw %}
-	</script>
+    {% include "mustache-templates.html" %} 	
 
     <script type="text/javascript">
 
-	var template = $('#template-select').html();
-	var template_detail = $('#template-detail').html();
-	var template_tags = $('#template-tags-cloud').html();
-	var template_tags_selected = $('#template-tags-selected').html();
-	var template_table_buttons = $('#template-table-buttons').html();
-	var template_table_buttons_light = $('#template-table-buttons-light').html();
-	Mustache.parse(template);
-	Mustache.parse(template_detail);
-	Mustache.parse(template_tags);
-	Mustache.parse(template_tags_selected);
-	Mustache.parse(template_table_buttons);
-	Mustache.parse(template_table_buttons_light);
-    
 	var selectedProvider = {% if selectedProvider %}"{{selectedProvider}}"{% else %}null{% endif %};
 	var selectedDataset = {% if selectedDataset %}"{{selectedDataset}}"{% else %}null{% endif %};
     //{#var selectedSeries = {% if selectedSeries %}"{{selectedSeries}}"{% else %}null{% endif %};#}
@@ -447,13 +368,9 @@
 	var dimensionFields = [];
 	var loaded_datatree = null;
 	var loaded_tags = null;
+	var searchableTree;
     
-    /*
-    function choiceEvent(e, value, row, index){
-    	console.log("event : ", e, value, row, index);
-    }
-    */
-    
+    /*{#
     function sparkFormatter(value, row) {
     	var 	values = _.sortBy(row.values, function(num) { return _.ceil(parseFloat(num), 2); });
     	return '<span class="sparklines" values="' + values.join(',') + '"></span>';
@@ -465,65 +382,7 @@
    		    css: {"background-color": "white"}
 		};    	
     }
-    
-    function seriesButtonFormatter(value, row, line){
-    	return Mustache.render(template_table_buttons, row)
-    }
-
-    function seriesButtonFormatterLight(value, row, line){
-    	return Mustache.render(template_table_buttons_light, row)
-    }
-    
-    function providerFormatter(value, row){
-        return '<small>' + value +'</small>';
-    }
-
-    function seriesKeyLinkFormatter(value, row){
-        return '<small>' + value + '</small>';
-    	//return '<small><a class="modal_show" data-title="Series details" data-url="' + row.view +'" data-series-slug="' + row.slug + '" href="javascript:void(0)" title="Show detail">' + row.key +'</a></small>';
-    }
-
-    function datasetCodeLinkFormatter(value, row){
-        return '<small>' + value + '</small>';
-    	//return '<small><a class="modal_show" data-title="Dataset" data-url="' + row.view_dataset +'" data-dataset-slug="' + row.dataset_slug + '" href="javascript:void(0)" title="Show dataset">' + value +'</a></small>';
-    }
-    
-    function periodFormatter(value, row){
-    	return '<span class="label label-default">' + row.start_date + ' -> ' + row.end_date + '</span>';
-    }
-    
-    function frequencyFormatter(value, row){
-    	return '<span class="label label-default">' + row.frequency_txt + '</span>';
-    }
-    
-    function nameFormatter(value, row){
-    	return '<small>' + value + '</small>'
-    }
-    
-    function menusite_toogle(){
-		var site_left = $('#site-left');
-		var site_content = $('#site-content');
-		
-		if (site_left.is(':visible')) {
-			site_left.hide();
-			site_content.removeClass('col-md-9');
-			site_content.addClass('col-md-12');
-		} else {
-			site_content.removeClass('col-md-12');
-			site_content.addClass('col-md-9');
-			site_left.show();
-		}
-    }
-    
-    function refresh_selectedTags(){
-    	$('#selectedTags').empty();
-    	if (! _.isEmpty(selectedTags)){
-    		var result = Mustache.render(template_tags_selected, {tags: selectedTags});
-    	} else {
-    		var result = "None";
-    	}
-    	$('#selectedTags').html(result);
-    }
+    #}*/
     
     function local_tags(){
     
@@ -537,7 +396,7 @@
     		return;
     	}
     	
-    	var url = '{{ url_for(".ajax-tag-prefetch-series") }}?limit=50&provider=' + selectedProvider;
+    	var url = widukind_options.url_tags + selectedProvider;
     	if (! _.isEmpty(selectedDataset) ){
     	   url = url + '&dataset=' + selectedDataset;
     	}
@@ -557,7 +416,11 @@
     
     function local_treeview(tree, callback){
     	
-    	var $searchableTree = $('#tree-tree').treeview({
+    	if (searchableTree){
+    	   searchableTree.treeview('remove');
+    	}
+    	
+    	searchableTree = $('#tree-tree').treeview({
         	data: tree,
         	enableLinks: false,
         	showTags: false,
@@ -580,18 +443,17 @@
               exactMatch: false,
               revealResults: true
             };
-            var results = $searchableTree.treeview('search', [ pattern, options ]);
+            var results = searchableTree.treeview('search', [ pattern, options ]);
         });
 
         $('#tree_btn_clear').off('click').on('click', function (e) {
-          $searchableTree.treeview('clearSearch');
+          searchableTree.treeview('clearSearch');
           $('#tree_search').val('');
-          $searchableTree.treeview('collapseAll', { silent: true });
+          searchableTree.treeview('collapseAll', { silent: true });
           //$('#search-output').html('');
         });
 
         $('#tree-tree').on('nodeSelected', function(event, data) {
-       		//console.log("nodeSelected : ", data);
        		if (! data.nodes){
        			//TODO: $('#selectedCategory').text(data.text);
        			$('#sidebarnav a[href="#tab-form"]').tab('show');
@@ -611,82 +473,6 @@
         });
     }
 
-	function detailFormatter(index, row) {
-		var o = {meta: {index: index}, row: row};
-		return Mustache.render(template_detail, o);
-	};
-	
-	function table_buttons(){
-		//button in first column of data table
-		
-	    $(".modal_show").off('click').on('click', function(e){
-	    	e.preventDefault();
-	    	var title = $(this).attr("data-title");
-	    	var url = $(this).attr("data-url");
-	    	ajax(url, 'GET', {}, {dataType: 'html', accepts: 'text/html'}).done(function(data) {
-	    		var dialog = bootbox.alert({
-	    			title: title,
-	    			backdrop: true,
-	    			size: 'large',
-	    			closeButton: false,
-	    			message: data
-	    		}).on('shown.bs.modal', function () {
-		    		flask_moment_render_all();
-		    		$('[data-toggle="tooltip"]').tooltip({
-		    		    placement: 'auto left',
-		    		});
-		    	});
-	    	});
-	    });
-		
-	    $(".add_cart").off('click').on('click', function(e){
-	    	e.preventDefault();
-	    	url = '{{url_for(".ajax-cart-add")}}';
-	    	var slug = $(this).attr("data-series-slug");
-	    	ajax(url, 'GET', {"slug": slug}).done(function(data) {
-	    		$("#cart_count").text(data.count);
-	    		cartCount = data.count;
-	    		toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
-	    	});			
-	    });
-		
-	    $(".view_graph").off('click').on('click', function(e){
-	    	e.preventDefault();
-	    	var slug = $(this).attr("data-series-slug");
-	    	//TODO: replace with data
-	    	var url = "/views/ajax/plot/series/" + slug;
-	    	ajax(url, 'GET').done(function(data) {
-	    		
-	    		var dialog = bootbox.alert({
-	    			title: data.meta.provider_name + ' - ' + data.meta.dataset_code + ' - ' + data.meta.key,
-	    			backdrop: true,
-	    			size: 'large',
-	    			closeButton: false,
-	    			message: '<div id="graphdiv" style="width:100%; background-color: white;"></div>'
-	    		}).on('shown.bs.modal', function () {
-	    			  var datas = [];
-	    			  var options = {
-	    			      labels: ['Period', 'Value'],
-	    			      title: data.meta.name,
-	    			      titleHeight: 32,
-	    			      includeZero: true,
-	    			      showRangeSelector: true
-	    			  };
-
-	    			  _.each(data.data, function(item){
-	    				  datas.push([new Date(item.period_ts), parseFloat(item.value)]);
-	    			  });
-
-	    			  new Dygraph("graphdiv", datas, options);
-	    		});
-	    	});
-		});
-	}
-	    
-	function after_loadData(){
-		table_buttons(); 
-	}
-	
     $(document).ready(function(){
     	
     	var $table = $('#series-list').bootstrapTable({
@@ -808,6 +594,10 @@
 		
 		var limit = $('#limit').val();
 		
+		function render_tree(arg1, arg2){
+	       console.log("render_tree : ", arg1, arg2);
+		}
+		
 		$('#sidebarnav a').off('click').on('click', function (e) {
 			e.preventDefault()
 
@@ -820,10 +610,9 @@
 					if (loaded_datatree === selectedProvider){
 						return;
 					}
-					var url = "{{ url_for('.tree_root_base')}}?json=1&provider=" +selectedProvider;
-					ajax(url, 'GET', {}, {dataType: 'script', accepts: 'application/javascript'}).done(function(data) {
-			  			local_treeview(datatree.tree, loadData);
-			  			return;
+					var url = widukind_options.url_tree + selectedProvider;
+					ajax(url, 'GET', {}, {dataType: 'script'}).done(function(data) {
+			  		    local_treeview(datatree.tree, loadData);
 			  		});
 					loaded_datatree = selectedProvider;
 				}
@@ -834,7 +623,7 @@
 		});
 		
 	    function loadData(){
-	  		var url = "{{url_for('.ajax-explorer-datas')}}";
+	  		var url = widukind_options.url_explorer;
 	  		var options = {};
 	  		
 	  		options.limit = limit;
@@ -879,7 +668,7 @@
 	  			dimension_filter.push(add_filter);
 	  		});
 
-	  		ajax(url, 'GET', options, {async: false}).done(function(data) {
+	  		ajax(url, 'GET', options).done(function(data) {
 	        	$table.bootstrapTable('load', data.data);
 	        	$("#count_series").text(Humanize.formatNumber(data.data.length));
 	            $("#total_series").text(Humanize.formatNumber(data.meta.total));
@@ -905,12 +694,13 @@
   			$("#htmlURL").text(api_html);
   			#}
   			*/
-	  		
+            /*	  		
 	  		$('.sparklines').sparkline('html', {
 	  			width: '50px',
 	  			height: '20px',
 	  			//normalRangeMax: 20,
 	  		});
+	  		*/
 	  	};
 		
 		function Provider(data) {
@@ -925,9 +715,9 @@
 		}
 
 	  	function loadProviders(){
-			var url = '{{ url_for(".ajax-providers-list") }}';
+			var url = widukind_options.url_providers;
 			
-			ajax(url, 'GET', {}, {"async": false}).done(function(data) {
+			ajax(url, 'GET').done(function(data) {
 	            var providers = $.map(data.data, function(item) { return new Provider(item) });
 	            
 	            $('#provider').empty().append('<option value="">Select a Provider</option>');
@@ -954,7 +744,7 @@
 	  		$("#dataset").chosen("destroy");
 	  		
 			var url = '/views/ajax/providers/'+ selectedProvider +'/datasets';
-			ajax(url, 'GET', {}, {"async": false}).done(function(data) {
+			ajax(url, 'GET').done(function(data) {
 	            var datasets = $.map(data.data, function(item) { return new Dataset(item) });
 	            
 	            $('#dataset').empty().append('<option value="">Select a Dataset</option>');
@@ -1060,11 +850,13 @@
 	  		} else {
 	  			$("#selectedProvider").text("All");
 	  		}
-	  		loadDatasets();
 	  		selectedTags = [];
 	  		refresh_selectedTags();
-	  		$('#search').empty();
-	  		$('#tree-tree').empty();
+	  		$('#search').val('');
+            $('#selectedSearch').text('None');
+	  		$('#tree-tree').val('');
+            $('#tree_search').val('');
+            loadDatasets();
 	  		loadData();
 	  	});	
 	  	
@@ -1240,8 +1032,8 @@
 			 return false;
 			}
 			
-	    	var url = "{{ url_for(".ajax-cart-view") }}";
-	    	ajax(url, 'GET').done(function(data) {
+	    	var url = widukind_options.url_cart_view;
+	    	ajax(url, 'GET', {}, {"dataType": "html"}).done(function(data) {
 	    		
 	    		var dialog = bootbox.alert({
 	    			title: "Series cart",
@@ -1299,7 +1091,7 @@
                                 return;
                             }
                             
-                            var url_export_csv = "{{ url_for('.export-series-csv-base', _external=True) }}/" + index.join('+');
+                            var url_export_csv = widukind_options.url_export_csv + "/" + index.join('+');
                             $("#cart-export-csv-link").toggle().html('<a target="_blank" href="' + url_export_csv + '">Click here for download</a>');
                             
                             $("#cart-export-csv-link a").on('click', function(e){
@@ -1311,9 +1103,8 @@
 		    	        
 		    	        $('.remove_cart').off('click').on('click', function (e) {
 		    		    	e.preventDefault();
-		    		    	var slug = $(this).attr("data-series-slug");
-		    		    	var url = '{{url_for(".ajax-cart-remove")}}';
-		    		    	ajax(url, 'GET', {"slug": slug}).done(function(data) {
+		    		    	var url = $(this).attr("data-cart-remove-url");
+		    		    	ajax(url, 'GET').done(function(data) {
 		    		    		$("#cart_count").text(data.count);
 		    		    		cartCount = data.count;
                                 if (cartCount > 0) {

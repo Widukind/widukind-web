@@ -33,7 +33,8 @@ class ViewsTestCase(TestCase):
         self.assertEquals(response_json["data"], 
                           [{'dataset_code': 'IPCH-2015-FR-COICOP', 
                             'name': 'Harmonised consumer price index - Base 2015 - France - By product (COICOP classification)', 
-                            'slug': 'insee-ipch-2015-fr-coicop'}])
+                            'slug': 'insee-ipch-2015-fr-coicop',
+                            'enable': True}])
         
     def test_views_ajax_datasets_dimensions_keys(self):
         response = self.json_get(url_for('views.ajax-datasets-dimensions-keys', 
