@@ -634,7 +634,7 @@ def explorer_view(provider=None, dataset=None, series=None):
         "selectedProvider": provider,
         "selectedDataset": dataset,
     }
-    return render_template("series-home.html", **ctx)
+    return render_template("explorer.html", **ctx)
 
 def send_file_csv(fileobj, mimetype=None, content_length=0):
 
