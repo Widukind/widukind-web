@@ -42,12 +42,16 @@
 							  		</a>
 							  	</li>
 							  	
-							  	<!-- tags -->
+							  	<!-- tags
+                                TODO: tags
+							  	{#
 							 	<li role="sidebar">
 							  		<a href="#tab-tags" title="Filter by tags" data-toggle="tab">Tags
 							  			{#<i class="fa fa-tag fa-lg fa-fw"></i>#}
 							  		</a>
 							  	</li>
+							  	#}
+							  	-->
 							  	
 							</ul>
 						</div><!-- panel-heading -->
@@ -142,6 +146,8 @@
 								</div>
 							</div><!-- tabpanel tab-search -->
 
+							{#
+                            TODO: tags
 							<div role="tabpanel" class="tab-pane fade" id="tab-tags">
 								<div class="row">
 									<div class="col-md-12">
@@ -153,7 +159,7 @@
 									</div>
 								</div>
 							</div><!-- tabpanel tab-tags -->
-							
+							#}
 							
 						</div><!-- tab-content -->
 				    </div>
@@ -226,7 +232,10 @@
 					    					<td class="col-md-1">Series</td>
 					    					<td class="col-md-2">Provider</td>
 					    					<td class="col-md-3">Dataset</td>
+					    					<!--
+					    					TODO: tags
 					    					<td class="col-md-3">Tags</td>
+					    					-->
 					    					<td class="col-md-3">Search Terms</td>
 				    					</tr>
 					    				<tr>
@@ -239,9 +248,12 @@
 					    					<td>
 					    						<small><span id="selectedDataset">All</span></small>
 					    					</td>
+					    					<!--
+					    					TODO: tags
 					    					<td>
 					    						<span id="selectedTags">None</span>
 					    					</td>
+					    					-->
 					    					<td>
 					    						<small><span id="selectedSearch">None</span></small>
 					    					</td>
@@ -357,12 +369,13 @@
 	var selectedDataset = {% if selectedDataset %}"{{selectedDataset}}"{% else %}null{% endif %};
     //{#var selectedSeries = {% if selectedSeries %}"{{selectedSeries}}"{% else %}null{% endif %};#}
 	var selectedTags = [];
+    var bestTags;
+    var loaded_tags = null;
     var providers_by_slug = {};
     var datasets_by_slug = {};
     var datasets_by_slug_dscode = {};
     var cartSeries = [];
     var search;
-    var bestTags;
     var cartCount = {{session.cart|length}};
 	var dimension_filter = [];
  	var full_dimension_filter = {};
@@ -372,7 +385,6 @@
 	var count_series = 0;
 	var dimensionFields = [];
 	var loaded_datatree = null;
-	var loaded_tags = null;
 	var searchableTree;
     
     /*{#
@@ -389,6 +401,9 @@
     }
     #}*/
     
+    /*
+    {#
+    TODO: tags
     function local_tags(){
     
         if (_.isEmpty(selectedProvider)){
@@ -418,6 +433,8 @@
   		});
 
     }
+    #}
+    */
     
     function local_treeview(tree, callback){
     	
@@ -654,9 +671,12 @@
 	  			options.search = search;
 	  		}
 
+            //TODO: tags
+            /*
 	  		if (! _.isEmpty(selectedTags)) {
 	  			options.tags = selectedTags.join(' ');
 	  		}
+	  		*/
 	  		
 	  		_.forEach(dimensionFields, function(dim) {
 	  			var add_filter;
@@ -855,8 +875,8 @@
 	  		} else {
 	  			$("#selectedProvider").text("All");
 	  		}
-	  		selectedTags = [];
-	  		refresh_selectedTags();
+	  		//TODO: tags : selectedTags = [];
+	  		//TODO: tags : refresh_selectedTags();
 	  		$('#search').val('');
             $('#selectedSearch').text('None');
 	  		$('#tree-tree').val('');
@@ -891,6 +911,8 @@
 
         loadData();
 
+        /*
+        TODO: tags
         $("#tab-tags").delegate('.tag', 'click', function(e){
 	    	e.preventDefault();
 	    	var tag = $(this).attr('data-tag');
@@ -912,6 +934,7 @@
 	    	refresh_selectedTags();
 	    	loadData();
 	    });
+	    */
 	    
 	    function get_sdmx_link(){
 	  		var api_sdmx = ["{{ config.BASE_URL_API_SDMX}}"];
