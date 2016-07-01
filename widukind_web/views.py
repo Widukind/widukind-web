@@ -416,13 +416,17 @@ def ajax_cart_add():
 @bp.route('/ajax/series/cart/remove', endpoint="ajax-cart-remove")
 def ajax_cart_remove():
     slug = request.args.get('slug')
+    is_all = slug == "all"
     cart = session.get("cart", [])
-    if slug in cart:
-        cart.remove(slug)
-        msg = {"msg": "Series remove from cart.", "category": "success"}
+    if is_all:
+        cart = []
+        msg = {"msg": "All series deleted in cart.", "category": "success"}
     else:
-        msg = {"msg": "Series not in the cart.", "category": "warning"}
-        
+        if slug in cart:
+            cart.remove(slug)
+            msg = {"msg": "Series remove from cart.", "category": "success"}
+        else:
+            msg = {"msg": "Series not in the cart.", "category": "warning"}
     session["cart"] = cart
     return current_app.jsonify(dict(notify=msg, count=len(session["cart"])))
         
@@ -655,7 +659,7 @@ def export_series_csv(slug=None):
     http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971+insee-ipch-2015-fr-coicop-001762151
     http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971+bis-cbs-q-s-5a-4b-f-b-a-a-lc1-a-1c
     """
-
+    
     if not slug:
         slug = request.args.get('slug')
 
@@ -718,7 +722,6 @@ def export_series_csv(slug=None):
     writer.writerow(headers)
     writer.writerows(values)
         
-    #print(fp.getvalue())
     fp.seek(0)
         
     return send_file_csv(fp, mimetype='text/csv')

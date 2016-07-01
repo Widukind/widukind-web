@@ -5,6 +5,7 @@ var widukind_options = {
     url_explorer: null,
     url_providers: null,
     url_cart_view: null,
+    url_cart_remove: null,
     url_export_csv: null, 
 };
 

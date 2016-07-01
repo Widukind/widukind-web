@@ -1089,17 +1089,43 @@
                             e.preventDefault();
 		    	            $cart.bootstrapTable('uncheckAll');
 		    	        });
+		    	        
+		    	        function removeCart(data){
+                            $("#cart_count").text(data.count);
+                            cartCount = data.count;
+                            if (cartCount > 0) {
+                                $cart.bootstrapTable('refresh', {});
+                            } else {
+                              dialog.modal('hide');
+                            }
+                            toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
+		    	        }
 		    	    	
 		    	        $('#delete').off('click').on('click', function (e) {
                             e.preventDefault();
-		    	            var index = [];
-		    	            var selected = $cart.bootstrapTable('getData');
-		    	            console.log("selected : ", selected);
-		    	            $('input[name="btSelectItem"]:checked').each(function () {
-		    	                index.push(selected[$(this).data('index')].slug);
-		    	            });
-		    	            console.log('Checked : ', index);
+                            var url = widukind_options.url_cart_remove + "?slug=all";
+                            ajax(url, 'GET').done(function(data) {
+                                removeCart(data);
+                            });
 		    	        });
+
+                        $('.remove_cart').off('click').on('click', function (e) {
+                            e.preventDefault();
+                            var url = $(this).attr("data-cart-remove-url");
+                            ajax(url, 'GET').done(function(data) {
+                                removeCart(data);
+                                /*
+                                $("#cart_count").text(data.count);
+                                cartCount = data.count;
+                                if (cartCount > 0) {
+                                    $cart.bootstrapTable('refresh', {});
+                                } else {
+                                  dialog.modal('hide');
+                                }
+                                toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
+                                */
+                            });
+                        });
 		    	        
                         $('#cart-export-csv').off('click').on('click', function (e) {
                             e.preventDefault();
@@ -1128,22 +1154,7 @@
                             });
                             
                         });
-		    	        
-		    	        $('.remove_cart').off('click').on('click', function (e) {
-		    		    	e.preventDefault();
-		    		    	var url = $(this).attr("data-cart-remove-url");
-		    		    	ajax(url, 'GET').done(function(data) {
-		    		    		$("#cart_count").text(data.count);
-		    		    		cartCount = data.count;
-                                if (cartCount > 0) {
-                                    $cart.bootstrapTable('refresh', {});
-                                } else {
-                                  dialog.modal('hide');
-                                }
-		    		    		toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
-		    		    	});
-		    	        });
-		    			
+                        
 	    			});
 	    	        
 	    		});
