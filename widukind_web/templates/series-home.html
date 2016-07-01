@@ -348,6 +348,11 @@
 
     <script type="text/javascript">
 
+    var chosen_default_options = {
+       search_contains: true,
+       allow_single_deselect: true,
+    };
+
 	var selectedProvider = {% if selectedProvider %}"{{selectedProvider}}"{% else %}null{% endif %};
 	var selectedDataset = {% if selectedDataset %}"{{selectedDataset}}"{% else %}null{% endif %};
     //{#var selectedSeries = {% if selectedSeries %}"{{selectedSeries}}"{% else %}null{% endif %};#}
@@ -731,7 +736,7 @@
 	            	}
 	            });
 	            
-	            $('#provider').chosen({allow_single_deselect: true});
+	            $('#provider').chosen(chosen_default_options);
 			});
 	  	};
 	  	
@@ -760,7 +765,7 @@
 	            	//$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
 	            });
 	            
-	            $('#dataset').chosen({allow_single_deselect: true});
+	            $('#dataset').chosen(chosen_default_options);
 	        });
 	  	};
 
@@ -803,7 +808,7 @@
     			_.forEach(dimensionFields, function(dim) {
     				$("#" + dim.key).chosen("destroy");
     				
-    				$("#" + dim.key).chosen({allow_single_deselect: true})
+    				$("#" + dim.key).chosen(chosen_default_options)
     				.on('change', function() {
     					dim.selectedOption = $(this).val();
     					loadData();
