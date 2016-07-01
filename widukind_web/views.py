@@ -18,6 +18,7 @@ from flask import (Blueprint,
                    redirect, 
                    abort)
 
+from flask_mail import Message
 from werkzeug.wsgi import wrap_file
 
 import arrow
@@ -25,10 +26,11 @@ from slugify import slugify
 
 from pymongo import ASCENDING, DESCENDING
 
-from widukind_web import constants
-from widukind_web.extensions import cache
-from widukind_web import queries
 from widukind_common.flask_utils import json_tools
+
+from widukind_web import constants
+from widukind_web.extensions import cache, mail
+from widukind_web import queries
 
 bp = Blueprint('views', __name__)
 
@@ -796,7 +798,7 @@ def home_views(bp_or_app):
         msg = {"msg": "Your message has been registred.", "category": "success"}
         try:
             contact = dict(
-                user_agent = None,
+                user_agent = str(request.user_agent),
                 remote_addr = request.remote_addr,
                 created = arrow.utcnow().datetime,
                 fullName = field_src.get('fullName'),
@@ -807,6 +809,15 @@ def home_views(bp_or_app):
             )
             queries.col_contact().insert(contact)
             #flash("Your message has been registred.", "success")
+            message = Message("Widukind - new contact from [%s]" % contact['email'],
+                              sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
+                              recipients=[current_app.config.get('MAIL_ADMINS')])
+            message.html = '<a href="%s">Admin contacts</a>' % url_for('admin.contacts', _external=True)
+            try:
+                mail.send(message)
+            except Exception as err:
+                current_app.logger.fatal(str(err))
+            
         except Exception as err:
             #flash("Sorry, An unexpected error has occurred. Your message has not registred.", "error")
             msg = {"msg": "Sorry, An unexpected error has occurred. Your message has not registred.", "category": "error"}

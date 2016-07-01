@@ -87,10 +87,9 @@ class Config(object):
     MAIL_PORT = config('WIDUKIND_WEB_MAIL_PORT', 25, cast=int)
     MAIL_USE_TLS = config('WIDUKIND_WEB_MAIL_USE_TLS', False, cast=bool)
     MAIL_USE_SSL = config('WIDUKIND_WEB_MAIL_USE_SSL', False, cast=bool)
-    #MAIL_DEBUG : default app.debug
-    MAIL_USERNAME = config('WIDUKIND_MAIL_USERNAME', None)
-    MAIL_PASSWORD = config('WIDUKIND_MAIL_PASSWORD', None)
-    MAIL_DEFAULT_SENDER = config('WIDUKIND_MAIL_DEFAULT_SENDER', "root@localhost.com")
+    MAIL_USERNAME = config('WIDUKIND_WEB_MAIL_USERNAME', None)
+    MAIL_PASSWORD = config('WIDUKIND_WEB_MAIL_PASSWORD', None)
+    MAIL_DEFAULT_SENDER = config('WIDUKIND_WEB_MAIL_DEFAULT_SENDER', "root")
     MAIL_MAX_EMAILS = None
     #MAIL_SUPPRESS_SEND : default app.testing
     MAIL_ASCII_ATTACHMENTS = False

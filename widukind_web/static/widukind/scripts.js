@@ -368,7 +368,7 @@ $(document).ready(function() {
     $("#contactLink").on('click', function(e){
         e.preventDefault();
         var url = $(this).attr("data-url") + '?modal=1';
-        ajax(url, 'GET').done(function(data) {
+        ajax(url, 'GET', {}, {"dataType": "html"}).done(function(data) {
             var dialog = bootbox.dialog({
                 //title: 'Contact Form',
                 backdrop: true,
