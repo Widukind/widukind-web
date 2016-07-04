@@ -2,13 +2,11 @@
 {% extends "base_form.html" %}
 {% endif %}
 
-{#
 {% if not is_modal %}
 {% block title %}{{super()}} - Contact Form{% endblock %}
 {% endif %}
-#}
 
-{#% block page %#}
+{% block page %}
 
 <div class="container">
     <div class="panel panel-default col-md-8" style="padding: 0;">
@@ -66,12 +64,14 @@
                     </div>
                 </div>
                 
+                {%- if config.RECAPTCHA2_SITEKEY -%}
                 <div class="form-group">
                     <label class="col-xs-3 control-label">Captcha</label>
                     <div class="col-xs-8">
                         <div id="captchaContainer"></div>
                     </div>
-                </div>                
+                </div>
+                {%- endif -%}                
             
                 <div class="form-group">
                     <div class="col-xs-9 col-xs-offset-3">
@@ -85,12 +85,13 @@
     </div>
 </div>
 
-{#% endblock page %#}
+{% endblock page %}
 
-{#
 {% block scripts %}
+{% if not is_modal %}
     {{super()}}
-#}    
+{% endif %}
+
     {%- if config.RECAPTCHA2_SITEKEY -%}
     <script type="text/javascript" src="{{ url_for('static', filename='local/formvalidation-reCaptcha2.min.js') }}"></script>
     {%- endif -%}
@@ -172,5 +173,5 @@ $(document).ready(function() {
 });
 </script>
     
-{#% endblock scripts %#}
+{% endblock scripts %}
 

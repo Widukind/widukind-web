@@ -42,12 +42,16 @@
 							  		</a>
 							  	</li>
 							  	
-							  	<!-- tags -->
+							  	<!-- tags
+                                TODO: tags
+							  	{#
 							 	<li role="sidebar">
 							  		<a href="#tab-tags" title="Filter by tags" data-toggle="tab">Tags
 							  			{#<i class="fa fa-tag fa-lg fa-fw"></i>#}
 							  		</a>
 							  	</li>
+							  	#}
+							  	-->
 							  	
 							</ul>
 						</div><!-- panel-heading -->
@@ -142,6 +146,8 @@
 								</div>
 							</div><!-- tabpanel tab-search -->
 
+							{#
+                            TODO: tags
 							<div role="tabpanel" class="tab-pane fade" id="tab-tags">
 								<div class="row">
 									<div class="col-md-12">
@@ -153,7 +159,7 @@
 									</div>
 								</div>
 							</div><!-- tabpanel tab-tags -->
-							
+							#}
 							
 						</div><!-- tab-content -->
 				    </div>
@@ -226,7 +232,10 @@
 					    					<td class="col-md-1">Series</td>
 					    					<td class="col-md-2">Provider</td>
 					    					<td class="col-md-3">Dataset</td>
+					    					<!--
+					    					TODO: tags
 					    					<td class="col-md-3">Tags</td>
+					    					-->
 					    					<td class="col-md-3">Search Terms</td>
 				    					</tr>
 					    				<tr>
@@ -239,9 +248,12 @@
 					    					<td>
 					    						<small><span id="selectedDataset">All</span></small>
 					    					</td>
+					    					<!--
+					    					TODO: tags
 					    					<td>
 					    						<span id="selectedTags">None</span>
 					    					</td>
+					    					-->
 					    					<td>
 					    						<small><span id="selectedSearch">None</span></small>
 					    					</td>
@@ -348,16 +360,22 @@
 
     <script type="text/javascript">
 
+    var chosen_default_options = {
+       search_contains: true,
+       allow_single_deselect: true,
+    };
+
 	var selectedProvider = {% if selectedProvider %}"{{selectedProvider}}"{% else %}null{% endif %};
 	var selectedDataset = {% if selectedDataset %}"{{selectedDataset}}"{% else %}null{% endif %};
     //{#var selectedSeries = {% if selectedSeries %}"{{selectedSeries}}"{% else %}null{% endif %};#}
 	var selectedTags = [];
+    var bestTags;
+    var loaded_tags = null;
     var providers_by_slug = {};
     var datasets_by_slug = {};
     var datasets_by_slug_dscode = {};
     var cartSeries = [];
     var search;
-    var bestTags;
     var cartCount = {{session.cart|length}};
 	var dimension_filter = [];
  	var full_dimension_filter = {};
@@ -367,7 +385,6 @@
 	var count_series = 0;
 	var dimensionFields = [];
 	var loaded_datatree = null;
-	var loaded_tags = null;
 	var searchableTree;
     
     /*{#
@@ -384,6 +401,9 @@
     }
     #}*/
     
+    /*
+    {#
+    TODO: tags
     function local_tags(){
     
         if (_.isEmpty(selectedProvider)){
@@ -413,6 +433,8 @@
   		});
 
     }
+    #}
+    */
     
     function local_treeview(tree, callback){
     	
@@ -649,9 +671,12 @@
 	  			options.search = search;
 	  		}
 
+            //TODO: tags
+            /*
 	  		if (! _.isEmpty(selectedTags)) {
 	  			options.tags = selectedTags.join(' ');
 	  		}
+	  		*/
 	  		
 	  		_.forEach(dimensionFields, function(dim) {
 	  			var add_filter;
@@ -731,7 +756,7 @@
 	            	}
 	            });
 	            
-	            $('#provider').chosen({allow_single_deselect: true});
+	            $('#provider').chosen(chosen_default_options);
 			});
 	  	};
 	  	
@@ -760,7 +785,7 @@
 	            	//$('#dataset').append($("<option></option>").attr("value", item.id).text(item.text));
 	            });
 	            
-	            $('#dataset').chosen({allow_single_deselect: true});
+	            $('#dataset').chosen(chosen_default_options);
 	        });
 	  	};
 
@@ -803,7 +828,7 @@
     			_.forEach(dimensionFields, function(dim) {
     				$("#" + dim.key).chosen("destroy");
     				
-    				$("#" + dim.key).chosen({allow_single_deselect: true})
+    				$("#" + dim.key).chosen(chosen_default_options)
     				.on('change', function() {
     					dim.selectedOption = $(this).val();
     					loadData();
@@ -850,8 +875,8 @@
 	  		} else {
 	  			$("#selectedProvider").text("All");
 	  		}
-	  		selectedTags = [];
-	  		refresh_selectedTags();
+	  		//TODO: tags : selectedTags = [];
+	  		//TODO: tags : refresh_selectedTags();
 	  		$('#search').val('');
             $('#selectedSearch').text('None');
 	  		$('#tree-tree').val('');
@@ -886,6 +911,8 @@
 
         loadData();
 
+        /*
+        TODO: tags
         $("#tab-tags").delegate('.tag', 'click', function(e){
 	    	e.preventDefault();
 	    	var tag = $(this).attr('data-tag');
@@ -907,6 +934,7 @@
 	    	refresh_selectedTags();
 	    	loadData();
 	    });
+	    */
 	    
 	    function get_sdmx_link(){
 	  		var api_sdmx = ["{{ config.BASE_URL_API_SDMX}}"];
@@ -1061,17 +1089,43 @@
                             e.preventDefault();
 		    	            $cart.bootstrapTable('uncheckAll');
 		    	        });
+		    	        
+		    	        function removeCart(data){
+                            $("#cart_count").text(data.count);
+                            cartCount = data.count;
+                            if (cartCount > 0) {
+                                $cart.bootstrapTable('refresh', {});
+                            } else {
+                              dialog.modal('hide');
+                            }
+                            toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
+		    	        }
 		    	    	
 		    	        $('#delete').off('click').on('click', function (e) {
                             e.preventDefault();
-		    	            var index = [];
-		    	            var selected = $cart.bootstrapTable('getData');
-		    	            console.log("selected : ", selected);
-		    	            $('input[name="btSelectItem"]:checked').each(function () {
-		    	                index.push(selected[$(this).data('index')].slug);
-		    	            });
-		    	            console.log('Checked : ', index);
+                            var url = widukind_options.url_cart_remove + "?slug=all";
+                            ajax(url, 'GET').done(function(data) {
+                                removeCart(data);
+                            });
 		    	        });
+
+                        $('.remove_cart').off('click').on('click', function (e) {
+                            e.preventDefault();
+                            var url = $(this).attr("data-cart-remove-url");
+                            ajax(url, 'GET').done(function(data) {
+                                removeCart(data);
+                                /*
+                                $("#cart_count").text(data.count);
+                                cartCount = data.count;
+                                if (cartCount > 0) {
+                                    $cart.bootstrapTable('refresh', {});
+                                } else {
+                                  dialog.modal('hide');
+                                }
+                                toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
+                                */
+                            });
+                        });
 		    	        
                         $('#cart-export-csv').off('click').on('click', function (e) {
                             e.preventDefault();
@@ -1100,22 +1154,7 @@
                             });
                             
                         });
-		    	        
-		    	        $('.remove_cart').off('click').on('click', function (e) {
-		    		    	e.preventDefault();
-		    		    	var url = $(this).attr("data-cart-remove-url");
-		    		    	ajax(url, 'GET').done(function(data) {
-		    		    		$("#cart_count").text(data.count);
-		    		    		cartCount = data.count;
-                                if (cartCount > 0) {
-                                    $cart.bootstrapTable('refresh', {});
-                                } else {
-                                  dialog.modal('hide');
-                                }
-		    		    		toastr[data.notify.category](data.notify.msg, {timeOut: 2000});
-		    		    	});
-		    	        });
-		    			
+                        
 	    			});
 	    	        
 	    		});

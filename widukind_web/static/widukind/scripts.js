@@ -5,6 +5,7 @@ var widukind_options = {
     url_explorer: null,
     url_providers: null,
     url_cart_view: null,
+    url_cart_remove: null,
     url_export_csv: null, 
 };
 
@@ -367,7 +368,7 @@ $(document).ready(function() {
     $("#contactLink").on('click', function(e){
         e.preventDefault();
         var url = $(this).attr("data-url") + '?modal=1';
-        ajax(url, 'GET').done(function(data) {
+        ajax(url, 'GET', {}, {"dataType": "html"}).done(function(data) {
             var dialog = bootbox.dialog({
                 //title: 'Contact Form',
                 backdrop: true,

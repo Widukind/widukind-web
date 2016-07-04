@@ -18,6 +18,7 @@ from flask import (Blueprint,
                    redirect, 
                    abort)
 
+from flask_mail import Message
 from werkzeug.wsgi import wrap_file
 
 import arrow
@@ -25,10 +26,11 @@ from slugify import slugify
 
 from pymongo import ASCENDING, DESCENDING
 
-from widukind_web import constants
-from widukind_web.extensions import cache
-from widukind_web import queries
 from widukind_common.flask_utils import json_tools
+
+from widukind_web import constants
+from widukind_web.extensions import cache, mail
+from widukind_web import queries
 
 bp = Blueprint('views', __name__)
 
@@ -416,13 +418,17 @@ def ajax_cart_add():
 @bp.route('/ajax/series/cart/remove', endpoint="ajax-cart-remove")
 def ajax_cart_remove():
     slug = request.args.get('slug')
+    is_all = slug == "all"
     cart = session.get("cart", [])
-    if slug in cart:
-        cart.remove(slug)
-        msg = {"msg": "Series remove from cart.", "category": "success"}
+    if is_all:
+        cart = []
+        msg = {"msg": "All series deleted in cart.", "category": "success"}
     else:
-        msg = {"msg": "Series not in the cart.", "category": "warning"}
-        
+        if slug in cart:
+            cart.remove(slug)
+            msg = {"msg": "Series remove from cart.", "category": "success"}
+        else:
+            msg = {"msg": "Series not in the cart.", "category": "warning"}
     session["cart"] = cart
     return current_app.jsonify(dict(notify=msg, count=len(session["cart"])))
         
@@ -634,7 +640,7 @@ def explorer_view(provider=None, dataset=None, series=None):
         "selectedProvider": provider,
         "selectedDataset": dataset,
     }
-    return render_template("series-home.html", **ctx)
+    return render_template("explorer.html", **ctx)
 
 def send_file_csv(fileobj, mimetype=None, content_length=0):
 
@@ -655,7 +661,7 @@ def export_series_csv(slug=None):
     http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971+insee-ipch-2015-fr-coicop-001762151
     http://127.0.0.1:8081/views/export/series/insee-ipch-2015-fr-coicop-001759971+bis-cbs-q-s-5a-4b-f-b-a-a-lc1-a-1c
     """
-
+    
     if not slug:
         slug = request.args.get('slug')
 
@@ -718,7 +724,6 @@ def export_series_csv(slug=None):
     writer.writerow(headers)
     writer.writerows(values)
         
-    #print(fp.getvalue())
     fp.seek(0)
         
     return send_file_csv(fp, mimetype='text/csv')
@@ -793,7 +798,7 @@ def home_views(bp_or_app):
         msg = {"msg": "Your message has been registred.", "category": "success"}
         try:
             contact = dict(
-                user_agent = None,
+                user_agent = str(request.user_agent),
                 remote_addr = request.remote_addr,
                 created = arrow.utcnow().datetime,
                 fullName = field_src.get('fullName'),
@@ -804,6 +809,15 @@ def home_views(bp_or_app):
             )
             queries.col_contact().insert(contact)
             #flash("Your message has been registred.", "success")
+            message = Message("Widukind - new contact from [%s]" % contact['email'],
+                              sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
+                              recipients=[current_app.config.get('MAIL_ADMINS')])
+            message.html = '<a href="%s">Admin contacts</a>' % url_for('admin.contacts', _external=True)
+            try:
+                mail.send(message)
+            except Exception as err:
+                current_app.logger.fatal(str(err))
+            
         except Exception as err:
             #flash("Sorry, An unexpected error has occurred. Your message has not registred.", "error")
             msg = {"msg": "Sorry, An unexpected error has occurred. Your message has not registred.", "category": "error"}
