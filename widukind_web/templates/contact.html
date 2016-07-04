@@ -64,12 +64,14 @@
                     </div>
                 </div>
                 
+                {%- if config.RECAPTCHA2_SITEKEY -%}
                 <div class="form-group">
                     <label class="col-xs-3 control-label">Captcha</label>
                     <div class="col-xs-8">
                         <div id="captchaContainer"></div>
                     </div>
-                </div>                
+                </div>
+                {%- endif -%}                
             
                 <div class="form-group">
                     <div class="col-xs-9 col-xs-offset-3">
