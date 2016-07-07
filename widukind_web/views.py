@@ -192,6 +192,7 @@ def ajax_dataset_frequencies(dataset):
             freqs.append({"value": freq, "text": freq})
     return json_tools.json_response(freqs)
 
+@bp.route('/slug/dataset/<slug>')
 @bp.route('/dataset/<slug>', endpoint="dataset-by-slug")
 def dataset_with_slug(slug):
 
@@ -230,6 +231,7 @@ def ajax_series_archives(slug, version):
         abort(404)
 """        
 
+@bp.route('/slug/series/<slug>', defaults={'version': -1})
 @bp.route('/series/<slug>', endpoint="series-by-slug", defaults={'version': -1})
 @bp.route('/series/<slug>/<int:version>', endpoint="series-by-slug-version")
 def series_with_slug(slug, version):
@@ -802,7 +804,6 @@ def datasets_last_update():
 def home_views(bp_or_app):
 
     @bp_or_app.route('/', endpoint="home")
-    @cache.cached(timeout=3600) #1H
     def index():
     
         cursor = queries.col_providers().find({}, {"metadata": False})
