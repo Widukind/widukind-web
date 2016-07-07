@@ -48,7 +48,16 @@
 	            {% block page %}{% endblock %}
             </div>
 	    </div>
-	</div>     
+	</div>
+	
+	{% block footer %}
+	<footer class="footer">
+		<div class="container">
+			<p class="text-muted">License : GNU Affero General Public License (AGPL) - <a target="_blank" href="https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License">https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License</a></p>
+		</div>
+	</footer>
+	{% endblock footer %}
+	     
 {% endblock content %}
 
 {% block scripts %}
@@ -65,6 +74,10 @@
     widukind_options.url_cart_view = '{{ url_for("views.ajax-cart-view") }}';
     widukind_options.url_cart_remove = '{{ url_for("views.ajax-cart-remove") }}';
     widukind_options.url_export_csv = '{{ url_for("views.export-series-csv-base", _external=True) }}';
+    widukind_options.url_api_sdmx = '{{ config.BASE_URL_API_SDMX }}';
+    widukind_options.url_api_json = '{{ config.BASE_URL_API_JSON }}';
+    widukind_options.url_api_html = '{{ config.BASE_URL_API_HTML }}';
+    cartCount = {{session.cart|length}};    
     </script> 
 
 <script type="text/javascript">
