@@ -26,6 +26,8 @@ class Config(object):
     PIWIK_URL = config('WIDUKIND_PIWIK_URL', None)
     PIWIK_SITE_ID = config('WIDUKIND_PIWIK_SITE_ID', 0, cast=int)
     
+    GOOGLE_WEBMASTER_META = config('WIDUKIND_GOOGLE_WEBMASTER_META', None)
+    
     CACHE_TYPE = config('WIDUKIND_CACHE_TYPE', "simple")
     CACHE_KEY_PREFIX = "widukind_web"
     ENABLE_CACHE = config('WIDUKIND_ENABLE_CACHE', True, cast=bool)

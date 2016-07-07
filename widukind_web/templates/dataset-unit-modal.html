@@ -3,7 +3,9 @@
 {% endif %}
 
 {% if not is_modal %}
-{% block title %}{{super()}} | Dataset | {{ provider.long_name }} | {{ dataset.dataset_code }} | {{ dataset.name }}{% endblock %}
+{% block title %}{{super()}} | Dataset | {{ provider.name }} | {{ provider.long_name }} | {{ dataset.dataset_code }} | {{ dataset.name }}{% endblock %}
+{% block meta_description %}Dataset - {{ provider.name }} - {{ provider.long_name }} - {{ dataset.dataset_code }} - {{ dataset.name }}{% endblock %}
+{% block meta_keywords %}{{ provider.name }}, {{ provider.long_name }}, {{ dataset.dataset_code }}, {{ dataset.name }}{% endblock %}
 {% endif %}
 
 {% block page %}

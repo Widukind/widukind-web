@@ -5,11 +5,16 @@
 {% block html_attribs %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"{% endblock html_attribs %}
 
 {%- block metas %}
-{{super()}}
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes"/>
+
 <meta name="description" content="{% block meta_description %}International Economics Database - A database of international macroeconomic data{% endblock %}" xml:lang="en-US" lang="en-US">
 <meta name="keywords" content="{% block meta_keywords %}International Economics Database, international macroeconomic data{% endblock %}" xml:lang="en-US" lang="en-US">
 <meta name="robots" content="index, follow">
+{% if config.GOOGLE_WEBMASTER_META %}
+<meta name="google-site-verification" content="{{config.GOOGLE_WEBMASTER_META}}" />
+{% endif %}
 {%- endblock metas %}
 
 {% block styles %}
@@ -48,7 +53,16 @@
 	            {% block page %}{% endblock %}
             </div>
 	    </div>
-	</div>     
+	</div>
+	
+	{% block footer %}
+	<footer class="footer">
+		<div class="container">
+			<p class="text-muted">License : GNU Affero General Public License (AGPL) - <a target="_blank" href="https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License">https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License</a></p>
+		</div>
+	</footer>
+	{% endblock footer %}
+	     
 {% endblock content %}
 
 {% block scripts %}
@@ -65,6 +79,10 @@
     widukind_options.url_cart_view = '{{ url_for("views.ajax-cart-view") }}';
     widukind_options.url_cart_remove = '{{ url_for("views.ajax-cart-remove") }}';
     widukind_options.url_export_csv = '{{ url_for("views.export-series-csv-base", _external=True) }}';
+    widukind_options.url_api_sdmx = '{{ config.BASE_URL_API_SDMX }}';
+    widukind_options.url_api_json = '{{ config.BASE_URL_API_JSON }}';
+    widukind_options.url_api_html = '{{ config.BASE_URL_API_HTML }}';
+    cartCount = {{session.cart|length}};    
     </script> 
 
 <script type="text/javascript">

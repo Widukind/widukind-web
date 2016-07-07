@@ -1,21 +1,49 @@
 {% if not is_modal %}
-{% extends "layout.html" %}
+{% extends "base_form.html" %}
 {% endif %}
 
 {% if not is_modal %}
-{% block title %}{{super()}} | Series | {{ provider.long_name }} | {{ dataset.dataset_code }} | {{ dataset.name }} | {{ series.key }} | {{ series.name }}{% endblock %}
+{% block title %}{{super()}} | Series | {{ provider.name }} | {{ provider.long_name }} | {{ dataset.dataset_code }} | {{ dataset.name }} | {{ series.key }} | {{ series.name }}{% endblock %}
+{% block meta_description %}Series - {{ provider.name }} - {{ provider.long_name }} - {{ dataset.dataset_code }} - {{ dataset.name }}} - {{ series.key }} - {{ series.name }}{% endblock %}
+{% block meta_keywords %}{{ provider.name }}, {{ provider.long_name }}, {{ dataset.dataset_code }}, {{ dataset.name }}}, {{ series.key }}, {{ series.name }}{% endblock %}
 {% endif %}
+
+{% if not is_modal %}
+{%- block head %}
+    {{super()}}
+    <link href="{{ url_for('static', filename="widukind/explorer.css") }}" rel="stylesheet">
+{% endblock %}
+{% endif %}
+
+{% macro attribute_short(value) %}
+{%- if value.attributes -%}
+	{%- for attr_key, attr_value in value.attributes.items() -%}
+		{% set title = dataset.codelists[attr_key][attr_value] if attr_key in dataset.codelists else attr_value  %}
+		<a data-toggle="tooltip" title="{{ title }}" href="javascript:void(0)">
+			{{ attr_value }}
+		</a>
+	{%- endfor -%}
+{%- else -%}
+	&nbsp;								
+{%- endif -%}
+
+{% endmacro %}
 
 {% block page %}
 
 <div class="container-fluid modal-detail">
 	<div class="row">
-		<div class="col-md-12 nopadding">				
+		<div class="col-md-12 nopadding">
+		
+			<div id="modal-detail-title" class="panel panel-default nopadding-left">
+		    	<div class="panel-heading">
+		    		<h5 class="nomargin">{{ provider.name }} - {{ dataset.dataset_code }} - {{ series.key }} - <small>{{ series.name }}</small></h5>
+		    	</div>
+		   	</div>
+			
 			<div class="panel panel-default nomargin-bottom">
 		    	<div class="panel-heading nopadding">
 		    	
-                    <h5>{{ provider.name }} - {{ dataset.dataset_code }} - {{ series.key }} - {{ series.name }}</h5>
-                    
 					<ul id="sidebarnav-series" class="nav nav-pills" role="tablist">
 					
 						<li role="series" class="active">
@@ -24,12 +52,6 @@
 							</a>
 					  	</li>
 					  	
-						<li role="series">
-							<a href="#tab-modal-dim" aria-controls="tab-modal-dim" data-toggle="tab">
-								<i class="fa fa-wpforms fa-fw"></i> Dimensions
-							</a>
-					  	</li>
-
 						<li role="series">
 							<a href="#tab-modal-val" aria-controls="tab-modal-val" data-toggle="tab">
 								<i class="fa fa-database fa-fw"></i> Datas
@@ -47,12 +69,20 @@
 								<i class="fa fa-area-chart"></i> Graph
 							</a>
 					  	</li>
-						
+
+						<li role="series">
+							<a href="#tab-modal-dim" aria-controls="tab-modal-dim" data-toggle="tab">
+								<i class="fa fa-wpforms fa-fw"></i> Dimensions
+							</a>
+					  	</li>
+
+						{#
 						<li role="series">
 							<a href="#tab-modal-tags" aria-controls="tab-modal-tags" data-toggle="tab">
 								<i class="fa fa-tag fa-fw"></i> Tags
 							</a>
 					  	</li>
+					  	#}
 
                         <li role="series">
                             <a href="#tab-modal-dataset" aria-controls="tab-modal-dataset" data-toggle="tab">
@@ -84,9 +114,33 @@
 					    <table id="series-identity" class="table table-striped table-condensed table-bordered">
 					    	<tbody>
                                 <tr>
+                                    <td class="col-md-2">Release Date</td>
+                                    <td class="col-md-10">
+                                        {{ moment(series.last_update_ds).format('LLL') }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-2">Current Version</td>
+                                    <td class="col-md-10">
+                                        {{ series.version }} ({%if is_latest %}latest{% else %}old{% endif %})
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td class="col-md-2">Direct Url</td>
                                     <td class="col-md-10">
-                                        <a target="_blank" href="{{ url_series }}">{{ url_series }}</a>
+                                        <a {% if is_modal %}target="_blank" {% endif %} href="{{ url_series }}">{{ url_series }}</a>
+                                        {#
+                                        <form class="form-inline">
+                                        <div class="form-group">
+                                        <select class="form-control input-sm" name="revisions" id="revisions">
+                                        	<option value="{{ url_series }}" selected="true">Current</option>
+                                        	{% for rev in revisions %}
+                                        	<option value="{{rev.url}}">{{rev.version}} - {{ moment(rev.last_update_ds).format('YYYY-MM-DD') }}</option>
+                                        	{% endfor %}
+                                        </select>
+                                        </div>
+                                        </form>
+                                        #}
                                     </td>
                                 </tr>
 					            <tr>
@@ -114,14 +168,14 @@
                                     <td class="col-md-10">{{ series.slug }}</td>
                                 </tr>
 					            <tr>
-					                <td class="col-md-2">Last Update</td>
-					                <td class="col-md-10">{{ moment(dataset.last_update).format('LLL') }}</td>
+					                <td class="col-md-2">Updated</td>
+					                <td class="col-md-10">{{ moment(series.last_update_widu).format('LLL') }}</td>
 					            </tr>
 					            <tr>
 					                <td class="col-md-2">Web Site</td>
 					                <td class="col-md-10">
 					                    {% if dataset.doc_href and dataset.doc_href.lower().startswith('http') %}
-					                    	{{ dataset.doc_href }}
+					                    	<a target="_blank" href="{{ dataset.doc_href }}">{{ dataset.doc_href }}</a>
 					                    {% else %}
 					                    	{{ provider.website }}
 					                    {% endif %}                
@@ -137,6 +191,16 @@
 					                <td class="col-md-2">Frequency</td>
 					                <td class="col-md-10">{{frequency(series.frequency)}}</td>
 					            </tr>
+								{% if series.tags %}
+					            <tr>
+					                <td class="col-md-2">Tags</td>
+					                <td class="col-md-10">
+					                	{% for tag in series.tags %}
+							            	<span class="label label-default">{{tag}}</span>
+							            {% endfor %}
+					                </td>
+					            </tr>
+					            {% endif %}
 							</tbody>
 						</table>
 					
@@ -185,31 +249,25 @@
 					</div><!-- tabpanel tab-modal-dim -->
 
 					<div role="tabpanel" class="tab-pane fade" id="tab-modal-val">
-					    <table id="seriesValues" class="table table-striped table-condensed">
+					    <table 
+					    	id="seriesDatas" 
+					    	data-classes="table table-hover table-bordered"
+					    	data-striped="true" 
+	        				data-mobile-responsive="true" 
+					    	data-height="400">
 						    <thead>
 								{% for value in series["values"]|reverse %}
 					              	{% if loop.first %}
-					              	<th class="col-md-2">Period</th>
-					              	<th class="col-md-2">{{ moment(dataset.last_update).format('LL') }}</th>
-					              	<th class="col-md-1">&nbsp;</th>
+					              	<th class="col-xs-2">Period</th>
+					              	<th class="col-xs-2 text-right">{{ moment(series.last_update_ds).format('YYYY-MM-DD') }}</th>
+					              	<th class="col-xs-2">&nbsp;</th>
 							</thead>				
 							<tbody>                	
 					              	{% endif %}
 					                <tr>
 										<td>{{ value.period }}</td>
 					                    <td>{{ value.value }}</td>
-										<td>
-				                     		{%- if value.attributes -%}
-				                         		{%- for attr_key, attr_value in value.attributes.items() -%}
-				                         		{% set title = dataset.codelists[attr_key][attr_value] if attr_key in dataset.codelists else attr_value  %}
-				                          		<a data-toggle="tooltip" title="{{ title }}" href="javascript:void(0)">
-				                           		{{ attr_value }}
-				                          		</a>
-				                         		{%- endfor -%}
-				                         	{%- else -%}
-				                         	&nbsp;								
-											{%- endif -%}
-										</td>
+										<td>{{ attribute_short(value) }}</td>
 									</tr>
 								{% endfor %}                 
 							</tbody>
@@ -217,11 +275,62 @@
 					</div><!-- tabpanel tab-modal-val -->
 
 					<div role="tabpanel" class="tab-pane fade" id="tab-modal-rev">
-						<p class="text-warning">Under construction...</p>
-						{#
-					    <table id="seriesRev" class="table table-striped table-condensed">
+						{% if not revisions %}
+						<p class="text-warning">No revisions.</p>
+						{% else %}
+					    <table 
+					    	id="seriesRevisions" 
+					    	data-classes="table table-hover table-condensed table-striped table-bordered"
+					    	data-striped="true" 
+	        				data-mobile-responsive="true" 
+					    	data-height="400" 
+					        data-buttons-align="left" 
+					        data-toolbar-align="right" 
+					        data-pagination="false"  
+					    	data-show-columns="true">
+					    	<thead>
+					    		<th class="col-xs-2">
+					    			<small>Period</small>
+					    		</th>
+				    			<th class="col-xs-1 text-right">
+				    				<small>{{ moment(series.last_update_ds).format('YYYY-MM-DD') }}</small>
+				    			</th>
+					    		{% for s in revisions %}
+				    			<th class="col-xs-1 text-right">
+				    				<small>
+					    				<a href="{{ s.url }}">
+					    				{{ moment(s.last_update_ds).format('YYYY-MM-DD') }}{# ({{s.version}}) #}
+					    				</a>
+				    				</small>
+				    			</th>
+					    		{% endfor %}
+					    	</thead>
+					    	<tbody>
+					    		{% for value in series["values"]|reverse %}
+					    		{% set indice = loop.index0 %}
+					    		<tr>
+					    			<td>
+					    				{{ value.period }}
+					    			</td>
+					    			<td class="text-right">
+					    				<small>{{value.value}} {{ attribute_short(value) }}</small>
+					    			</td>
+					    			{% for s in revisions %}
+									{% set rev_values = s["values"] %}
+					    			<td class="text-right">
+					    				{% if rev_values[indice] %}
+					    					<small>{{rev_values[indice].value}} {{ attribute_short(value) }}</small>
+					    				{% else %}
+					    				&nbsp;
+					    				{% endif %}
+					    			</td>
+					    			{% endfor %}
+					    		</tr>
+					    		{% endfor %}
+					    	</tbody>
 						</table>
-						#}
+						{% endif %}
+						
 					</div><!-- tabpanel tab-modal-rev -->
 
 					<div role="tabpanel" class="tab-pane fade" id="tab-modal-graph">
@@ -261,16 +370,16 @@
                     <div role="tabpanel" class="tab-pane fade" id="tab-modal-api">
                         <table class="table">
                             <tr>
-                                <td class="col-md-2">
-                                    <h5 class="pull-right">SDMX :</h5>
+                                <td class="col-xs-1">
+                                    <h5>SDMX</h5>
                                 </td>
                                 <td>
                                     <pre>{{ config.BASE_URL_API_SDMX}}/{{series.provider_name}}/data/{{dataset.dataset_code}}/{{dimension_filter}}</pre>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="col-md-2">
-                                    <h5 class="pull-right">JSON :</h5>
+                                <td class="col-xs-1">
+                                    <h5>JSON</h5>
                                 </td>
                                 <td>
                                     <pre>{{ config.BASE_URL_API_JSON}}/series/{{series.slug}}</pre>
@@ -278,8 +387,8 @@
                             </tr>
                             {#
                             <tr>
-                                <td class="col-md-2">
-                                    <h5 class="pull-right">HTML :</h5>
+                                <td class="col-xs-1">
+                                    <h5 class="pull-right">HTML</h5>
                                 </td>
                                 <td>
                                     <pre>{{ config.BASE_URL_API_HTML}}/series/{{series.slug}}</pre>
@@ -297,6 +406,9 @@
                         <div class="debug" style="display: none">
                             <h2>Series:</h2>
                             <pre id="debug_object_series"></pre>
+                            
+                            <h2>Revisions:</h2>
+                            <pre>{{ revisions|pprint }}</pre>
                         
                             <h2>Dataset:</h2>
                             <pre id="debug_object_dataset"></pre>
@@ -328,7 +440,7 @@
 $(document).ready(function(){
 
     onLoadSeries();
-        
+    
     var debug_options = {
         url: "{{ url_for('.series-by-slug', slug=series.slug) }}?debug=1",
         button_id: "#debug",

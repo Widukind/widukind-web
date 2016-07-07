@@ -22,6 +22,10 @@
 	margin-bottom: 0;
 }
 
+.nomargin {
+	margin: 0;
+}
+
 .noborder {
 	border: 0;
 }
@@ -34,9 +38,9 @@
  	color: #77ad8d;
 }
 
-.modal-detail .panel-heading {
-	padding-left: 0;
-}    
+#modal-detail-title {
+	margin-bottom: 15px;
+}
 
 .nav-pills > .active > a {
     font-weight: bold;
