@@ -26,6 +26,7 @@ from slugify import slugify
 
 from pymongo import ASCENDING, DESCENDING
 
+from widukind_common.utils import series_archives_load 
 from widukind_common.flask_utils import json_tools
 
 from widukind_web import constants
@@ -217,34 +218,62 @@ def dataset_with_slug(slug):
                            #count=count_series
                            )
 
-@bp.route('/series/<slug>', endpoint="series-by-slug")
-def series_with_slug(slug):
+"""
+@bp.route('/series/<slug>/<int:version>', endpoint="ajax-series-archives-by-slug")
+def ajax_series_archives(slug, version):
     
-    is_reverse = request.args.get('reverse')
-    is_modal = request.args.get('modal', default=0, type=int)
-
-    query = {"slug": slug}    
-    series = queries.col_series().find_one(query)
-
+    query = {"slug": slug, "version": version}
+    
+    series = queries.col_series_archives().find_one(query)
+    
     if not series:
         abort(404)
+"""        
+
+@bp.route('/series/<slug>', endpoint="series-by-slug", defaults={'version': -1})
+@bp.route('/series/<slug>/<int:version>', endpoint="series-by-slug-version")
+def series_with_slug(slug, version):
+    """
+    Dans tous les cas:
+    - charger la version latest
+    - charger toutes les révisions antérieurs à la version latest
+    """
+    
+    is_modal = request.args.get('modal', default=0, type=int)
+    is_debug = request.args.get('debug')
+    #_version = request.args.get('version', default="latest")
+    is_latest = True
+    query = {"slug": slug}
+    
+    '''Load always latest series from col series'''
+    series_latest = queries.col_series().find_one(query)
+    if not series_latest:
+        abort(404)
+
+    if version >= 0 and version != series_latest['version']:
+        query['version'] = version
+        store = queries.col_series_archives().find_one(query)
+        if not store:
+            abort(404)
+        series = series_archives_load(store)
+        is_latest = False
+    else:
+        series = series_latest
         
-    provider = queries.col_providers().find_one({"name": series['provider_name']},
+    provider = queries.col_providers().find_one({"name": series_latest['provider_name']},
                                                 {"metadata": False})
     if not provider:
         abort(404)
     if provider["enable"] is False:
         abort(307)
 
-    dataset = queries.col_datasets().find_one({'provider_name': series['provider_name'],
-                                               "dataset_code": series['dataset_code']},
+    dataset = queries.col_datasets().find_one({'provider_name': series_latest['provider_name'],
+                                               "dataset_code": series_latest['dataset_code']},
                                               {"metadata": False})
     if not dataset:
         abort(404)
     if dataset["enable"] is False:
         abort(307)
-        
-    is_debug = request.args.get('debug')
     
     if is_debug:
         '''debug mode'''
@@ -255,6 +284,30 @@ def series_with_slug(slug):
                                         dataset=result_dataset, 
                                         series=result_series))        
 
+    '''Load revisions < current version'''
+    revisions = []
+    if "version" in series:
+        query_revisions = {"slug": slug, "version": {"$lt": series["version"]}}
+        count_values = len(series['values'])
+        for store in queries.col_series_archives().find(query_revisions).sort('version', DESCENDING):
+            series_rev = series_archives_load(store)
+            values = series_rev['values']
+            empty_element = count_values - len(values)
+            values.reverse()
+            for i in range(empty_element):
+                values.insert(0, None)
+            revisions.append({
+                "last_update_ds": series_rev['last_update_ds'], 
+                "version": series_rev['version'], 
+                "values": values,
+                "url": url_for('.series-by-slug-version', slug=slug, version=series_rev['version'])})
+    else:
+        series["version"] = 0
+
+    if not "last_update_ds" in series:
+        series["last_update_ds"] = dataset["last_update"]
+        series["last_update_widu"] = dataset["last_update"]
+
     #view_explorer = url_for('.explorer_s', series=slug, _external=True)
     url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
@@ -263,30 +316,6 @@ def series_with_slug(slug):
     url_series_plot = url_for('.ajax_series_plot', slug=slug)
     url_export_csv = url_for('.export-series-csv', slug=slug)
 
-    max_revisions = 0
-    revision_dates = []
-    obs_attributes_keys = []
-    obs_attributes_values = []
-    
-    for v in series["values"]:
-        
-        if "revisions" in v:
-            for r in v["revisions"]:
-                if not r["revision_date"] in revision_dates:
-                    revision_dates.append(r["revision_date"])
-
-            count = len(v["revisions"])
-            if count > max_revisions:
-                max_revisions = count
-        
-        if v.get("attributes"):
-            for key, attr in v["attributes"].items():
-                obs_attributes_keys.append(key)
-                obs_attributes_values.append(attr)       
-    
-    revision_dates.reverse()
-    #pprint(revision_dates)
-    
     dimension_filter = ".".join([series["dimensions"][key] for key in dataset["dimension_keys"]])
     
     result = render_template(
@@ -301,13 +330,17 @@ def series_with_slug(slug):
                     is_modal=is_modal,
                     provider=provider,
                     dataset=dataset,
+                    is_latest=is_latest,
+                    revisions=revisions,
+                    #max_version=max_version,
                     #view_explorer=view_explorer,
                     dimension_filter=dimension_filter.upper(),
-                    is_reverse=is_reverse,
-                    obs_attributes_keys=list(set(obs_attributes_keys)),
-                    obs_attributes_values=list(set(obs_attributes_values)),
-                    revision_dates=list(set(revision_dates)),
-                    max_revisions=max_revisions)
+                    #is_reverse=is_reverse,
+                    #obs_attributes_keys=list(set(obs_attributes_keys)),
+                    #obs_attributes_values=list(set(obs_attributes_values)),
+                    #revision_dates=list(set(revision_dates)),
+                    #max_revisions=max_revisions
+                    )
     
     return result
     
@@ -458,6 +491,8 @@ def ajax_cart_view():
         
         docs = list(series)
         for s in docs:
+            if not "version" in s:
+                s["version"] = 0
             s['view'] = url_for('.series-by-slug', slug=s['slug'], modal=1)
 
             dataset_slug = slugify("%s-%s" % (s["provider_name"], 
@@ -539,7 +574,7 @@ def ajax_explorer_datas():
             is_eurostat = True
     
     if search:
-        query["$text"] = {"$search": search}
+        query["$text"] = {"$search": search.strip()}
         projection['score'] = {'$meta': 'textScore'}
 
     disabled_datasets = []
@@ -577,6 +612,9 @@ def ajax_explorer_datas():
     for s in series_list:
         if disabled_datasets and s["dataset_code"] in disabled_datasets:
             continue
+        
+        if not "version" in s:
+            s["version"] = 0
         
         s['start_date'] = s["values"][0]["period"]
         s['end_date'] = s["values"][-1]["period"]
@@ -690,6 +728,8 @@ def export_series_csv(slug=None):
     values = []
     for doc in series_list:
         #dataset_slug = doc["dataset_slug"]
+        if not "version" in doc:
+            doc["version"] = 0
         provider_name = doc["provider_name"]
         dataset_code = doc["dataset_code"]
         key = doc["key"]
