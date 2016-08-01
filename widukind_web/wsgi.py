@@ -169,7 +169,7 @@ def _conf_db(app, db=None):
     from widukind_common.utils import get_mongo_db
     from widukind_web.utils import create_or_update_indexes
     if not db:
-        app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL"), connect=False)
+        app.widukind_db = get_mongo_db(app.config.get("MONGODB_URL").strip('"'), connect=False)
     else:
         app.widukind_db = db
     app.widukind_fs = gridfs.GridFS(app.widukind_db)
@@ -446,6 +446,7 @@ def _conf_assets(app):
         "local/font-awesome.min.css",
         #"widukind/style-light.css",
         "local/toastr.min.css",
+        "local/bootstrap-horizon.css",
     ]
     
     common_js = [

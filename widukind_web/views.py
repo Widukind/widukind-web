@@ -294,10 +294,13 @@ def series_with_slug(slug, version):
         for store in queries.col_series_archives().find(query_revisions).sort('version', DESCENDING):
             series_rev = series_archives_load(store)
             values = series_rev['values']
+            
             empty_element = count_values - len(values)
             values.reverse()
+            
             for i in range(empty_element):
                 values.insert(0, None)
+                
             revisions.append({
                 "last_update_ds": series_rev['last_update_ds'], 
                 "version": series_rev['version'], 
@@ -314,7 +317,8 @@ def series_with_slug(slug, version):
     url_provider = url_for('.explorer_p', provider=provider["slug"])
     url_dataset = url_for('.explorer_d', dataset=dataset["slug"])
     url_dataset_direct = url_for('.dataset-by-slug', slug=dataset["slug"], _external=True)
-    url_series = url_for('.series-by-slug', slug=slug, _external=True)
+    url_series = url_for('.series-by-slug-version', slug=slug, version=series["version"], _external=True)
+    url_series_latest = url_for('.series-by-slug-version', slug=slug, version=series_latest["version"])
     url_series_plot = url_for('.ajax_series_plot', slug=slug)
     url_export_csv = url_for('.export-series-csv', slug=slug)
 
@@ -326,6 +330,7 @@ def series_with_slug(slug, version):
                     url_dataset=url_dataset,
                     url_dataset_direct=url_dataset_direct,
                     url_series=url_series,
+                    url_series_latest=url_series_latest,
                     url_series_plot=url_series_plot,
                     url_export_csv=url_export_csv,
                     series=series,
