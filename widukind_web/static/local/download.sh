@@ -69,3 +69,5 @@ curl -O http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.min.css
 curl -O http://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.min.js
 
 curl -O http://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js
+
+curl -O https://raw.githubusercontent.com/Zertz/bootstrap-horizon/master/bootstrap-horizon.css

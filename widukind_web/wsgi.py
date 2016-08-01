@@ -446,6 +446,7 @@ def _conf_assets(app):
         "local/font-awesome.min.css",
         #"widukind/style-light.css",
         "local/toastr.min.css",
+        "local/bootstrap-horizon.css",
     ]
     
     common_js = [
