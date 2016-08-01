@@ -39,59 +39,6 @@ var chosen_default_options = {
    allow_single_deselect: true,
 };
 
-function datasetLastUpdateFormatter(value, row) {
-    return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
-}
-
-function datasetDownloadLastFormatter(value, row) {
-    return new String(moment(value).format('LL')); // + " (" + new String((moment(value).fromNow())) + ")";
-}
-
-function createdFormatter(value, row) {
-    return new String(moment(value).format('L')) + " (" + new String((moment(value).fromNow())) + ")";
-}
-
-function datasetNameFormatter(value, row){
-	return '<a href="' + row.view + '" title="Dataset link">' + value + '</a>';
-}
-
-function datasetButtonFormatter(value, row){
-    var d = [];
-    d.push('<div class="btn-group btn-group-xs" role="group"><center>');
-    d.push('<div class="btn btn-xs btn-group" role="group">');
-    d.push('<a href="' + row.series + '" title="Series link">');
-    d.push('<i class="fa fa-stack-exchange fa-lg"></i>');
-    d.push('</a>');
-    d.push('</div>');
-    if ( row.docHref ) {
-        d.push('<div class="btn btn-xs btn-group" role="group">');          
-        d.push('<a target="_blank" href="' + row.docHref + '" title="Web Site"><i class="fa fa-external-link-square fa-lg"></i></a>');
-        d.push('</div>');
-    }
-    d.push('</center></div>');
-    return d.join('');
-}
-
-
-function seriesKeyLinkFormatter(value, row){
-    return '<small><a class="modal_show" data-url="'+ row.view +'" href="javascript:void(0)" title="Show detail">' + row.key +'</a></small>';
-    //return '<small>' + value + '</small>';
-  ////<a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
-}
-
-function is_revisions_Formatter(value, row){
-	if ( row.is_revisions === true ) {
-    	return '<i class="fa fa-check"></i>';
-    } else {
-    	return '&nbsp;';
-    }
-}
-
-
-function seriesNameLinkFormatter(value, row){
-    return '<a href="' + row.view + '" title="Show detail">' + row.name +'</a>';
-}
-
 function AdminQueriesResponseHandler(res){
 	_.forEach(res, function(item){
 		var tags = item.tags;
@@ -297,6 +244,20 @@ function loadGraph(url){
 
 }
 
+function revisionsDiff(){
+	//Parcours tableau revisions pour faire ressortir diff
+	$("#seriesRevisions > tbody > tr").each(function(i, item){ 
+		  var line = $(item).find("span.revision");
+		  var period = $(line).eq(0).text();
+		  var current_value = $(line).eq(1).text();
+		  var value = $(line).eq(2).text();
+		  if (current_value!==value){
+		    console.log(i, period, current_value, value, current_value===value);
+		  }
+		  //TODO: attributes
+	});	
+}
+
 function onLoadSeries(){
     $('#sidebarnav-series a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         e.preventDefault();
@@ -309,12 +270,15 @@ function onLoadSeries(){
             });
         }
     });
-    var $revision_table = $('#seriesRevisions').bootstrapTable();
+    //$('#seriesIdentity').bootstrapTable();
+    $('#seriesRevisions').bootstrapTable();
     $('#seriesDatas').bootstrapTable();
 }
 
 function onShownModal(){
-    
+
+	var dialog = this;
+	
     onLoadSeries();
     
     flask_moment_render_all();
@@ -323,6 +287,21 @@ function onShownModal(){
         placement: 'auto left',
     });
     
+    $('#modal-detail .modal_show').on('click', function(e){
+    	e.preventDefault();
+    	$(dialog).modal('hide');
+        var title = $(this).attr("data-title");
+        var url = $(this).attr("data-url");
+        ajax(url, 'GET', {}, {dataType: 'html', accepts: 'text/html'}).done(function(data) {
+            var dialog = bootbox.alert({
+                title: title,
+                backdrop: true,
+                size: 'large',
+                closeButton: false,
+                message: data
+            }).on('shown.bs.modal', onShownModal);
+        });
+    });
 }
 
 function modal_show(e){
@@ -355,6 +334,16 @@ function show_graph(e){
     e.preventDefault();
     var url = $(this).attr("data-series-plot-url");
     loadGraph(url);
+}
+
+function createdFormatter(value, row) {
+    return new String(moment(value).format('L')) + " (" + new String((moment(value).fromNow())) + ")";
+}
+
+function seriesKeyLinkFormatter(value, row){
+    return '<small><a class="modal_show" data-url="'+ row.view +'" href="javascript:void(0)" title="Show detail">' + row.key +'</a></small>';
+    //return '<small>' + value + '</small>';
+  ////<a title="View series" data-title="View series" type="button" class="btn btn-default modal_show" href="javascript:void(0)" data-url="{{view}}"><i class="fa fa-eye"></i></a>
 }
 
 function seriesButtonFormatter(value, row, line){
