@@ -93,7 +93,7 @@
 	                       			</a>
 	                       			
                        				<h5>{{ provider.long_name }}</h5>
-                       				<h5>{{ provider.website }}</h5>
+                       				<h5><a class="text-primary" target="_blank" href="{{ provider.website }}">{{ provider.website }}</a>{% if provider.terms_of_use %} - <a target="_blank" class="text-primary" href="{{ provider.terms_of_use }}">Terms of Use</a>{% endif %}</h5>
                        			</div>
                        			<div class="col-md-2">
                        				<h3>
@@ -158,10 +158,6 @@
                         <p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
                     </div>
 
-                    <div class="partner-logos text-center">
-                        <h3 style="margin-top: 0;"><small>Providers</small></h3>
-                    </div>
-                        
                 </div>
             </div>
             

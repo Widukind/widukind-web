@@ -305,6 +305,7 @@ def series_with_slug(slug, version):
                 "last_update_ds": series_rev['last_update_ds'], 
                 "version": series_rev['version'], 
                 "values": values,
+                "name": series_rev["name"],
                 "url": url_for('.series-by-slug-version', slug=slug, version=series_rev['version'])})
     else:
         series["version"] = 0
@@ -788,7 +789,6 @@ def datasets_last_update():
     }
 
     startDate = arrow.utcnow().replace(days=-1).floor("second")
-    print("startDate : ", startDate, startDate.datetime)
     query["created"] = {"$gte": startDate.datetime}
     
     limit = request.args.get('limit', default=0, type=int)
@@ -887,7 +887,6 @@ def home_views(bp_or_app):
         }
     
         startDate = arrow.utcnow().replace(days=-1).floor("second")
-        print("startDate : ", startDate, startDate.datetime)
         query["created"] = {"$gte": startDate.datetime}
         
         limit = request.args.get('limit', default=0, type=int)
