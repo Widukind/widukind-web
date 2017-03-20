@@ -9,14 +9,14 @@
     {% assets "form_css" %}
         <link href="{{ ASSET_URL }}" rel="stylesheet">
     {% endassets %}
-    
+
     <style>
     .profile-img{box-shadow: 0 5px 15px rgba(0,0,0,.5)}
-    
+
     .noborder {
         border: 0;
     }
-    
+
   	div.provider {
 		background-color: #fff;
 	   	border-top-right-radius: 10px;
@@ -29,7 +29,7 @@
   	div.provider * h5, div.provider .human-number, div.provider * small {
   		color: #000;
   	}
-      
+
     .provider-name {
     	font-weight: bold;
     	box-sizing: border-box;
@@ -41,7 +41,7 @@
 	   	padding-top: 0;
 	   	padding-bottom: 5px;
     }
-    
+
 	.logos {
 	   margin: 0;
 	   padding: 0;
@@ -52,7 +52,7 @@
 	   border-bottom-left-radius: 6px;
 	   overflow: hidden;
 	}
-	
+
 	.logos img {
 	   width: 100%;
 	}
@@ -62,7 +62,7 @@
         padding-right: 100px;
     }
     */
-    
+
     </style>
 {% endblock %}
 
@@ -91,17 +91,17 @@
 	                       				{{ provider.name }}
 	                       				</h3>
 	                       			</a>
-	                       			
+
                        				<h5>{{ provider.long_name }}</h5>
                        				<h5><a class="text-primary" target="_blank" href="{{ provider.website }}">{{ provider.website }}</a>{% if provider.terms_of_use %} - <a target="_blank" class="text-primary" href="{{ provider.terms_of_use }}">Terms of Use</a>{% endif %}</h5>
                        			</div>
                        			<div class="col-md-2">
                        				<h3>
                        				<img src="{{ url_for('static', filename='widukind/logos/provider-'+ provider.slug + '.png') }}" alt="" class="center-block img-thumbnail img-responsive profile-img" />
-                       				</h3>	
+                       				</h3>
                        			</div>
                        		</div>
-                       </div><!--/col-->          
+                       </div><!--/col-->
                    </div>
                    {#
              		<div class="row">
@@ -124,99 +124,99 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            
+
             <div class="panel panel-default noborder nomargin-bottom">
                 <div class="panel-body nopadding-bottom">
-                
+
                     <h3 class="text-center" style="margin-top: 0;">
                         International Economics Database
                     </h3>
-                    
+
                     <p class="text-center">A database of international macroeconomic data</p>
-        
+
                     <div class="partner-logos text-center">
                         <h3 style="margin-top: 0;"><small>Partners</small></h3>
                         <p>
                             <a href="http://www.strategie.gouv.fr" target="_blank">
                                 <img class="img-rounded" src="{{ static("logos/logo-fs-new-40.png") }}" alt="France Stratégie">
                             </a>
-                            
+
                             <span> &nbsp; </span>
-                            
-                            <a href="http://www.cepremap.org" target="_blank">               
+
+                            <a href="http://www.cepremap.org" target="_blank">
                                 <img class="img-rounded" src="{{ static("logos/logo-cepremap-40-new.png") }}" alt="CEPREMAP">
                             </a>
                         </p>
-                        
+
                     </div>
-                    
+
                     <p>&nbsp;</p>
-                    
+
                     <div class="home-intro text-justify">
-                        <p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;).</p> 
+                        <p>The purpose of the Widukind project is to provide a unique website accessible for all users, allowing them to free download public economic data as released by national producers (national institutes of statistics, central banks) as well as international ones (IMF, World Bank, OECD, Eurostat, ECB&hellip;).</p>
                         <p>These data will be updated regularly and former updates are archived so as to build overtime a <em>real time database</em>. Moreover, data can be downloaded directly by a broad spectrum of econometric and statistical analysis softwares using the utilities provided by the project (R, Matlab, Stata, EViews, Excel, Python, Julia&hellip;).</p>
                         <p>This website is still under development and may contains bugs. Moreover, datasets are currently only updated occasionally and data changed by their provider may be reflected here with a delay. We plan to eliminate this delay in the final version.</p>
                     </div>
 
                 </div>
             </div>
-            
+
         </div>
     </div>
 	<div class="row">
-	
+
         <div class="panel panel-default noborder">
             <div class="panel-body nopadding-top">
-    
+
         		<div class="col-md-6">
         			{% if "insee" in providers %}
         			{{ card(providers["insee"], "insee-ipch-2015-fr-coicop")}}
         			{% endif %}
-        			
+
         			{% if "imf" in providers %}
         			{{ card(providers["imf"], "imf-weo")}}
         			{% endif %}
-        
+
         			{% if "esri" in providers %}
         			{{ card(providers["esri"])}}
         			{% endif %}
-        			
+
                     {% if "ecb" in providers %}
                     {{ card(providers["ecb"], "ecb-exr")}}
                     {% endif %}
-                    
+
                     {% if "bea" in providers %}
                     {{ card(providers["bea"])}}
                     {% endif %}
-        
+
         		</div>
         		<div class="col-md-6">
                     {% if "eurostat" in providers %}
                     {{ card(providers["eurostat"], "eurostat-namq-10-gdp")}}
                     {% endif %}
-                    
+
                     {% if "bis" in providers %}
                     {{ card(providers["bis"], "bis-pp-ls")}}
                     {% endif %}
-        
+
         			{% if "oecd" in providers %}
         			{{ card(providers["oecd"], "oecd-eo")}}
         			{% endif %}
-        			
+
         			{% if "worldbank" in providers %}
         			{{ card(providers["worldbank"], "worldbank-gem")}}
         			{% endif %}
-        			
+
         			{% if "fed" in providers %}
         			{{ card(providers["fed"], "fed-g19-terms")}}
         			{% endif %}
         		</div>
-        		
+
             </div>
         </div>
-		
+
 	</div>
-	
+
 </div>
 {% endblock %}
 

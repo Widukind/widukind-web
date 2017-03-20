@@ -15,11 +15,11 @@ from widukind_web import constants
 from widukind_web.extensions import cache
 
 def _conf_converters(app):
-    
+
     from werkzeug.routing import BaseConverter, ValidationError
     from bson.objectid import ObjectId
     from bson.errors import InvalidId
-    
+
     class BSONObjectIdConverter(BaseConverter):
 
         def to_python(self, value):
@@ -27,14 +27,14 @@ def _conf_converters(app):
                 return ObjectId(value)
             except (InvalidId, ValueError, TypeError):
                 raise ValidationError()
-             
+
         def to_url(self, value):
-            return str(value)    
-        
+            return str(value)
+
     app.url_map.converters['objectid'] = BSONObjectIdConverter
-    
-def _conf_logging(debug=False, 
-                  stdout_enable=True, 
+
+def _conf_logging(debug=False,
+                  stdout_enable=True,
                   syslog_enable=False,
                   prog_name='widukind_web',
                   config_file=None,
@@ -42,11 +42,11 @@ def _conf_logging(debug=False,
 
     import sys
     import logging.config
-    
+
     if config_file:
         logging.config.fileConfig(config_file, disable_existing_loggers=True)
         return logging.getLogger(prog_name)
-    
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': True,
@@ -59,7 +59,7 @@ def _conf_logging(debug=False,
                 'format': '%(asctime)s %(name)s: [%(levelname)s] - %(message)s',
                 'datefmt': '%Y-%m-%d %H:%M:%S',
             },
-        },    
+        },
         'handlers': {
             'null': {
                 'level':LEVEL_DEFAULT,
@@ -69,7 +69,7 @@ def _conf_logging(debug=False,
                 'level':LEVEL_DEFAULT,
                 'class':'logging.StreamHandler',
                 'formatter': 'simple'
-            },      
+            },
         },
         'loggers': {
             '': {
@@ -84,7 +84,7 @@ def _conf_logging(debug=False,
             },
         },
     }
-    
+
     if sys.platform.startswith("win32"):
         LOGGING['loggers']['']['handlers'] = ['console']
 
@@ -94,10 +94,10 @@ def _conf_logging(debug=False,
                 'class':'logging.handlers.SysLogHandler',
                 'address' : '/dev/log',
                 'facility': 'daemon',
-                'formatter': 'simple'    
-        }       
+                'formatter': 'simple'
+        }
         LOGGING['loggers']['']['handlers'].append('syslog')
-        
+
     if stdout_enable:
         if not 'console' in LOGGING['loggers']['']['handlers']:
             LOGGING['loggers']['']['handlers'].append('console')
@@ -105,22 +105,22 @@ def _conf_logging(debug=False,
     '''if handlers is empty'''
     if not LOGGING['loggers']['']['handlers']:
         LOGGING['loggers']['']['handlers'] = ['console']
-    
+
     if debug:
         LOGGING['loggers']['']['level'] = 'DEBUG'
         LOGGING['loggers'][prog_name]['level'] = 'DEBUG'
         for handler in LOGGING['handlers'].keys():
             LOGGING['handlers'][handler]['formatter'] = 'debug'
-            LOGGING['handlers'][handler]['level'] = 'DEBUG' 
+            LOGGING['handlers'][handler]['level'] = 'DEBUG'
 
-    #from pprint import pprint as pp 
+    #from pprint import pprint as pp
     #pp(LOGGING)
     #werkzeug = logging.getLogger('werkzeug')
     #werkzeug.handlers = []
-             
+
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('')
-    
+
     return logger
 
 def _conf_logging_mongo(app):
@@ -128,33 +128,33 @@ def _conf_logging_mongo(app):
     handler = MongoHandler(db=app.widukind_db, collection=constants.COL_LOGS)
     handler.setLevel(logging.ERROR)
     app.logger.addHandler(handler)
-    
+
 def _conf_logging_mail(app):
     from logging.handlers import SMTPHandler
-    
+
     ADMIN = app.config.get("MAIL_ADMINS", None)
     if not ADMIN:
         app.logger.error("Emails address for admins are not configured")
         return
-        
+
     ADMINS = ADMIN.split(",")
     """
     mailhost, fromaddr, toaddrs, subject, credentials=None, secure=None, timeout=5.0
     """
     mail_handler = SMTPHandler(app.config.get("MAIL_SERVER"),
                                app.config.get("MAIL_DEFAULT_SENDER"),
-                               ADMINS, 
+                               ADMINS,
                                'Application Failed')
     mail_handler.setLevel(logging.ERROR)
     app.logger.addHandler(mail_handler)
-    
+
 def _conf_logging_errors(app):
-    
+
     def log_exception(sender, exception, **extra):
         sender.logger.error(str(exception))
-        
+
     from flask import got_request_exception
-    got_request_exception.connect(log_exception, app)        
+    got_request_exception.connect(log_exception, app)
 
 def _conf_sentry(app):
     try:
@@ -163,7 +163,7 @@ def _conf_sentry(app):
             sentry = Sentry(app, logging=True, level=app.logger.level)
     except ImportError:
         pass
-    
+
 def _conf_db(app, db=None):
     import gridfs
     from widukind_common.utils import get_mongo_db
@@ -179,7 +179,7 @@ def _conf_session(app):
     from widukind_common.flask_utils.mongo_session import PyMongoSessionInterface
     app.session_interface = PyMongoSessionInterface(app.widukind_db,
                                                     collection=constants.COL_SESSION)
-    
+
 def _conf_cache(app):
     """
     @cache.cached(timeout=50)
@@ -187,87 +187,87 @@ def _conf_cache(app):
     @cache.memoize(50)
     """
     cache.init_app(app)
-    
+
 def _conf_default_views(app):
-    
+
     from widukind_web.views import home_views
     home_views(app)
 
 def _conf_record_query(app):
-    
+
     from gevent.queue import Queue
-    
-    from widukind_web import queues    
+
+    from widukind_web import queues
     queues.RECORD_QUERY = Queue()
-    
+
     def record():
         col = app.widukind_db[constants.COL_QUERIES]
         while True:
             q = queues.RECORD_QUERY.get()
             col.insert(q)
-    
+
     return [gevent.spawn(record)]
 
-    
+
 def _conf_auth(app):
     extensions.auth.init_app(app)
-    
+
     @app.context_processor
     def is_auth():
         def _is_logged():
             if session.get("is_logged"):
                 return True
-            
+
             result = extensions.auth.authenticate()
-            
+
             if result:
                 session["is_logged"] = True
                 return True
-        
-        return dict(is_logged=_is_logged)        
-    
+
+        return dict(is_logged=_is_logged)
+
 def _conf_mail(app):
     extensions.mail.init_app(app)
 
 def _conf_periods(app):
-    
+
     import pandas
-    
+
     def get_ordinal_from_period(date_str, freq=None):
         if not freq in constants.CACHE_FREQUENCY:
             return pandas.Period(date_str, freq=freq).ordinal
-        
+
         key = "p-to-o-%s.%s" % (date_str, freq)
         value = cache.get(key)
         if value:
             return value
-        
+
         value = pandas.Period(date_str, freq=freq).ordinal
         cache.set(key, value, timeout=300)
         return value
-    
+
     def get_period_from_ordinal(date_ordinal, freq=None):
         if not freq in constants.CACHE_FREQUENCY:
             return str(pandas.Period(ordinal=date_ordinal, freq=freq))
-    
+
         key = "o-to-p-%s.%s" % (date_ordinal, freq)
         value = cache.get(key)
         if value:
             return value
-        
+
         value = str(pandas.Period(ordinal=date_ordinal, freq=freq))
         cache.set(key, value, timeout=300)
         return value
-    
+
     app.get_ordinal_from_period = get_ordinal_from_period
     app.get_period_from_ordinal = get_period_from_ordinal
-    
+
     @app.context_processor
     def convert_pandas_period():
         def convert(date_ordinal, frequency):
             return get_period_from_ordinal(date_ordinal, frequency)
         return dict(pandas_period=convert)
-    
+
 
 def _conf_processors(app):
 
@@ -282,7 +282,7 @@ def _conf_processors(app):
             except:
                 _versions[p] = "None"
         return dict(versions=_versions)
-    
+
     @app.context_processor
     def cart():
         cart = session.get("cart", [])
@@ -298,7 +298,7 @@ def _conf_processors(app):
         def _split(s):
             return s.split()
         return dict(split=_split)
-    
+
     @app.context_processor
     def provider_list():
         #TODO: update or cache !!!
@@ -320,28 +320,28 @@ def _conf_processors(app):
     def server_time():
         import arrow
         return dict(server_time=arrow.utcnow().to('local').format('YYYY-MM-DD HH:mm:ss ZZ'))
-                
+
 def _conf_bootstrap(app):
     from flask_bootstrap import WebCDN
     from flask_bootstrap import Bootstrap
     Bootstrap(app)
 
 def _conf_sitemap(app):
-    
+
     from datetime import datetime, timedelta
 
     from functools import wraps
     from flask_sitemap import sitemap_page_needed
-    
+
     from widukind_web import queries
-    
+
     CACHE_KEY = 'sitemap-page-{0}'
-    
+
     @sitemap_page_needed.connect
     def create_page(app, page, urlset):
         key = CACHE_KEY.format(page)
         cache.set(key, extensions.sitemap.render_page(urlset=urlset))
-        
+
     def load_page(fn):
         @wraps(fn)
         def loader(*args, **kwargs):
@@ -360,14 +360,14 @@ def _conf_sitemap(app):
     @extensions.sitemap.register_generator
     def sitemap_datasets():
         query = {"enable": True}
-        projection = {'_id': False, "download_last": True, "slug": True} 
+        projection = {'_id': False, "download_last": True, "slug": True}
         datasets = queries.col_datasets().find(query, projection)
         for doc in datasets:
-            yield ('views.dataset-by-slug', 
-                   {'slug': doc['slug']}, 
-                   doc['download_last'], 
+            yield ('views.dataset-by-slug',
+                   {'slug': doc['slug']},
+                   doc['download_last'],
                    "daily", 0.9)
-            
+
     @extensions.sitemap.register_generator
     def sitemap_global():
         yield ('home', {}, None, "daily", 1.0)
@@ -376,7 +376,7 @@ def _conf_sitemap(app):
     app.config['SITEMAP_VIEW_DECORATORS'] = [load_page]
 
     extensions.sitemap.init_app(app)
-    
+
 def _conf_bp(app):
     from widukind_web import views
     from widukind_web import admin
@@ -400,7 +400,7 @@ def _conf_errors(app):
             values['original_error'] = str(values['original_error'])
             return app.jsonify(values), 307
         return render_template('errors/307.html', **values), 307
-    
+
     @app.errorhandler(500)
     def error_500(error):
         is_json = request.args.get('json') or request.is_xhr
@@ -409,7 +409,7 @@ def _conf_errors(app):
             values['original_error'] = str(values['original_error'])
             return app.jsonify(values), 500
         return render_template('errors/500.html', **values), 500
-    
+
     @app.errorhandler(404)
     def not_found_error(error):
         is_json = request.args.get('json') or request.is_xhr
@@ -428,17 +428,17 @@ def _conf_jsonify(app):
         return current_app.response_class(content, mimetype='application/json')
 
     app.jsonify = jsonify
-    
+
 def _conf_assets(app):
     from flask_assets import Bundle
     assets = extensions.assets
     #app.debug = True
     assets.init_app(app)
-    
+
     import os
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "static"))
-    
+
     common_css = [
         #"local/bootstrap-3.3.6/css/bootstrap.min.css",
         #"local/bootstrap-3.3.6/css/bootstrap-theme.min.css",
@@ -448,7 +448,7 @@ def _conf_assets(app):
         "local/toastr.min.css",
         "local/bootstrap-horizon.css",
     ]
-    
+
     common_js = [
         "local/jquery.min.js",
         "local/bootstrap-3.3.6/js/bootstrap.min.js",
@@ -462,7 +462,7 @@ def _conf_assets(app):
 
     table_css = [
         "local/bootstrap-table.min.css",
-    ]    
+    ]
     table_js = [
         "local/bootstrap-table.min.js",
         "local/bootstrap-table-cookie.min.js",
@@ -476,7 +476,7 @@ def _conf_assets(app):
         #"local/bootstrap-table-resizable.min.js",
         "local/bootstrap-table-en-US.min.js",
     ]
-    
+
     form_css = [
         "local/awesome-bootstrap-checkbox.min.css",
         #"local/select2.min.css",
@@ -500,9 +500,9 @@ def _conf_assets(app):
         #"local/dygraph-combined.js",
     ] + table_js
 
-    #TODO: export    
+    #TODO: export
     table_export_js = [
-        'bootstrap-table/extensions/export/bootstrap-table-export.min.js',    
+        'bootstrap-table/extensions/export/bootstrap-table-export.min.js',
         'bootstrap-table/extensions/flat-json/bootstrap-table-flat-json.min.js',
         'bootstrap-table/extensions/toolbar/bootstrap-table-toolbar.js',
         'table-export/tableExport.js',
@@ -512,50 +512,50 @@ def _conf_assets(app):
         'table-export/jspdf/jspdf.js',
         'table-export/jspdf/libs/base64.js'
     ]
-    
+
     for filename in common_css + common_js + form_css + form_js:
         filepath = os.path.abspath(os.path.join(STATIC_DIR, filename))
         if not os.path.exists(filepath):
             raise Exception("file not found [%s]" % filepath)
-    
+
     #274Ko
-    common_css_bundler = Bundle(*common_css, 
+    common_css_bundler = Bundle(*common_css,
                                 filters='cssmin',
                                 #output='gen/common-%(version)s.css'
                                 output='local/common.css'
                                 )
     if not 'common_css' in assets._named_bundles:
         assets.register('common_css', common_css_bundler)
-    
+
     #207Ko
     common_js_bundler = Bundle(*common_js,
-                               filters='jsmin', 
+                               filters='jsmin',
                                output='local/common.js')
     if not 'common_js' in assets._named_bundles:
         assets.register('common_js', common_js_bundler)
-    
+
     #49Ko
     if not 'form_css' in assets._named_bundles:
         assets.register('form_css', Bundle(*form_css,
-                                           filters='cssmin', 
+                                           filters='cssmin',
                                            output='local/form.css'))
-    
+
     #505Ko
     if not 'form_js' in assets._named_bundles:
-        assets.register('form_js', Bundle(*form_js, 
+        assets.register('form_js', Bundle(*form_js,
                                           filters='jsmin',
                                           output='local/form.js'))
 
     if not 'table_css' in assets._named_bundles:
         assets.register('table_css', Bundle(*table_css,
-                                           filters='cssmin', 
+                                           filters='cssmin',
                                            output='local/table.css'))
 
     if not 'table_js' in assets._named_bundles:
         assets.register('table_js', Bundle(*table_js,
-                                           filters='jsmin', 
+                                           filters='jsmin',
                                            output='local/table.js'))
-    
+
     with app.app_context():
         assets.cache = True #not app.debug
         assets.manifest = 'cache' if not app.debug else False
@@ -563,59 +563,59 @@ def _conf_assets(app):
         #print(assets['common_css'].urls())
 
 def create_app(config='widukind_web.settings.Prod', db=None):
-    
+
     env_config = config_from_env('WIDUKIND_SETTINGS', config)
-    
+
     app = Flask(__name__)
-    app.config.from_object(env_config)    
+    app.config.from_object(env_config)
 
     _conf_db(app, db=db)
 
     app.config['LOGGER_NAME'] = 'widukind_web'
     app._logger = _conf_logging(debug=app.debug, prog_name='widukind_web')
-    
+
     if app.config.get("LOGGING_MONGO_ENABLE", True):
         _conf_logging_mongo(app)
 
     if app.config.get("LOGGING_MAIL_ENABLE", False):
         _conf_logging_mail(app)
 
-    _conf_logging_errors(app)    
-    
+    _conf_logging_errors(app)
+
     extensions.moment.init_app(app)
-    
+
     _conf_bootstrap(app)
-    
+
     _conf_sentry(app)
-    
-    _conf_errors(app)
-    
+
+    # _conf_errors(app)
+
     _conf_cache(app)
-    
+
     _conf_converters(app)
-    
+
     _conf_jsonify(app)
-    
+
     _conf_default_views(app)
-    
+
     _conf_bp(app)
-    
+
     _conf_record_query(app)
 
     _conf_processors(app)
-    
+
     _conf_periods(app)
-    
+
     _conf_auth(app)
-    
+
     _conf_sitemap(app)
-    
+
     _conf_session(app)
-    
+
     _conf_mail(app)
-    
+
     _conf_assets(app)
-    
+
     app.wsgi_app = ProxyFix(app.wsgi_app)
-    
+
     return app

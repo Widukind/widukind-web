@@ -1,15 +1,15 @@
 {% extends "layout.html" %}
 
-{% block title %}{{super()}} - 307 Disable element{% endblock %}
+{% block title %}{{super()}} - 307 Disabled element{% endblock %}
 
 {% block page %}
 
 <div class="text-center error-box">
     <h1 class="error-text tada animated"><i class="fa fa-times-circle text-danger error-icon-shadow"></i> Error 307</h1>
-    <h2>Disable element</h2>
+    <h2>Disabled element</h2>
     <p>The administrator has been notified.</p>
     <p>Sorry for the inconvenience!</p>
-    <p><a href="{{ url_for('home') }}">Back</a></p>    
+    <p><a href="{{ url_for('home') }}">Back</a></p>
 </div>
 
 {% endblock %}
