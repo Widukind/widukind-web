@@ -856,7 +856,7 @@ def home_views(bp_or_app):
             )
             queries.col_contact().insert(contact)
             #flash("Your message has been registred.", "success")
-            message = Message("Widukind - new contact from [%s]" % contact['email'],
+            message = Message("DB.nomics - new contact from [%s]" % contact['email'],
                               sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
                               recipients=[current_app.config.get('MAIL_ADMINS')])
             message.html = '<a href="%s">Admin contacts</a>' % url_for('admin.contacts', _external=True)
@@ -876,7 +876,7 @@ def home_views(bp_or_app):
     def atom_feed():
         from werkzeug.contrib.atom import AtomFeed
         now = arrow.utcnow().datetime
-        feed = AtomFeed("Widukind",
+        feed = AtomFeed("DB.nomics",
                         feed_url=request.url,
                         #url=request.host_url,
                         #updated=now,

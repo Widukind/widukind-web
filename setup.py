@@ -7,16 +7,16 @@ from widukind_web.version import version_str
 setup(
     name='widukind-web',
     version=version_str(),
-    description='Widukind web UI',
-    author='Widukind Team',
-    url='https://github.com/Widukind/widukind-web',
+    description='Web user interface for the `DB.nomics project',
+    author='DB.nomics Team',
+    url='https://git.nomics.world/dbnomics/widukind-web',
     zip_safe=False,
     license='AGPLv3',
     include_package_data=True,
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=[
-      'nose',
+        'nose',
     ],
     entry_points={
         'console_scripts': [

@@ -1,6 +1,6 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/google.html" as google %}
-{% block title %}Widukind{% endblock %}
+{% block title %}DB.nomics{% endblock %}
 
 {% block html_attribs %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US"{% endblock html_attribs %}
 
@@ -37,11 +37,11 @@
 	  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 	</script>
 	<div id="content" class="container-fluid">
-        
+
         {% block custom_navbar %}
         {% include "navbar.html" with context %}
         {% endblock %}
-        
+
         <div class="row">
             {#
             <div id="site_menu_left" {% block menu_left_attrs %}class="col-md-2"{% endblock %} style="display: none;">
@@ -54,7 +54,7 @@
             </div>
 	    </div>
 	</div>
-	
+
 	{% block footer %}
 	<footer class="footer">
 		<div class="container">
@@ -62,7 +62,7 @@
 		</div>
 	</footer>
 	{% endblock footer %}
-	     
+
 {% endblock content %}
 
 {% block scripts %}
@@ -70,7 +70,7 @@
 	    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {% endassets %}
     {{ moment.include_moment(local_js=url_for('static', filename="local/moment.min.js")) }}
-       
+
     <script type="text/javascript">
     widukind_options.url_tags = '{{ url_for("views.ajax-tag-prefetch-series") }}?limit=50&provider=';
     widukind_options.url_tree = '{{ url_for("views.tree_root_base")}}?json=1&provider=';
@@ -82,15 +82,15 @@
     widukind_options.url_api_sdmx = '{{ config.BASE_URL_API_SDMX }}';
     widukind_options.url_api_json = '{{ config.BASE_URL_API_JSON }}';
     widukind_options.url_api_html = '{{ config.BASE_URL_API_HTML }}';
-    cartCount = {{session.cart|length}};    
-    </script> 
+    cartCount = {{session.cart|length}};
+    </script>
 
 <script type="text/javascript">
 
 $(document).ready(function() {
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        {% for category, message in messages %}        
+        {% for category, message in messages %}
           toastr['{{category}}']("{{message}}");
         {% endfor %}
       {% endif %}

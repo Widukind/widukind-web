@@ -12,7 +12,7 @@ class Config(object):
     DEFAULT_PROVIDER = config('WIDUKIND_WEB_DEFAULT_PROVIDER', None)
     DEFAULT_DATASET = config('WIDUKIND_WEB_DEFAULT_DATASET', None)
 
-    DEFAULT_URL_API = config('WIDUKIND_BASE_URL_API', "http://widukind-api.cepremap.org/api/v1")
+    DEFAULT_URL_API = config('WIDUKIND_BASE_URL_API', "https://api.db.nomics.world/api/v1")
     BASE_URL_API_JSON = config('WIDUKIND_BASE_URL_API_JSON', "%s/json" % DEFAULT_URL_API)
     BASE_URL_API_SDMX = config('WIDUKIND_BASE_URL_API_SDMX', "%s/sdmx" % DEFAULT_URL_API)
     BASE_URL_API_HTML = config('WIDUKIND_BASE_URL_API_HTML', "%s/html" % DEFAULT_URL_API)
@@ -67,7 +67,7 @@ class Config(object):
     SITEMAP_GZIP = False
     #SITEMAP_MAX_URL_COUNT = 10000
     SITEMAP_INCLUDE_RULES_WITHOUT_PARAMS = False #not True
-    FULL_URL_SITEMAP = config('WIDUKIND_WEB_FULL_URL_SITEMAP', "http://widukind.cepremap.org")
+    FULL_URL_SITEMAP = config('WIDUKIND_WEB_FULL_URL_SITEMAP', "https://db.nomics.world")
     #SITEMAP_URL_SCHEME = None
 
     SEARCH_MIN = config('WIDUKIND_WEB_SEARCH_MIN', 1, cast=int)

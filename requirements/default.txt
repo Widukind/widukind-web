@@ -1,4 +1,4 @@
-git+git://github.com/Widukind/widukind-common@master#egg=widukind-common
+git+git://git.nomics.world/dbnomics/widukind-common@master#egg=widukind-common
 pandas>=0.14.1
 python-dateutil
 arrow
